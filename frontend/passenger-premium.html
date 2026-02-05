@@ -1,0 +1,5863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RailMitra • Premium Station Assistance</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Swiss Design - Monochrome Palette */
+      --pure-black: #000000;
+      --rich-black: #0a0a0a;
+      --charcoal: #141414;
+      --graphite: #1a1a1a;
+      --slate: #252525;
+      --steel: #333333;
+      --silver: #666666;
+      --pearl: #999999;
+      --cloud: #cccccc;
+      --snow: #f5f5f5;
+      --pure-white: #ffffff;
+      
+      /* Accent Colors - Minimal */
+      --emerald: #10b981;
+      --amber: #f59e0b;
+      --sapphire: #3b82f6;
+      
+      /* Typography Scale */
+      --text-xs: 11px;
+      --text-sm: 13px;
+      --text-base: 15px;
+      --text-lg: 17px;
+      --text-xl: 20px;
+      --text-2xl: 24px;
+      --text-3xl: 32px;
+      --text-4xl: 40px;
+      --text-5xl: 56px;
+      --text-6xl: 72px;
+      
+      /* Spacing */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 20px;
+      --space-6: 24px;
+      --space-8: 32px;
+      --space-10: 40px;
+      --space-12: 48px;
+      --space-16: 64px;
+      --space-20: 80px;
+      --space-24: 96px;
+      
+      /* Radius */
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 24px;
+      --radius-full: 9999px;
+      
+      /* Transitions */
+      --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+      --duration-fast: 150ms;
+      --duration-base: 250ms;
+      --duration-slow: 400ms;
+    }
+
+    /* Light Mode (Default) */
+    body {
+      --bg-primary: var(--pure-white);
+      --bg-secondary: var(--snow);
+      --bg-tertiary: var(--cloud);
+      --text-primary: var(--pure-black);
+      --text-secondary: var(--silver);
+      --text-tertiary: var(--pearl);
+      --border-color: rgba(0, 0, 0, 0.08);
+      --card-bg: var(--pure-white);
+      --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 8px 32px rgba(0, 0, 0, 0.04);
+      --card-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.12), 0 16px 48px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Dark Mode */
+    body.dark {
+      --bg-primary: var(--rich-black);
+      --bg-secondary: var(--charcoal);
+      --bg-tertiary: var(--graphite);
+      --text-primary: var(--pure-white);
+      --text-secondary: var(--pearl);
+      --text-tertiary: var(--silver);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --card-bg: var(--graphite);
+      --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 8px 32px rgba(0, 0, 0, 0.2);
+      --card-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.4), 0 16px 48px rgba(0, 0, 0, 0.3);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Navigation */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      padding: var(--space-4) var(--space-8);
+      background: var(--bg-primary);
+      border-bottom: 1px solid var(--border-color);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+
+    .navbar-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      text-decoration: none;
+      color: var(--text-primary);
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--text-primary);
+      color: var(--bg-primary);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .logo-text {
+      font-size: var(--text-xl);
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: var(--space-8);
+    }
+
+    .nav-link {
+      font-size: var(--text-sm);
+      font-weight: 500;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color var(--duration-fast) var(--ease-out);
+    }
+
+    .nav-link:hover {
+      color: var(--text-primary);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      position: relative;
+    }
+
+    .theme-toggle {
+      width: 40px;
+      height: 40px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-md);
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .theme-toggle:hover {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+    }
+
+    .btn-primary {
+      padding: var(--space-3) var(--space-6);
+      background: var(--text-primary);
+      color: var(--bg-primary);
+      border: none;
+      border-radius: var(--radius-full);
+      font-size: var(--text-sm);
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Hero Section */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: var(--space-24) var(--space-8);
+      padding-top: 120px;
+    }
+
+    .hero-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-16);
+      align-items: center;
+    }
+
+    .hero-content {
+      max-width: 600px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-4);
+      background: var(--bg-secondary);
+      border-radius: var(--radius-full);
+      font-size: var(--text-xs);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-secondary);
+      margin-bottom: var(--space-6);
+    }
+
+    .hero-badge svg {
+      width: 16px;
+      height: 16px;
+      color: var(--emerald);
+    }
+
+    .hero-title {
+      font-size: var(--text-6xl);
+      font-weight: 800;
+      letter-spacing: -3px;
+      line-height: 1;
+      margin-bottom: var(--space-6);
+    }
+
+    .hero-title span {
+      display: block;
+      color: var(--text-tertiary);
+    }
+
+    .hero-description {
+      font-size: var(--text-lg);
+      color: var(--text-secondary);
+      margin-bottom: var(--space-10);
+      max-width: 480px;
+      line-height: 1.7;
+    }
+
+    .hero-cta {
+      display: flex;
+      gap: var(--space-4);
+    }
+
+    .btn-large {
+      padding: var(--space-5) var(--space-10);
+      font-size: var(--text-base);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 2px solid var(--border-color);
+      color: var(--text-primary);
+    }
+
+    .btn-outline:hover {
+      border-color: var(--text-primary);
+      background: var(--bg-secondary);
+    }
+
+    .hero-visual {
+      position: relative;
+    }
+
+    .hero-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-xl);
+      padding: var(--space-8);
+      box-shadow: var(--card-shadow);
+      transform: rotate(-2deg);
+      transition: all var(--duration-base) var(--ease-out);
+    }
+
+    .hero-card:hover {
+      transform: rotate(0deg) translateY(-8px);
+      box-shadow: var(--card-shadow-hover);
+    }
+
+    .booking-preview {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-6);
+    }
+
+    .booking-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .booking-id {
+      font-size: var(--text-xs);
+      color: var(--text-tertiary);
+      font-weight: 500;
+    }
+
+    .booking-status {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: var(--text-xs);
+      font-weight: 600;
+      color: var(--emerald);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--emerald);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .booking-route {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+    }
+
+    .route-point {
+      flex: 1;
+    }
+
+    .route-label {
+      font-size: var(--text-xs);
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: var(--space-1);
+    }
+
+    .route-value {
+      font-size: var(--text-2xl);
+      font-weight: 700;
+      letter-spacing: -1px;
+    }
+
+    .route-divider {
+      width: 60px;
+      height: 2px;
+      background: var(--border-color);
+      position: relative;
+    }
+
+    .route-divider::before {
+      content: '→';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--card-bg);
+      padding: 0 var(--space-2);
+      color: var(--text-tertiary);
+    }
+
+    .booking-assistant {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      padding: var(--space-4);
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+    }
+
+    .assistant-avatar {
+      width: 48px;
+      height: 48px;
+      background: var(--text-primary);
+      color: var(--bg-primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-lg);
+      font-weight: 700;
+    }
+
+    .assistant-info h4 {
+      font-size: var(--text-base);
+      font-weight: 600;
+      margin-bottom: var(--space-1);
+    }
+
+    .assistant-info p {
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+    }
+
+    .assistant-rating {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: var(--space-1);
+      font-size: var(--text-sm);
+      font-weight: 600;
+    }
+
+    .assistant-rating svg {
+      width: 16px;
+      height: 16px;
+      color: var(--amber);
+    }
+
+    /* Services Section */
+    .services {
+      padding: var(--space-24) var(--space-8);
+      background: var(--bg-secondary);
+    }
+
+    .section-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: var(--space-16);
+    }
+
+    .section-tag {
+      font-size: var(--text-xs);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--text-tertiary);
+      margin-bottom: var(--space-4);
+    }
+
+    .section-title {
+      font-size: var(--text-4xl);
+      font-weight: 800;
+      letter-spacing: -2px;
+      margin-bottom: var(--space-4);
+    }
+
+    .section-description {
+      font-size: var(--text-lg);
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-6);
+    }
+
+    .service-card {
+      background: var(--card-bg);
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: var(--space-8);
+      transition: all var(--duration-base) var(--ease-out);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .service-card.selected {
+      border-color: var(--text-primary);
+      background: var(--bg-secondary);
+    }
+
+    .service-card.selected::before {
+      transform: scaleX(1);
+    }
+
+    .service-checkbox {
+      position: absolute;
+      top: var(--space-4);
+      right: var(--space-4);
+    }
+
+    .service-check {
+      width: 24px;
+      height: 24px;
+      accent-color: var(--text-primary);
+      cursor: pointer;
+    }
+
+    .service-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--text-primary);
+      transform: scaleX(0);
+      transition: transform var(--duration-base) var(--ease-out);
+    }
+
+    .service-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--card-shadow-hover);
+    }
+
+    .service-card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .service-icon {
+      width: 56px;
+      height: 56px;
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin-bottom: var(--space-6);
+    }
+
+    .service-name {
+      font-size: var(--text-xl);
+      font-weight: 700;
+      margin-bottom: var(--space-3);
+      letter-spacing: -0.5px;
+    }
+
+    .service-description {
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: var(--space-6);
+    }
+
+    .service-price {
+      font-size: var(--text-2xl);
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+
+    .service-price span {
+      font-size: var(--text-sm);
+      font-weight: 400;
+      color: var(--text-tertiary);
+    }
+
+    /* ==================== LUGGAGE SELECTOR STYLES ==================== */
+    .luggage-section {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      margin-top: var(--space-4);
+    }
+
+    .luggage-section.hidden {
+      display: none;
+    }
+
+    .luggage-header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      margin-bottom: var(--space-4);
+    }
+
+    .luggage-header-icon {
+      font-size: 24px;
+    }
+
+    .luggage-header-text h4 {
+      font-size: var(--text-base);
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .luggage-header-text span {
+      font-size: var(--text-xs);
+      color: var(--text-tertiary);
+    }
+
+    .luggage-size-selector {
+      display: flex;
+      gap: var(--space-3);
+      margin-bottom: var(--space-4);
+    }
+
+    .luggage-size-option {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: var(--space-3) var(--space-2);
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--duration-fast);
+      background: var(--card-bg);
+    }
+
+    .luggage-size-option:hover {
+      border-color: var(--text-tertiary);
+    }
+
+    .luggage-size-option.selected {
+      border-color: var(--text-primary);
+      background: var(--bg-secondary);
+    }
+
+    .luggage-size-option input {
+      display: none;
+    }
+
+    .luggage-size-icon {
+      font-size: 24px;
+      margin-bottom: var(--space-1);
+    }
+
+    .luggage-size-label {
+      font-size: var(--text-sm);
+      font-weight: 600;
+      text-transform: capitalize;
+    }
+
+    .luggage-size-price {
+      font-size: var(--text-xs);
+      color: var(--text-tertiary);
+    }
+
+    /* Quantity Stepper */
+    .luggage-quantity-wrapper {
+      display: none;
+      animation: slideDown 0.2s ease-out;
+    }
+
+    .luggage-quantity-wrapper.visible {
+      display: block;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .luggage-quantity-label {
+      font-size: var(--text-sm);
+      font-weight: 500;
+      margin-bottom: var(--space-2);
+      color: var(--text-secondary);
+    }
+
+    .quantity-stepper {
+      display: inline-flex;
+      align-items: center;
+      background: var(--card-bg);
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+
+    .stepper-btn {
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-primary);
+      transition: background var(--duration-fast);
+      user-select: none;
+    }
+
+    .stepper-btn:hover:not(:disabled) {
+      background: var(--bg-secondary);
+    }
+
+    .stepper-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .stepper-value {
+      min-width: 60px;
+      text-align: center;
+      font-size: var(--text-xl);
+      font-weight: 700;
+      padding: 0 var(--space-3);
+      user-select: none;
+    }
+
+    .luggage-cost-display {
+      margin-top: var(--space-3);
+      padding: var(--space-3);
+      background: rgba(16, 185, 129, 0.1);
+      border-radius: var(--radius-sm);
+      font-size: var(--text-sm);
+      color: var(--emerald);
+      font-weight: 500;
+      display: none;
+    }
+
+    .luggage-cost-display.visible {
+      display: block;
+    }
+    
+    /* ==================== LUGGAGE CART STYLES ==================== */
+    .luggage-type-cards {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+    
+    .luggage-type-card {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3);
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+    
+    .luggage-type-card:hover {
+      border-color: var(--emerald);
+      background: rgba(16, 185, 129, 0.05);
+    }
+    
+    .luggage-type-icon {
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+    
+    .luggage-type-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    
+    .luggage-type-name {
+      font-weight: 600;
+      font-size: var(--text-sm);
+      color: var(--text-primary);
+    }
+    
+    .luggage-type-weight {
+      font-size: 11px;
+      color: var(--emerald);
+      font-weight: 500;
+    }
+    
+    .luggage-type-desc {
+      font-size: 10px;
+      color: var(--text-tertiary);
+    }
+    
+    .luggage-type-price {
+      font-size: var(--text-sm);
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    
+    .luggage-type-add {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--emerald);
+      color: white;
+      border-radius: var(--radius-full);
+      font-size: 18px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    
+    /* Luggage Cart */
+    .luggage-cart {
+      margin-top: var(--space-4);
+      padding: var(--space-3);
+      background: rgba(16, 185, 129, 0.05);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      border-radius: var(--radius-md);
+    }
+    
+    .luggage-cart.hidden {
+      display: none;
+    }
+    
+    .luggage-cart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-3);
+      font-size: var(--text-sm);
+      font-weight: 600;
+      color: var(--emerald);
+    }
+    
+    .clear-cart-btn {
+      background: transparent;
+      border: none;
+      color: var(--ruby);
+      font-size: 11px;
+      cursor: pointer;
+      padding: var(--space-1) var(--space-2);
+      border-radius: var(--radius-sm);
+      transition: background var(--duration-fast);
+    }
+    
+    .clear-cart-btn:hover {
+      background: rgba(239, 68, 68, 0.1);
+    }
+    
+    .luggage-cart-items {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+    
+    .luggage-cart-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2);
+      background: var(--card-bg);
+      border-radius: var(--radius-sm);
+      font-size: var(--text-sm);
+    }
+    
+    .cart-item-icon {
+      font-size: 16px;
+    }
+    
+    .cart-item-info {
+      flex: 1;
+    }
+    
+    .cart-item-name {
+      font-weight: 500;
+    }
+    
+    .cart-item-weight {
+      font-size: 10px;
+      color: var(--text-tertiary);
+    }
+    
+    .cart-item-stepper {
+      display: flex;
+      align-items: center;
+      gap: var(--space-1);
+    }
+    
+    .cart-stepper-btn {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border-color);
+      background: var(--bg-secondary);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      transition: all var(--duration-fast);
+    }
+    
+    .cart-stepper-btn:hover {
+      border-color: var(--text-primary);
+    }
+    
+    .cart-stepper-value {
+      min-width: 24px;
+      text-align: center;
+      font-weight: 600;
+      font-size: var(--text-sm);
+    }
+    
+    .cart-item-price {
+      font-weight: 600;
+      min-width: 50px;
+      text-align: right;
+    }
+    
+    .cart-item-remove {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      color: var(--ruby);
+      cursor: pointer;
+      font-size: 14px;
+      opacity: 0.6;
+      transition: opacity var(--duration-fast);
+    }
+    
+    .cart-item-remove:hover {
+      opacity: 1;
+    }
+    
+    .luggage-cart-total {
+      margin-top: var(--space-3);
+      padding-top: var(--space-3);
+      border-top: 1px dashed rgba(16, 185, 129, 0.3);
+      display: flex;
+      justify-content: space-between;
+      font-size: var(--text-sm);
+      font-weight: 600;
+      color: var(--emerald);
+    }
+    
+    #luggageCartTotalAmount {
+      font-size: var(--text-base);
+    }
+    /* ==================== END LUGGAGE CART STYLES ==================== */
+    
+    /* ==================== END LUGGAGE SELECTOR STYLES ==================== */
+
+    /* Booking Form */
+    .booking-section {
+      padding: var(--space-24) var(--space-8);
+    }
+
+    .booking-form-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-xl);
+      padding: var(--space-12);
+      box-shadow: var(--card-shadow);
+    }
+
+    .form-title {
+      font-size: var(--text-3xl);
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      margin-bottom: var(--space-2);
+    }
+
+    .form-subtitle {
+      font-size: var(--text-base);
+      color: var(--text-secondary);
+      margin-bottom: var(--space-10);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-6);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
+    .form-group.full-width {
+      grid-column: span 2;
+    }
+
+    .form-label {
+      font-size: var(--text-sm);
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* ==================== TRAIN AUTOCOMPLETE STYLES ==================== */
+    .train-autocomplete-wrapper {
+      position: relative;
+    }
+
+    .train-dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+      max-height: 320px;
+      overflow-y: auto;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-8px);
+      transition: all 0.2s ease;
+      margin-top: 4px;
+    }
+
+    .train-dropdown.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .train-dropdown-item {
+      padding: 14px 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      border-bottom: 1px solid var(--border-color);
+      transition: all 0.15s ease;
+    }
+
+    .train-dropdown-item:last-child {
+      border-bottom: none;
+    }
+
+    .train-dropdown-item:hover,
+    .train-dropdown-item.highlighted {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(139, 92, 246, 0.05));
+    }
+
+    .train-dropdown-item:active {
+      background: rgba(59, 130, 246, 0.12);
+    }
+
+    .train-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .train-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .train-main {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .train-number {
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--primary);
+      background: rgba(59, 130, 246, 0.1);
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+
+    .train-name {
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .train-route {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .train-type-badge {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      flex-shrink: 0;
+    }
+
+    .train-type-rajdhani { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+    .train-type-shatabdi { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
+    .train-type-vande { background: rgba(249, 115, 22, 0.15); color: #f97316; }
+    .train-type-duronto { background: rgba(139, 92, 246, 0.15); color: #8b5cf6; }
+    .train-type-superfast { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+    .train-type-express { background: rgba(107, 114, 128, 0.15); color: #6b7280; }
+    .train-type-mail { background: rgba(236, 72, 153, 0.15); color: #ec4899; }
+    .train-type-garib { background: rgba(20, 184, 166, 0.15); color: #14b8a6; }
+    .train-type-tejas { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+    .train-type-humsafar { background: rgba(99, 102, 241, 0.15); color: #6366f1; }
+    .train-type-passenger { background: rgba(168, 162, 158, 0.15); color: #a8a29e; }
+    .train-type-local { background: rgba(34, 211, 238, 0.15); color: #22d3ee; }
+    .train-type-special { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
+
+    .train-dropdown-empty {
+      padding: 24px;
+      text-align: center;
+      color: var(--text-tertiary);
+    }
+
+    .train-dropdown-empty svg {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 12px;
+      opacity: 0.5;
+    }
+
+    .train-dropdown-loading {
+      padding: 24px;
+      text-align: center;
+      color: var(--text-secondary);
+    }
+
+    .train-dropdown-loading .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid var(--border-color);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 12px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .train-match-highlight {
+      background: rgba(245, 158, 11, 0.3);
+      color: var(--text-primary);
+      padding: 0 2px;
+      border-radius: 2px;
+      font-weight: 700;
+    }
+
+    /* Scrollbar styling for dropdown */
+    .train-dropdown::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .train-dropdown::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .train-dropdown::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 3px;
+    }
+
+    .train-dropdown::-webkit-scrollbar-thumb:hover {
+      background: var(--text-tertiary);
+    }
+    /* ==================== END TRAIN AUTOCOMPLETE STYLES ==================== */
+
+    /* ==================== STATION DROPDOWN STYLES ==================== */
+    .station-select-wrapper {
+      position: relative;
+    }
+
+    .station-select-wrapper.hidden {
+      display: none;
+    }
+
+    .station-select-wrapper.loading .station-select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cstyle%3E.spinner{animation:spin 1s linear infinite;transform-origin:center}@keyframes spin{to{transform:rotate(360deg)}}%3C/style%3E%3Ccircle class='spinner' cx='12' cy='12' r='8' fill='none' stroke='%233b82f6' stroke-width='2' stroke-dasharray='40' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 20px;
+      padding-right: 40px;
+    }
+
+    .station-select {
+      width: 100%;
+      padding: 14px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+      background: var(--card-bg);
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 20px;
+    }
+
+    .station-select:hover:not(:disabled) {
+      border-color: var(--primary);
+    }
+
+    .station-select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+    }
+
+    .station-select:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      background-color: var(--bg-secondary);
+    }
+
+    .station-select option {
+      padding: 12px;
+      background: var(--card-bg);
+      color: var(--text-primary);
+    }
+
+    .station-info-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      padding: 6px 12px;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.08));
+      border-radius: 8px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .station-info-badge svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .station-no-service {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      border-radius: 10px;
+      color: #ef4444;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .station-no-service svg {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+    /* ==================== END STATION DROPDOWN STYLES ==================== */
+
+    /* ==================== SMART STATION SELECTOR STYLES ==================== */
+    .smart-station-wrapper {
+      margin-top: 8px;
+      animation: smartSlideIn 0.3s ease-out;
+    }
+
+    .smart-station-wrapper.hidden {
+      display: none;
+    }
+
+    @keyframes smartSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .smart-station-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .smart-station-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 24px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .smart-station-badge.pickup {
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(34, 197, 94, 0.08));
+      color: var(--emerald);
+      border: 1px solid rgba(34, 197, 94, 0.25);
+    }
+
+    .smart-station-badge.drop {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.08));
+      color: var(--primary);
+      border: 1px solid rgba(59, 130, 246, 0.25);
+    }
+
+    .badge-icon {
+      font-size: 16px;
+    }
+
+    .smart-station-hint {
+      font-size: 13px;
+      color: var(--text-tertiary);
+      font-style: italic;
+    }
+
+    .smart-station-select {
+      width: 100%;
+      padding: 14px 16px;
+      font-size: 15px;
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      background: var(--card-bg);
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .smart-station-select:hover {
+      border-color: var(--primary);
+    }
+
+    .smart-station-select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+      outline: none;
+    }
+
+    .smart-station-info {
+      margin-top: 10px;
+      padding: 10px 14px;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(139, 92, 246, 0.05));
+      border: 1px solid rgba(59, 130, 246, 0.15);
+      border-radius: 10px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      min-height: 20px;
+      display: none;
+    }
+
+    .smart-station-info.visible {
+      display: block;
+      animation: smartSlideIn 0.2s ease-out;
+    }
+
+    .smart-station-info.valid {
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.05));
+      border-color: rgba(34, 197, 94, 0.2);
+      color: var(--emerald);
+    }
+
+    .smart-station-info.invalid {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+    }
+
+    /* Station loading state */
+    .smart-station-select.loading {
+      background-image: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    /* ==================== END SMART STATION STYLES ==================== */
+
+    /* ==================== SERVICE TYPE SELECTOR STYLES ==================== */
+    .service-type-wrapper {
+      margin-top: 8px;
+      animation: smartSlideIn 0.3s ease-out;
+    }
+
+    .service-type-wrapper.hidden {
+      display: none;
+    }
+
+    .service-type-selector {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .service-type-option {
+      cursor: pointer;
+    }
+
+    .service-type-option input[type="radio"] {
+      display: none;
+    }
+
+    .service-type-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 16px 12px;
+      background: var(--card-bg);
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+
+    .service-type-option:hover .service-type-card {
+      border-color: var(--primary);
+      background: rgba(59, 130, 246, 0.05);
+    }
+
+    .service-type-option input[type="radio"]:checked + .service-type-card {
+      border-color: var(--primary);
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.08));
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+    }
+
+    .service-type-option input[type="radio"]:disabled + .service-type-card {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: var(--bg-secondary);
+    }
+
+    .service-type-option input[type="radio"]:disabled + .service-type-card:hover {
+      border-color: var(--border-color);
+      background: var(--bg-secondary);
+    }
+
+    .service-type-icon {
+      font-size: 24px;
+    }
+
+    .service-type-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .service-type-desc {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--emerald);
+      background: rgba(16, 185, 129, 0.1);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .service-type-helper {
+      font-size: 10px;
+      color: var(--text-tertiary);
+      margin-top: 4px;
+    }
+
+    .service-type-guidance {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-top: 12px;
+      padding: 12px 16px;
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(59, 130, 246, 0.08));
+      border: 1px solid rgba(34, 197, 94, 0.2);
+      border-radius: 10px;
+    }
+
+    .guidance-icon {
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .guidance-text {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .service-type-error {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+      padding: 10px 14px;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      border-radius: 10px;
+      color: #ef4444;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .service-type-error.hidden {
+      display: none;
+    }
+
+    .service-type-error svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 480px) {
+      .service-type-selector {
+        grid-template-columns: 1fr;
+      }
+      
+      .service-type-card {
+        flex-direction: row;
+        justify-content: flex-start;
+        gap: 12px;
+        padding: 14px 16px;
+      }
+      
+      .service-type-icon {
+        font-size: 20px;
+      }
+    }
+    /* ==================== END SERVICE TYPE SELECTOR STYLES ==================== */
+
+    /* ==================== ROUND TRIP STATION SELECTORS ==================== */
+    .round-trip-stations {
+      margin-top: 16px;
+    }
+
+    .round-trip-stations.hidden {
+      display: none;
+    }
+
+    .round-trip-header {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .round-trip-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .round-trip-subtitle {
+      font-size: 12px;
+      color: var(--text-tertiary);
+    }
+
+    .round-trip-grid {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    @media (max-width: 640px) {
+      .round-trip-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .round-trip-arrow {
+        transform: rotate(90deg);
+        justify-self: center;
+      }
+    }
+
+    .round-trip-station-box {
+      background: var(--card-bg);
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px;
+      transition: all 0.2s ease;
+    }
+
+    .round-trip-station-box:focus-within {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    }
+
+    .round-trip-station-box .form-label {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 10px;
+    }
+
+    .station-type-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      width: fit-content;
+    }
+
+    .station-type-badge.pickup {
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(34, 197, 94, 0.08));
+      color: var(--emerald);
+    }
+
+    .station-type-badge.drop {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.08));
+      color: var(--primary);
+    }
+
+    .station-help {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      font-weight: 400;
+    }
+
+    .round-trip-arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-top: 40px;
+    }
+
+    .round-trip-arrow svg {
+      width: 32px;
+      height: 32px;
+      stroke: var(--text-tertiary);
+    }
+
+    .station-info {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      min-height: 20px;
+    }
+
+    .station-info.valid {
+      color: var(--emerald);
+    }
+
+    .station-info.invalid {
+      color: #ef4444;
+    }
+
+    .round-trip-validation {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+      padding: 10px 14px;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      border-radius: 10px;
+      color: #ef4444;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .round-trip-validation.hidden {
+      display: none;
+    }
+
+    .round-trip-validation svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+    /* ==================== END ROUND TRIP STYLES ==================== */
+
+    /* Selected Services Display */
+    .selected-services {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      padding: var(--space-4);
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      min-height: 48px;
+      align-items: center;
+    }
+
+    .selected-services .no-service {
+      color: var(--text-tertiary);
+      font-size: var(--text-sm);
+    }
+
+    .service-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-4);
+      background: var(--text-primary);
+      color: var(--bg-primary);
+      border-radius: var(--radius-full);
+      font-size: var(--text-sm);
+      font-weight: 500;
+    }
+
+    .service-tag .remove {
+      cursor: pointer;
+      opacity: 0.7;
+    }
+
+    .service-tag .remove:hover {
+      opacity: 1;
+    }
+
+    /* Insurance Option */
+    .insurance-option {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-4);
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .insurance-option:hover {
+      background: var(--bg-tertiary);
+    }
+
+    .insurance-option input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      accent-color: var(--text-primary);
+    }
+
+    .insurance-text {
+      font-size: var(--text-base);
+    }
+
+    .insurance-text small {
+      color: var(--text-tertiary);
+    }
+
+    /* Price Breakdown */
+    .price-breakdown {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      padding: var(--space-5);
+    }
+
+    .price-row {
+      display: flex;
+      justify-content: space-between;
+      padding: var(--space-3) 0;
+      font-size: var(--text-base);
+      color: var(--text-secondary);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .price-row:last-child {
+      border-bottom: none;
+    }
+
+    .price-row.total {
+      font-size: var(--text-xl);
+      font-weight: 700;
+      color: var(--text-primary);
+      padding-top: var(--space-4);
+      margin-top: var(--space-2);
+      border-top: 2px solid var(--border-color);
+      border-bottom: none;
+    }
+
+    .form-input,
+    .form-select {
+      padding: var(--space-4) var(--space-5);
+      background: var(--bg-secondary);
+      border: 2px solid transparent;
+      border-radius: var(--radius-md);
+      font-size: var(--text-base);
+      color: var(--text-primary);
+      transition: all var(--duration-fast) var(--ease-out);
+      font-family: inherit;
+    }
+
+    .form-input:focus,
+    .form-select:focus {
+      outline: none;
+      border-color: var(--text-primary);
+      background: var(--card-bg);
+    }
+
+    .form-input::placeholder {
+      color: var(--text-tertiary);
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 120px;
+    }
+
+    .form-actions {
+      margin-top: var(--space-8);
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--space-4);
+    }
+
+    .btn-submit {
+      padding: var(--space-4) var(--space-10);
+      background: var(--text-primary);
+      color: var(--bg-primary);
+      border: none;
+      border-radius: var(--radius-full);
+      font-size: var(--text-base);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Progress Tracker */
+    .progress-section {
+      padding: var(--space-24) var(--space-8);
+      background: var(--bg-secondary);
+      display: none;
+    }
+
+    .progress-section.active {
+      display: block;
+    }
+
+    .progress-container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .progress-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-xl);
+      padding: var(--space-10);
+      box-shadow: var(--card-shadow);
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: var(--space-8);
+    }
+
+    .progress-title {
+      font-size: var(--text-2xl);
+      font-weight: 700;
+      letter-spacing: -1px;
+      margin-bottom: var(--space-2);
+    }
+
+    .progress-booking-id {
+      font-size: var(--text-sm);
+      color: var(--text-tertiary);
+    }
+
+    .progress-status-badge {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-4);
+      background: rgba(16, 185, 129, 0.1);
+      border-radius: var(--radius-full);
+      font-size: var(--text-sm);
+      font-weight: 600;
+      color: var(--emerald);
+    }
+
+    .progress-timeline {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: var(--space-10);
+      position: relative;
+    }
+
+    .progress-timeline::before {
+      content: '';
+      position: absolute;
+      top: 20px;
+      left: 40px;
+      right: 40px;
+      height: 2px;
+      background: var(--border-color);
+    }
+
+    .progress-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-3);
+      position: relative;
+      z-index: 1;
+    }
+
+    .step-dot {
+      width: 40px;
+      height: 40px;
+      background: var(--bg-secondary);
+      border: 2px solid var(--border-color);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      transition: all var(--duration-base) var(--ease-out);
+    }
+
+    .step-dot.active {
+      background: var(--text-primary);
+      border-color: var(--text-primary);
+      color: var(--bg-primary);
+    }
+
+    .step-dot.completed {
+      background: var(--emerald);
+      border-color: var(--emerald);
+      color: white;
+    }
+
+    .step-label {
+      font-size: var(--text-xs);
+      font-weight: 600;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .step-label.active {
+      color: var(--text-primary);
+    }
+
+    .assistant-card {
+      display: flex;
+      align-items: center;
+      gap: var(--space-5);
+      padding: var(--space-6);
+      background: var(--bg-secondary);
+      border-radius: var(--radius-lg);
+    }
+
+    .assistant-card-avatar {
+      width: 72px;
+      height: 72px;
+      background: var(--text-primary);
+      color: var(--bg-primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-2xl);
+      font-weight: 700;
+    }
+
+    .assistant-card-info h3 {
+      font-size: var(--text-xl);
+      font-weight: 700;
+      margin-bottom: var(--space-1);
+    }
+
+    .assistant-card-info p {
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+      margin-bottom: var(--space-2);
+    }
+
+    .assistant-card-meta {
+      display: flex;
+      gap: var(--space-4);
+    }
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-1);
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+    }
+
+    .meta-item svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .assistant-actions {
+      margin-left: auto;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
+    .action-btn {
+      padding: var(--space-3) var(--space-5);
+      border-radius: var(--radius-md);
+      font-size: var(--text-sm);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .action-btn.call {
+      background: var(--emerald);
+      border: none;
+      color: white;
+    }
+
+    .action-btn.call:hover {
+      background: #0d9668;
+    }
+
+    .action-btn.cancel {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+    }
+
+    .action-btn.cancel:hover {
+      border-color: var(--text-primary);
+      color: var(--text-primary);
+    }
+
+    /* Footer */
+    .footer {
+      padding: var(--space-16) var(--space-8);
+      border-top: 1px solid var(--border-color);
+    }
+
+    .footer-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .footer-copy {
+      font-size: var(--text-sm);
+      color: var(--text-tertiary);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: var(--space-8);
+    }
+
+    .footer-link {
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color var(--duration-fast) var(--ease-out);
+    }
+
+    .footer-link:hover {
+      color: var(--text-primary);
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .hero-inner {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+
+      .hero-content {
+        max-width: 100%;
+      }
+
+      .hero-title {
+        font-size: var(--text-5xl);
+      }
+
+      .hero-description {
+        margin: 0 auto var(--space-10);
+      }
+
+      .hero-cta {
+        justify-content: center;
+      }
+
+      .hero-visual {
+        display: none;
+      }
+
+      .services-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .navbar {
+        padding: var(--space-4);
+      }
+
+      .nav-links {
+        display: none;
+      }
+
+      .hero {
+        padding: var(--space-16) var(--space-4);
+      }
+
+      .hero-title {
+        font-size: var(--text-4xl);
+        letter-spacing: -2px;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .form-group.full-width {
+        grid-column: span 1;
+      }
+
+      .booking-form-container {
+        padding: var(--space-6);
+      }
+
+      .assistant-card {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .assistant-actions {
+        margin-left: 0;
+        flex-direction: row;
+      }
+    }
+
+    /* Dark mode icon swap */
+    .theme-toggle .sun { display: none; }
+    .theme-toggle .moon { display: block; }
+    
+    body.dark .theme-toggle .sun { display: block; }
+    body.dark .theme-toggle .moon { display: none; }
+
+    /* Notification Toast */
+    .toast {
+      position: fixed;
+      bottom: var(--space-6);
+      right: var(--space-6);
+      padding: var(--space-4) var(--space-6);
+      background: var(--text-primary);
+      color: var(--bg-primary);
+      border-radius: var(--radius-md);
+      font-size: var(--text-sm);
+      font-weight: 500;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all var(--duration-base) var(--ease-out);
+      z-index: 9999;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* Loading Spinner */
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid transparent;
+      border-top-color: currentColor;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: inline-block;
+      margin-right: var(--space-2);
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Profile Dropdown Styles */
+    .profile-section {
+      display: none;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .profile-section.active {
+      display: flex;
+    }
+
+    .profile-trigger {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-2) var(--space-3);
+      background: var(--bg-secondary);
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+      border: 1px solid var(--border-color);
+    }
+
+    .profile-trigger:hover {
+      background: var(--bg-tertiary);
+    }
+
+    .profile-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--emerald), var(--sapphire));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: var(--text-sm);
+      color: white;
+      overflow: hidden;
+    }
+
+    .profile-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .profile-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .profile-greeting {
+      font-size: var(--text-xs);
+      color: var(--text-secondary);
+    }
+
+    .profile-name {
+      font-size: var(--text-sm);
+      font-weight: 600;
+      color: var(--text-primary);
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .profile-dropdown-icon {
+      color: var(--text-secondary);
+      transition: transform var(--duration-fast) var(--ease-out);
+    }
+
+    .profile-trigger.open .profile-dropdown-icon {
+      transform: rotate(180deg);
+    }
+
+    .profile-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      min-width: 280px;
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--card-shadow-hover);
+      border: 1px solid var(--border-color);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-10px);
+      transition: all var(--duration-fast) var(--ease-out);
+      z-index: 1000;
+      overflow: hidden;
+    }
+
+    .profile-dropdown.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .dropdown-header {
+      padding: var(--space-5);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+    }
+
+    .dropdown-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--emerald), var(--sapphire));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: var(--text-xl);
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .dropdown-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .avatar-upload {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0,0,0,0.6);
+      color: white;
+      font-size: 10px;
+      text-align: center;
+      padding: 2px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity var(--duration-fast);
+    }
+
+    .dropdown-avatar:hover .avatar-upload {
+      opacity: 1;
+    }
+
+    .dropdown-user-info h4 {
+      font-size: var(--text-base);
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+
+    .dropdown-user-info p {
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+    }
+
+    .dropdown-menu {
+      padding: var(--space-2);
+    }
+
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      text-decoration: none;
+      font-size: var(--text-sm);
+      transition: background var(--duration-fast);
+      cursor: pointer;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+    }
+
+    .dropdown-item:hover {
+      background: var(--bg-secondary);
+    }
+
+    .dropdown-item svg {
+      width: 18px;
+      height: 18px;
+      color: var(--text-secondary);
+    }
+
+    .dropdown-item.danger {
+      color: var(--ruby);
+    }
+
+    .dropdown-item.danger svg {
+      color: var(--ruby);
+    }
+
+    .dropdown-divider {
+      height: 1px;
+      background: var(--border-color);
+      margin: var(--space-2) 0;
+    }
+
+    .sign-in-btn {
+      display: inline-flex;
+    }
+
+    .sign-in-btn.hidden {
+      display: none;
+    }
+
+    /* Settings Modal */
+    .settings-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all var(--duration-base);
+    }
+
+    .settings-modal.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .settings-content {
+      background: var(--card-bg);
+      border-radius: var(--radius-xl);
+      width: 100%;
+      max-width: 480px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.3);
+    }
+
+    .settings-header {
+      padding: var(--space-6);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .settings-header h3 {
+      font-size: var(--text-xl);
+      font-weight: 600;
+    }
+
+    .settings-close {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--bg-secondary);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-primary);
+    }
+
+    .settings-body {
+      padding: var(--space-6);
+    }
+
+    .settings-section {
+      margin-bottom: var(--space-6);
+    }
+
+    .settings-section h4 {
+      font-size: var(--text-sm);
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: var(--space-4);
+    }
+
+    .settings-avatar-section {
+      display: flex;
+      align-items: center;
+      gap: var(--space-5);
+      margin-bottom: var(--space-6);
+    }
+
+    .settings-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--emerald), var(--sapphire));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: var(--text-3xl);
+      color: white;
+      overflow: hidden;
+    }
+
+    .settings-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .settings-avatar-actions {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
+    .avatar-upload-btn {
+      padding: var(--space-2) var(--space-4);
+      background: var(--text-primary);
+      color: var(--bg-primary);
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: var(--text-sm);
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .avatar-remove-btn {
+      padding: var(--space-2) var(--space-4);
+      background: transparent;
+      color: var(--ruby);
+      border: 1px solid var(--ruby);
+      border-radius: var(--radius-md);
+      font-size: var(--text-sm);
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .settings-input-group {
+      margin-bottom: var(--space-4);
+    }
+
+    .settings-input-group label {
+      display: block;
+      font-size: var(--text-sm);
+      font-weight: 500;
+      margin-bottom: var(--space-2);
+      color: var(--text-primary);
+    }
+
+    .settings-input {
+      width: 100%;
+      padding: var(--space-3) var(--space-4);
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      font-size: var(--text-base);
+      color: var(--text-primary);
+    }
+
+    .settings-input:focus {
+      outline: none;
+      border-color: var(--text-primary);
+    }
+
+    .settings-footer {
+      padding: var(--space-6);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      gap: var(--space-3);
+      justify-content: flex-end;
+    }
+
+    .settings-save-btn {
+      padding: var(--space-3) var(--space-6);
+      background: var(--text-primary);
+      color: var(--bg-primary);
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: var(--text-sm);
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .settings-cancel-btn {
+      padding: var(--space-3) var(--space-6);
+      background: transparent;
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      font-size: var(--text-sm);
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    #avatarInput {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <a href="passenger-premium.html" class="logo">
+        <div class="logo-icon">🚆</div>
+        <span class="logo-text">RailMitra</span>
+      </a>
+      
+      <div class="nav-links">
+        <a href="#services" class="nav-link nav-passenger">Services</a>
+        <a href="#book" class="nav-link nav-passenger">Book Now</a>
+        <a href="assistant-premium.html" class="nav-link nav-assistant" style="display: none;">My Dashboard</a>
+        <a href="admin-premium.html" class="nav-link nav-admin" style="display: none;">Admin Panel</a>
+        <a href="passenger-premium.html" class="nav-link nav-staff" style="display: none;">Passenger Portal</a>
+      </div>
+      
+      <div class="nav-actions">
+        <button class="theme-toggle" onclick="toggleTheme()">
+          <svg class="moon" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+          </svg>
+          <svg class="sun" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+          </svg>
+        </button>
+        
+        <!-- Sign In Button (shown when not logged in) -->
+        <a href="login-premium.html" class="btn-primary sign-in-btn" id="signInBtn">Sign In</a>
+        
+        <!-- Profile Section (shown when logged in) -->
+        <div class="profile-section" id="profileSection">
+          <div class="profile-trigger" onclick="toggleProfileDropdown()">
+            <div class="profile-avatar" id="navAvatar">
+              <span id="navAvatarInitials">U</span>
+              <img id="navAvatarImg" src="" alt="" style="display: none;">
+            </div>
+            <div class="profile-info">
+              <span class="profile-greeting">Hello,</span>
+              <span class="profile-name" id="navUserName">User</span>
+            </div>
+            <svg class="profile-dropdown-icon" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </div>
+          
+          <!-- Dropdown Menu -->
+          <div class="profile-dropdown" id="profileDropdown">
+            <div class="dropdown-header">
+              <div class="dropdown-avatar" id="dropdownAvatar">
+                <span id="dropdownAvatarInitials">U</span>
+                <img id="dropdownAvatarImg" src="" alt="" style="display: none;">
+                <label class="avatar-upload" for="avatarInput">📷 Change</label>
+              </div>
+              <div class="dropdown-user-info">
+                <h4 id="dropdownUserName">User Name</h4>
+                <p id="dropdownUserPhone">+91 XXXXX XXXXX</p>
+              </div>
+            </div>
+            
+            <div class="dropdown-menu">
+              <a href="#" class="dropdown-item" onclick="openSettings(); return false;">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                Settings
+              </a>
+              <a href="#" class="dropdown-item" onclick="viewMyBookings(); return false;">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+                My Bookings
+              </a>
+              <div class="dropdown-divider"></div>
+              <button class="dropdown-item danger" onclick="logout()">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                </svg>
+                Sign Out
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <input type="file" id="avatarInput" accept="image/*" onchange="handleAvatarUpload(event)">
+      </div>
+    </div>
+  </nav>
+
+  <!-- Settings Modal -->
+  <div class="settings-modal" id="settingsModal">
+    <div class="settings-content">
+      <div class="settings-header">
+        <h3>Settings</h3>
+        <button class="settings-close" onclick="closeSettings()">✕</button>
+      </div>
+      <div class="settings-body">
+        <div class="settings-avatar-section">
+          <div class="settings-avatar" id="settingsAvatar">
+            <span id="settingsAvatarInitials">U</span>
+            <img id="settingsAvatarImg" src="" alt="" style="display: none;">
+          </div>
+          <div class="settings-avatar-actions">
+            <button class="avatar-upload-btn" onclick="document.getElementById('avatarInput').click()">Upload Photo</button>
+            <button class="avatar-remove-btn" onclick="removeAvatar()">Remove Photo</button>
+          </div>
+        </div>
+        
+        <div class="settings-section">
+          <h4>Profile Information</h4>
+          <div class="settings-input-group">
+            <label>Full Name</label>
+            <input type="text" class="settings-input" id="settingsName" placeholder="Your name">
+          </div>
+          <div class="settings-input-group">
+            <label>Phone Number</label>
+            <input type="text" class="settings-input" id="settingsPhone" placeholder="+91 XXXXX XXXXX" disabled>
+          </div>
+        </div>
+      </div>
+      <div class="settings-footer">
+        <button class="settings-cancel-btn" onclick="closeSettings()">Cancel</button>
+        <button class="settings-save-btn" onclick="saveSettings()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- My Bookings Modal -->
+  <div class="settings-modal" id="bookingsModal">
+    <div class="settings-content" style="max-width: 750px; max-height: 90vh; width: 95%;">
+      <div class="settings-header" style="position: sticky; top: 0; background: var(--card-bg); z-index: 10;">
+        <h3>📋 My Bookings</h3>
+        <button class="settings-close" onclick="closeBookingsModal()">✕</button>
+      </div>
+      <div class="settings-body" style="max-height: calc(90vh - 80px); overflow-y: auto; padding: 20px;">
+        <div id="bookingsLoading" style="text-align: center; padding: 40px; color: var(--text-secondary);">
+          <div style="font-size: 32px; margin-bottom: 12px;">⏳</div>
+          Loading your bookings...
+        </div>
+        <div id="bookingsEmpty" style="text-align: center; padding: 40px; color: var(--text-secondary); display: none;">
+          <div style="font-size: 48px; margin-bottom: 12px;">📋</div>
+          <p>No bookings found</p>
+          <p style="font-size: 13px; margin-top: 8px;">Your booking history will appear here</p>
+        </div>
+        <div id="bookingsList" style="display: none;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-content">
+        <div class="hero-badge">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          Verified Assistants
+        </div>
+        
+        <h1 class="hero-title">
+          Travel with
+          <span>confidence.</span>
+        </h1>
+        
+        <p class="hero-description">
+          Premium railway station assistance at your fingertips. From wheelchair support to luggage handling, our verified assistants ensure a seamless journey.
+        </p>
+        
+        <div class="hero-cta">
+          <a href="#book" class="btn-primary btn-large">Book Assistance</a>
+          <a href="#services" class="btn-primary btn-large btn-outline">View Services</a>
+        </div>
+      </div>
+      
+      <div class="hero-visual">
+        <div class="hero-card">
+          <div class="booking-preview">
+            <div class="booking-header">
+              <span class="booking-id">#RM-2024-0847</span>
+              <div class="booking-status">
+                <div class="status-dot"></div>
+                In Progress
+              </div>
+            </div>
+            
+            <div class="booking-route">
+              <div class="route-point">
+                <div class="route-label">Platform</div>
+                <div class="route-value">5</div>
+              </div>
+              <div class="route-divider"></div>
+              <div class="route-point">
+                <div class="route-label">Exit</div>
+                <div class="route-value">Main</div>
+              </div>
+            </div>
+            
+            <div class="booking-assistant">
+              <div class="assistant-avatar">RS</div>
+              <div class="assistant-info">
+                <h4>Rahul Singh</h4>
+                <p>Your Assistant</p>
+              </div>
+              <div class="assistant-rating">
+                <svg fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                </svg>
+                4.9
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services Section -->
+  <section class="services" id="services">
+    <div class="section-inner">
+      <div class="section-header">
+        <p class="section-tag">What We Offer</p>
+        <h2 class="section-title">Station Assistance</h2>
+        <p class="section-description">
+          Professional assistance for every traveler. Select the services you need.
+        </p>
+      </div>
+      
+      <div class="services-grid">
+        <div class="service-card" data-service="Luggage" data-price="0">
+          <div class="service-checkbox">
+            <input type="checkbox" id="svc-luggage" class="service-check" data-service="Luggage" data-price="0">
+          </div>
+          <div class="service-icon">🧳</div>
+          <h3 class="service-name">Luggage Assistance</h3>
+          <p class="service-description">
+            Professional porter service for your bags. From platform to exit or vehicle.
+          </p>
+          <div class="service-price">From ₹30 <span>/ item</span></div>
+          
+          <!-- Luggage Cart Section (appears when luggage service is selected) -->
+          <div class="luggage-section hidden" id="luggageDetailsSection">
+            <div class="luggage-header">
+              <span class="luggage-header-icon">📦</span>
+              <div class="luggage-header-text">
+                <h4>Add Luggage</h4>
+                <span>Select multiple types if needed</span>
+              </div>
+            </div>
+            
+            <!-- Luggage Type Cards (click to add to cart) -->
+            <div class="luggage-type-cards" id="luggageTypeCards">
+              <div class="luggage-type-card" data-type="small" onclick="event.stopPropagation(); addLuggageToCart('small')">
+                <div class="luggage-type-icon">🎒</div>
+                <div class="luggage-type-info">
+                  <span class="luggage-type-name">Small</span>
+                  <span class="luggage-type-weight">Up to 5kg</span>
+                  <span class="luggage-type-desc">Backpack / Cabin Bag</span>
+                </div>
+                <div class="luggage-type-price">₹30</div>
+                <div class="luggage-type-add">+</div>
+              </div>
+              <div class="luggage-type-card" data-type="medium" onclick="event.stopPropagation(); addLuggageToCart('medium')">
+                <div class="luggage-type-icon">🧳</div>
+                <div class="luggage-type-info">
+                  <span class="luggage-type-name">Medium</span>
+                  <span class="luggage-type-weight">Up to 10kg</span>
+                  <span class="luggage-type-desc">Standard Suitcase</span>
+                </div>
+                <div class="luggage-type-price">₹60</div>
+                <div class="luggage-type-add">+</div>
+              </div>
+              <div class="luggage-type-card" data-type="large" onclick="event.stopPropagation(); addLuggageToCart('large')">
+                <div class="luggage-type-icon">📦</div>
+                <div class="luggage-type-info">
+                  <span class="luggage-type-name">Large</span>
+                  <span class="luggage-type-weight">Above 10kg</span>
+                  <span class="luggage-type-desc">Heavy Suitcase / Trunk</span>
+                </div>
+                <div class="luggage-type-price">₹100</div>
+                <div class="luggage-type-add">+</div>
+              </div>
+            </div>
+            
+            <!-- Luggage Cart (shows added items) -->
+            <div class="luggage-cart hidden" id="luggageCart">
+              <div class="luggage-cart-header">
+                <span>🛒 Your Luggage</span>
+                <button type="button" class="clear-cart-btn" onclick="clearLuggageCart()">Clear All</button>
+              </div>
+              <div class="luggage-cart-items" id="luggageCartItems">
+                <!-- Items will be rendered here -->
+              </div>
+              <div class="luggage-cart-total" id="luggageCartTotal">
+                Total: <span id="luggageCartTotalAmount">₹0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="service-card" data-service="SeatEscort" data-price="60">
+          <div class="service-checkbox">
+            <input type="checkbox" id="svc-escort" class="service-check" data-service="SeatEscort" data-price="60">
+          </div>
+          <div class="service-icon">🚶</div>
+          <h3 class="service-name">Seat Escorting</h3>
+          <p class="service-description">
+            Personal escort to your seat. Assistance with boarding and finding your coach.
+          </p>
+          <div class="service-price">₹60 <span>/ booking</span></div>
+        </div>
+        
+        <div class="service-card" data-service="Language" data-price="30">
+          <div class="service-checkbox">
+            <input type="checkbox" id="svc-language" class="service-check" data-service="Language" data-price="30">
+          </div>
+          <div class="service-icon">🗣️</div>
+          <h3 class="service-name">Language Help</h3>
+          <p class="service-description">
+            Multilingual assistant for communication. Hindi, English, Telugu, and more.
+          </p>
+          <div class="service-price">₹30 <span>/ booking</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Booking Form Section -->
+  <section class="booking-section" id="book">
+    <div class="section-inner">
+      <div class="booking-form-container">
+        <h2 class="form-title">Book Assistance</h2>
+        <p class="form-subtitle">Fill in your details to request a verified assistant</p>
+        
+        <form id="bookingForm" onsubmit="submitBooking(event)">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Full Name</label>
+              <input type="text" class="form-input" id="passengerName" placeholder="Enter your name" required>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Train Name / Number</label>
+              <div class="train-autocomplete-wrapper" style="position: relative;">
+                <input type="text" class="form-input" id="trainName" placeholder="Enter Train Name or Number (e.g., Rajdhani, 12301)" autocomplete="off">
+                <input type="hidden" id="selectedTrainId">
+                <input type="hidden" id="selectedTrainNumber">
+                <div class="train-dropdown" id="trainDropdown"></div>
+              </div>
+            </div>
+            
+            <!-- Service Type Selector (hidden until train is SELECTED) -->
+            <div class="form-group full-width service-type-wrapper hidden" id="serviceTypeWrapper">
+              <label class="form-label">What do you need?</label>
+              <div class="service-type-selector" id="serviceTypeSelector">
+                <label class="service-type-option">
+                  <input type="radio" name="serviceType" value="pickup">
+                  <span class="service-type-card">
+                    <span class="service-type-icon">�</span>
+                    <span class="service-type-name">Boarding Assistance</span>
+                    <span class="service-type-desc">Platform → Train</span>
+                    <span class="service-type-helper">Help me board the train</span>
+                  </span>
+                </label>
+                <label class="service-type-option">
+                  <input type="radio" name="serviceType" value="drop">
+                  <span class="service-type-card">
+                    <span class="service-type-icon">🚶‍♂️</span>
+                    <span class="service-type-name">Arrival Assistance</span>
+                    <span class="service-type-desc">Train → Platform</span>
+                    <span class="service-type-helper">Help me exit after arrival</span>
+                  </span>
+                </label>
+                <label class="service-type-option">
+                  <input type="radio" name="serviceType" value="round_trip">
+                  <span class="service-type-card">
+                    <span class="service-type-icon">🔄</span>
+                    <span class="service-type-name">Round Trip</span>
+                    <span class="service-type-desc">Both services</span>
+                    <span class="service-type-helper">Boarding + Arrival at different stations</span>
+                  </span>
+                </label>
+              </div>
+            </div>
+            
+            <!-- SMART STATION SELECTOR: Pickup/Boarding (hidden until pickup selected) -->
+            <div class="form-group full-width smart-station-wrapper hidden" id="pickupOnlyWrapper">
+              <div class="smart-station-header">
+                <div class="smart-station-badge pickup">
+                  <span class="badge-icon">🚉</span>
+                  <span class="badge-text">Boarding Station</span>
+                </div>
+                <span class="smart-station-hint">Where will you board the train? (Platform → Train)</span>
+              </div>
+              <select class="form-select smart-station-select" id="pickupOnlySelect">
+                <option value="">Select your boarding station...</option>
+              </select>
+              <div class="smart-station-info" id="pickupOnlyInfo"></div>
+            </div>
+            
+            <!-- SMART STATION SELECTOR: Drop/Arrival (hidden until drop selected) -->
+            <div class="form-group full-width smart-station-wrapper hidden" id="dropOnlyWrapper">
+              <div class="smart-station-header">
+                <div class="smart-station-badge drop">
+                  <span class="badge-icon">🚶‍♂️</span>
+                  <span class="badge-text">Arrival Station</span>
+                </div>
+                <span class="smart-station-hint">Where will you exit the train? (Train → Platform)</span>
+              </div>
+              <select class="form-select smart-station-select" id="dropOnlySelect">
+                <option value="">Select your arrival/exit station...</option>
+              </select>
+              <div class="smart-station-info" id="dropOnlyInfo"></div>
+            </div>
+            
+            <!-- SMART STATION SELECTOR: Round Trip (hidden until round_trip selected) -->
+            <div class="form-group full-width round-trip-stations hidden" id="roundTripStationsWrapper">
+              <div class="round-trip-header">
+                <span class="round-trip-title">🔄 Round Trip Assistance</span>
+                <span class="round-trip-subtitle">Boarding at one station, Arrival at another</span>
+              </div>
+              <div class="round-trip-grid">
+                <!-- Pickup/Boarding Station -->
+                <div class="round-trip-station-box">
+                  <label class="form-label">
+                    <span class="station-type-badge pickup">🚉 Boarding Station</span>
+                    <span class="station-help">Platform → Train (where you board)</span>
+                  </label>
+                  <select class="form-select" id="pickupStationSelect">
+                    <option value="">Select boarding station...</option>
+                  </select>
+                  <div class="station-info" id="pickupStationInfo"></div>
+                </div>
+                
+                <!-- Visual Arrow -->
+                <div class="round-trip-arrow">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                    <polyline points="12,5 19,12 12,19"/>
+                  </svg>
+                </div>
+                
+                <!-- Drop/Arrival Station -->
+                <div class="round-trip-station-box">
+                  <label class="form-label">
+                    <span class="station-type-badge drop">🚶‍♂️ Arrival Station</span>
+                    <span class="station-help">Train → Platform (where you exit)</span>
+                  </label>
+                  <select class="form-select" id="dropStationSelect">
+                    <option value="">Select arrival/exit station...</option>
+                  </select>
+                  <div class="station-info" id="dropStationInfo"></div>
+                </div>
+              </div>
+              <!-- Round Trip Validation -->
+              <div class="round-trip-validation hidden" id="roundTripValidation">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="8" x2="12" y2="12"/>
+                  <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                <span id="roundTripValidationText"></span>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Coach</label>
+              <input type="text" class="form-input" id="coach" placeholder="e.g. S5">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Seat</label>
+              <input type="text" class="form-input" id="seat" placeholder="e.g. 42">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Preferred Language</label>
+              <select class="form-select" id="language">
+                <option value="Hindi">Hindi</option>
+                <option value="Telugu">Telugu</option>
+                <option value="English">English</option>
+              </select>
+            </div>
+            
+            <!-- Selected Services Display -->
+            <div class="form-group full-width">
+              <label class="form-label">Selected Services</label>
+              <div id="selectedServicesDisplay" class="selected-services">
+                <span class="no-service">Select services from above ↑</span>
+              </div>
+            </div>
+            
+            <!-- Insurance Option -->
+            <div class="form-group full-width">
+              <label class="insurance-option">
+                <input type="checkbox" id="insuranceChk">
+                <span class="checkmark"></span>
+                <span class="insurance-text">Add Insurance — ₹0.45 <small>(covers luggage up to ₹30,000)</small></span>
+              </label>
+            </div>
+            
+            <!-- Price Breakdown -->
+            <div class="form-group full-width">
+              <div class="price-breakdown" id="priceBreakdown">
+                <div class="price-row">
+                  <span>Services</span>
+                  <span id="servicesTotal">₹0</span>
+                </div>
+                <div class="price-row" id="luggageLine" style="display: none;">
+                  <span id="luggageLineLabel">Luggage</span>
+                  <span id="luggageLineAmount">₹0</span>
+                </div>
+                <div class="price-row" id="roundTripLine" style="display: none;">
+                  <span>Round Trip (×2)</span>
+                  <span id="roundTripMultiplier">—</span>
+                </div>
+                <div class="price-row">
+                  <span>Platform Fee</span>
+                  <span>₹10</span>
+                </div>
+                <div class="price-row" id="insuranceLine" style="display: none;">
+                  <span>Insurance</span>
+                  <span>₹0.45</span>
+                </div>
+                <div class="price-row total">
+                  <span>Total</span>
+                  <span id="totalAmount">₹10</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-actions">
+            <button type="submit" class="btn-submit" id="submitBtn">
+              Create Booking — <span id="submitTotal">₹10</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Progress Tracker Section (Hidden by default) -->
+  <section class="progress-section" id="track">
+    <div class="progress-container">
+      <div class="progress-card">
+        <div class="progress-header">
+          <div>
+            <h2 class="progress-title">Booking Confirmed</h2>
+            <p class="progress-booking-id" id="bookingIdDisplay">#RM-2024-0000</p>
+          </div>
+          <div class="progress-status-badge" id="statusBadge">
+            <div class="status-dot"></div>
+            <span id="statusText">Pending</span>
+          </div>
+        </div>
+        
+        <div class="progress-timeline">
+          <div class="progress-step">
+            <div class="step-dot completed" id="step1">✓</div>
+            <span class="step-label active">Booked</span>
+          </div>
+          <div class="progress-step">
+            <div class="step-dot" id="step2">2</div>
+            <span class="step-label" id="step2Label">Assigned</span>
+          </div>
+          <div class="progress-step">
+            <div class="step-dot" id="step3">3</div>
+            <span class="step-label" id="step3Label">In Progress</span>
+          </div>
+          <div class="progress-step">
+            <div class="step-dot" id="step4">4</div>
+            <span class="step-label" id="step4Label">Completed</span>
+          </div>
+        </div>
+        
+        <div class="assistant-card" id="assistantCard" style="display: none;">
+          <div class="assistant-card-avatar" id="assistantAvatar">RS</div>
+          <div class="assistant-card-info">
+            <h3 id="assistantName">Rahul Singh</h3>
+            <p id="assistantStation">New Delhi Railway Station</p>
+            <div class="assistant-card-meta">
+              <span class="meta-item">
+                <svg fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                </svg>
+                <span id="assistantRating">4.9</span>
+              </span>
+              <span class="meta-item">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span id="assistantBookings">127 bookings</span>
+              </span>
+            </div>
+          </div>
+          <div class="assistant-actions">
+            <button class="action-btn call" onclick="callAssistant()">
+              📞 Call
+            </button>
+          </div>
+        </div>
+        
+        <div id="searchingMessage" style="text-align: center; padding: 40px; color: var(--text-secondary);">
+          <div class="spinner" style="width: 40px; height: 40px; margin: 0 auto 16px;"></div>
+          <p>Finding the best assistant for you...</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <p class="footer-copy">© 2024 RailMitra. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="#" class="footer-link">Terms of Service</a>
+        <a href="#" class="footer-link">Privacy Policy</a>
+        <a href="#" class="footer-link">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // Theme Toggle
+    function toggleTheme() {
+      document.body.classList.toggle('dark');
+      localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+    }
+
+    // Load saved theme
+    if (localStorage.getItem('theme') === 'dark') {
+      document.body.classList.add('dark');
+    }
+
+    // Toast notification
+    function showToast(message, duration = 3000) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), duration);
+    }
+
+    // Get token
+    function getToken() {
+      return localStorage.getItem('railcare_token');
+    }
+
+    // Current user state
+    let currentUser = null;
+    let userAvatar = null;
+
+    // Check authentication and show profile
+    function checkAuth() {
+      const token = getToken();
+      if (!token) {
+        showSignInButton();
+        return;
+      }
+
+      try {
+        // Decode token to get user info
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const expiry = payload.exp * 1000;
+        
+        if (expiry < Date.now()) {
+          localStorage.removeItem('railcare_token');
+          showSignInButton();
+          return;
+        }
+
+        currentUser = { name: payload.name, phone: '', role: payload.role };
+        userAvatar = localStorage.getItem('railcare_avatar');
+        showUserProfile(currentUser);
+      } catch (e) {
+        console.error('Auth check error:', e);
+        showSignInButton();
+      }
+    }
+
+    function showSignInButton() {
+      document.getElementById('signInBtn')?.classList.remove('hidden');
+      document.getElementById('profileSection')?.classList.remove('active');
+      
+      // Show passenger links for guests (Services, Book Now)
+      document.querySelectorAll('.nav-passenger').forEach(el => {
+        el.style.display = '';
+      });
+      // Hide staff/portal-specific links for guests
+      document.querySelectorAll('.nav-assistant, .nav-admin, .nav-staff').forEach(el => {
+        el.style.display = 'none';
+      });
+    }
+
+    function showUserProfile(user) {
+      console.log('[showUserProfile] Starting with user:', user);
+      const signInBtn = document.getElementById('signInBtn');
+      const profileSection = document.getElementById('profileSection');
+      console.log('[showUserProfile] signInBtn element:', signInBtn);
+      console.log('[showUserProfile] profileSection element:', profileSection);
+      
+      if (signInBtn) signInBtn.classList.add('hidden');
+      if (profileSection) profileSection.classList.add('active');
+
+      const name = user.name || 'User';
+      const phone = user.phone || '';
+      const role = user.role || 'passenger';
+      const initials = getInitials(name);
+      console.log('[showUserProfile] Name:', name, 'Initials:', initials);
+
+      // Update all name/initial displays
+      const navUserName = document.getElementById('navUserName');
+      if (navUserName) navUserName.textContent = name.split(' ')[0];
+      
+      const navAvatarInitials = document.getElementById('navAvatarInitials');
+      if (navAvatarInitials) navAvatarInitials.textContent = initials;
+      
+      const dropdownUserName = document.getElementById('dropdownUserName');
+      if (dropdownUserName) dropdownUserName.textContent = name;
+      
+      const dropdownUserPhone = document.getElementById('dropdownUserPhone');
+      if (dropdownUserPhone) dropdownUserPhone.textContent = phone || 'Phone not set';
+      
+      const dropdownAvatarInitials = document.getElementById('dropdownAvatarInitials');
+      if (dropdownAvatarInitials) dropdownAvatarInitials.textContent = initials;
+      
+      const settingsAvatarInitials = document.getElementById('settingsAvatarInitials');
+      if (settingsAvatarInitials) settingsAvatarInitials.textContent = initials;
+      
+      const settingsName = document.getElementById('settingsName');
+      if (settingsName) settingsName.value = name;
+      
+      const settingsPhone = document.getElementById('settingsPhone');
+      if (settingsPhone) settingsPhone.value = phone;
+
+      // Update avatar images if available
+      if (userAvatar) {
+        updateAvatarImages(userAvatar);
+      }
+
+      // Update navigation based on role
+      updateNavForRole(role);
+    }
+
+    function updateNavForRole(role) {
+      // Hide all role-specific nav items first
+      document.querySelectorAll('.nav-passenger, .nav-assistant, .nav-admin, .nav-staff').forEach(el => {
+        el.style.display = 'none';
+      });
+
+      if (role === 'passenger') {
+        // Passengers see: Services, Book Now
+        document.querySelectorAll('.nav-passenger').forEach(el => {
+          el.style.display = '';
+        });
+      } else if (role === 'assistant') {
+        // Assistants see: My Dashboard, Passenger Portal
+        document.querySelectorAll('.nav-assistant, .nav-staff').forEach(el => {
+          el.style.display = '';
+        });
+      } else if (role === 'admin') {
+        // Admins see: Admin Panel, Passenger Portal
+        document.querySelectorAll('.nav-admin, .nav-staff').forEach(el => {
+          el.style.display = '';
+        });
+      }
+    }
+
+    function getInitials(name) {
+      return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    }
+
+    function updateAvatarImages(src) {
+      const avatarImgs = ['navAvatarImg', 'dropdownAvatarImg', 'settingsAvatarImg'];
+      const avatarInitials = ['navAvatarInitials', 'dropdownAvatarInitials', 'settingsAvatarInitials'];
+      
+      avatarImgs.forEach((id, i) => {
+        const img = document.getElementById(id);
+        const initials = document.getElementById(avatarInitials[i]);
+        if (src) {
+          img.src = src;
+          img.style.display = 'block';
+          initials.style.display = 'none';
+        } else {
+          img.style.display = 'none';
+          initials.style.display = 'block';
+        }
+      });
+    }
+
+    // Profile dropdown toggle
+    function toggleProfileDropdown() {
+      const dropdown = document.getElementById('profileDropdown');
+      const trigger = document.querySelector('.profile-trigger');
+      dropdown.classList.toggle('show');
+      trigger.classList.toggle('open');
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      const profileSection = document.getElementById('profileSection');
+      if (!profileSection.contains(e.target)) {
+        document.getElementById('profileDropdown').classList.remove('show');
+        document.querySelector('.profile-trigger')?.classList.remove('open');
+      }
+    });
+
+    // Settings modal
+    function openSettings() {
+      document.getElementById('settingsModal').classList.add('show');
+      document.getElementById('profileDropdown').classList.remove('show');
+      document.querySelector('.profile-trigger')?.classList.remove('open');
+    }
+
+    function closeSettings() {
+      document.getElementById('settingsModal').classList.remove('show');
+    }
+
+    // Avatar upload
+    function handleAvatarUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      if (file.size > 2 * 1024 * 1024) {
+        showToast('Image too large. Max 2MB allowed.');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        userAvatar = e.target.result;
+        localStorage.setItem('railcare_avatar', userAvatar);
+        updateAvatarImages(userAvatar);
+        showToast('Profile photo updated!');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeAvatar() {
+      userAvatar = null;
+      localStorage.removeItem('railcare_avatar');
+      updateAvatarImages(null);
+      showToast('Profile photo removed');
+    }
+
+    // Save settings
+    async function saveSettings() {
+      const name = document.getElementById('settingsName').value.trim();
+      if (!name) {
+        showToast('Name is required');
+        return;
+      }
+
+      try {
+        const token = getToken();
+        const res = await fetch('/api/auth/update-profile', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ name })
+        });
+
+        if (res.ok) {
+          currentUser.name = name;
+          showUserProfile(currentUser);
+          closeSettings();
+          showToast('Settings saved!');
+        } else {
+          // Still update locally even if API fails
+          currentUser.name = name;
+          showUserProfile(currentUser);
+          closeSettings();
+          showToast('Settings saved locally');
+        }
+      } catch (e) {
+        // Update locally
+        currentUser.name = name;
+        showUserProfile(currentUser);
+        closeSettings();
+        showToast('Settings saved locally');
+      }
+    }
+
+    // Logout
+    function logout() {
+      localStorage.removeItem('railcare_token');
+      localStorage.removeItem('railcare_avatar');
+      currentUser = null;
+      userAvatar = null;
+      showSignInButton();
+      document.getElementById('profileDropdown').classList.remove('show');
+      showToast('Signed out successfully');
+    }
+
+    // View my bookings
+    async function viewMyBookings() {
+      console.log('[viewMyBookings] Starting...');
+      document.getElementById('profileDropdown').classList.remove('show');
+      
+      // Show modal - use 'show' class to match CSS
+      const modal = document.getElementById('bookingsModal');
+      modal.classList.add('show');
+      
+      // Show loading
+      document.getElementById('bookingsLoading').style.display = 'block';
+      document.getElementById('bookingsEmpty').style.display = 'none';
+      document.getElementById('bookingsList').style.display = 'none';
+      
+      try {
+        const token = getToken();
+        console.log('[viewMyBookings] Token exists:', !!token);
+        
+        if (!token) {
+          document.getElementById('bookingsLoading').style.display = 'none';
+          document.getElementById('bookingsEmpty').style.display = 'block';
+          document.getElementById('bookingsEmpty').innerHTML = `
+            <div style="font-size: 48px; margin-bottom: 12px;">🔒</div>
+            <p>Please sign in to view your bookings</p>
+          `;
+          return;
+        }
+        
+        const headers = { 'Authorization': `Bearer ${token}` };
+        
+        // Use dedicated my-bookings endpoint
+        console.log('[viewMyBookings] Fetching from /api/bookings/my-bookings');
+        const res = await fetch('/api/bookings/my-bookings', { headers });
+        const data = await res.json();
+        console.log('[viewMyBookings] Response:', data);
+        
+        document.getElementById('bookingsLoading').style.display = 'none';
+        
+        if (!data.success || !data.bookings || data.bookings.length === 0) {
+          console.log('[viewMyBookings] No bookings found or error');
+          document.getElementById('bookingsEmpty').style.display = 'block';
+          if (!data.success) {
+            document.getElementById('bookingsEmpty').innerHTML = `
+              <div style="font-size: 48px; margin-bottom: 12px;">⚠️</div>
+              <p>${data.message || 'Failed to load bookings'}</p>
+            `;
+          }
+          return;
+        }
+        
+        const bookings = data.bookings;
+        console.log('[viewMyBookings] Rendering', bookings.length, 'bookings');
+        
+        // Render bookings
+        const container = document.getElementById('bookingsList');
+        console.log('[viewMyBookings] Container element:', container);
+        container.style.display = 'block';
+        
+        // Add booking count header
+        let html = `
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color);">
+            <div>
+              <span style="font-size: 14px; color: var(--text-tertiary);">Total Bookings</span>
+              <div style="font-size: 28px; font-weight: 700; color: var(--text-primary);">${bookings.length}</div>
+            </div>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+              <div style="text-align: center; padding: 8px 16px; background: rgba(16, 185, 129, 0.1); border-radius: 12px;">
+                <div style="font-size: 18px; font-weight: 700; color: #10b981;">${bookings.filter(b => b.status === 'Completed').length}</div>
+                <div style="font-size: 11px; color: var(--text-tertiary);">Completed</div>
+              </div>
+              <div style="text-align: center; padding: 8px 16px; background: rgba(139, 92, 246, 0.1); border-radius: 12px;">
+                <div style="font-size: 18px; font-weight: 700; color: #8b5cf6;">${bookings.filter(b => !['Completed', 'Cancelled', 'Rejected'].includes(b.status)).length}</div>
+                <div style="font-size: 11px; color: var(--text-tertiary);">Active</div>
+              </div>
+            </div>
+          </div>
+          ${bookings.length > 3 ? `
+          <div style="text-align: center; padding: 12px; margin-bottom: 16px; background: rgba(59, 130, 246, 0.08); border-radius: 12px; color: var(--text-secondary); font-size: 13px;">
+            <span style="margin-right: 6px;">👆</span>Scroll down to see all ${bookings.length} bookings
+          </div>
+          ` : ''}
+        `;
+        
+        html += bookings.map((b, index) => {
+          const statusColors = {
+            'Pending': '#f59e0b',
+            'Searching': '#f59e0b',
+            'Assigned': '#3b82f6',
+            'Accepted': '#3b82f6',
+            'Start Pending': '#8b5cf6',
+            'In Progress': '#8b5cf6',
+            'Completion Pending': '#8b5cf6',
+            'Completed': '#10b981',
+            'Cancelled': '#ef4444',
+            'Rejected': '#ef4444'
+          };
+          
+          const statusColor = statusColors[b.status] || '#666';
+          const date = b.createdAt ? new Date(b.createdAt).toLocaleDateString('en-IN', { 
+            day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+          }) : '—';
+          
+          const services = Array.isArray(b.services) ? b.services.join(', ') : (b.service || '—');
+          const assistantName = b.assistantId?.name || 'Not assigned';
+          const isActive = !['Completed', 'Cancelled', 'Rejected'].includes(b.status);
+          
+          // For round-trip, show detailed task status
+          const isRoundTrip = b.serviceType === 'round_trip';
+          
+          return `
+            <div class="my-booking-card" style="
+              background: var(--bg-secondary);
+              border-radius: 16px;
+              padding: 20px;
+              margin-bottom: 16px;
+              border: 1px solid var(--border-color);
+              ${isActive ? 'border-left: 4px solid ' + statusColor + ';' : ''}
+              position: relative;
+            ">
+              <div style="position: absolute; top: -10px; left: 20px; background: var(--bg-primary); padding: 2px 10px; border-radius: 12px; font-size: 11px; color: var(--text-tertiary); border: 1px solid var(--border-color);">
+                #${bookings.length - index}
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; margin-top: 8px;">
+                <div>
+                  <div style="font-weight: 600; font-size: 15px;">${b.station || 'Station'}</div>
+                  <div style="font-size: 12px; color: var(--text-tertiary);">${date}</div>
+                </div>
+                <span style="
+                  padding: 4px 12px;
+                  background: ${statusColor}20;
+                  color: ${statusColor};
+                  border-radius: 20px;
+                  font-size: 12px;
+                  font-weight: 600;
+                ">${b.status}</span>
+              </div>
+              
+              ${isRoundTrip ? `
+              <!-- ROUND TRIP: Show both service legs -->
+              <div style="border: 2px solid rgba(139, 92, 246, 0.3); border-radius: 12px; padding: 12px; margin-bottom: 12px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.05), rgba(99, 102, 241, 0.05));">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                  <span style="font-size: 18px;">🔄</span>
+                  <div style="font-weight: 700; font-size: 14px; color: var(--purple);">Round Trip Assistance</div>
+                </div>
+                <div id="roundTripTasks-${b._id}" style="display: flex; flex-direction: column; gap: 8px;">
+                  <!-- Pickup Service -->
+                  <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(16, 185, 129, 0.1); border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.2);">
+                    <span style="font-size: 16px;">🚉</span>
+                    <div style="flex: 1;">
+                      <div style="font-weight: 600; font-size: 13px; color: var(--emerald);">Boarding Assistance</div>
+                      <div style="font-size: 12px; color: var(--text-secondary);">${b.pickupStationName || b.pickupStationCode || 'Departure Station'}</div>
+                    </div>
+                    <div style="text-align: right;">
+                      <div style="font-size: 11px; color: var(--text-tertiary);">Assistant</div>
+                      <div style="font-size: 12px; font-weight: 600; color: var(--text-primary);" id="pickupAssistant-${b._id}">
+                        <span style="color: var(--amber);">⏳ Searching</span>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Drop Service -->
+                  <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(59, 130, 246, 0.1); border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.2);">
+                    <span style="font-size: 16px;">🚶‍♂️</span>
+                    <div style="flex: 1;">
+                      <div style="font-weight: 600; font-size: 13px; color: var(--sapphire);">Arrival Assistance</div>
+                      <div style="font-size: 12px; color: var(--text-secondary);">${b.dropStationName || b.dropStationCode || 'Arrival Station'}</div>
+                    </div>
+                    <div style="text-align: right;">
+                      <div style="font-size: 11px; color: var(--text-tertiary);">Assistant</div>
+                      <div style="font-size: 12px; font-weight: 600; color: var(--text-primary);" id="dropAssistant-${b._id}">
+                        <span style="color: var(--amber);">⏳ Searching</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div style="margin-top: 8px; padding: 6px 10px; background: rgba(139, 92, 246, 0.08); border-radius: 6px; font-size: 11px; color: var(--text-secondary);">
+                  ℹ️ Different assistants may be assigned at each station
+                </div>
+              </div>
+              <div data-booking-id="${b._id}" class="round-trip-tasks-passenger"></div>
+              ` : `
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 13px; color: var(--text-secondary);">
+                <div>
+                  <span style="color: var(--text-tertiary);">Services:</span>
+                  <div style="color: var(--text-primary); margin-top: 2px;">${services}</div>
+                </div>
+                <div>
+                  <span style="color: var(--text-tertiary);">Assistant:</span>
+                  <div style="color: var(--text-primary); margin-top: 2px;">${assistantName}</div>
+                </div>
+                ${b.trainNumber ? `
+                <div>
+                  <span style="color: var(--text-tertiary);">Train:</span>
+                  <div style="color: var(--text-primary); margin-top: 2px;">${b.trainNumber}</div>
+                </div>
+                ` : ''}
+                ${b.price ? `
+                <div>
+                  <span style="color: var(--text-tertiary);">Amount:</span>
+                  <div style="color: var(--text-primary); margin-top: 2px;">₹${b.price}</div>
+                </div>
+                ` : ''}
+              </div>
+              `}
+              
+              ${isActive ? `
+              <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border-color);">
+                <button onclick="trackBooking('${b._id}')" style="
+                  padding: 8px 20px;
+                  background: var(--text-primary);
+                  color: var(--bg-primary);
+                  border: none;
+                  border-radius: 8px;
+                  font-size: 13px;
+                  font-weight: 600;
+                  cursor: pointer;
+                ">Track Booking</button>
+              </div>
+              ` : ''}
+            </div>
+          `;
+        }).join('');
+        
+        console.log('[viewMyBookings] HTML generated, length:', html.length);
+        container.innerHTML = html;
+        console.log('[viewMyBookings] Bookings rendered successfully');
+        
+        // Load tasks for round-trip bookings after rendering
+        setTimeout(() => {
+          document.querySelectorAll('.round-trip-tasks-passenger').forEach(el => {
+            const bookingId = el.dataset.bookingId;
+            if (bookingId) loadRoundTripTasks(bookingId);
+          });
+        }, 100);
+        
+      } catch (err) {
+        console.error('Error fetching bookings:', err);
+        document.getElementById('bookingsLoading').style.display = 'none';
+        document.getElementById('bookingsEmpty').style.display = 'block';
+        document.getElementById('bookingsEmpty').innerHTML = `
+          <div style="font-size: 48px; margin-bottom: 12px;">⚠️</div>
+          <p>Error loading bookings</p>
+          <p style="font-size: 13px; margin-top: 8px;">${err.message}</p>
+        `;
+      }
+    }
+    
+    function closeBookingsModal() {
+      document.getElementById('bookingsModal').classList.remove('show');
+    }
+    
+    // Load round-trip task assignments for passenger visibility
+    async function loadRoundTripTasks(bookingId) {
+      try {
+        const res = await fetch(`/api/scheduling/booking/${bookingId}/tasks`);
+        const data = await res.json();
+        
+        if (!data.success || !data.tasks) return;
+        
+        data.tasks.forEach(task => {
+          const elementId = task.taskType === 'pickup' 
+            ? `pickupAssistant-${bookingId}` 
+            : `dropAssistant-${bookingId}`;
+          const element = document.getElementById(elementId);
+          
+          if (element) {
+            if (task.isAssigned && task.assistant) {
+              element.innerHTML = `<span style="color: var(--emerald);">✓ ${task.assistant.name}</span>`;
+            } else if (task.status === 'in_progress') {
+              element.innerHTML = `<span style="color: var(--purple);">🚀 In Progress</span>`;
+            } else if (task.status === 'completed') {
+              element.innerHTML = `<span style="color: var(--emerald);">✅ Completed</span>`;
+            } else {
+              element.innerHTML = `<span style="color: var(--amber);">⏳ Searching</span>`;
+            }
+          }
+        });
+      } catch (err) {
+        console.error('[loadRoundTripTasks] Error:', err.message);
+      }
+    }
+
+    function trackBooking(bookingId) {
+      closeBookingsModal();
+      currentBookingId = bookingId;
+      
+      // Show tracking section
+      document.getElementById('book').style.display = 'none';
+      document.getElementById('services').style.display = 'none';
+      document.getElementById('track').classList.add('active');
+      
+      // Start polling
+      startPolling();
+      
+      // Fetch current status
+      fetch(`/api/bookings/${bookingId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success || data.booking) {
+            updateProgressUI(data.booking || data);
+          }
+        })
+        .catch(console.error);
+      
+      // Update URL
+      window.history.pushState({}, '', `?booking=${bookingId}`);
+      
+      // Scroll to tracking section
+      document.getElementById('track').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // State
+    let selectedServices = [];
+    let currentBookingId = null;
+    let pollInterval = null;
+    const PLATFORM_FEE = 10;
+    const INSURANCE_COST = 0.45;
+    const MAX_LUGGAGE_QUANTITY = 8;
+    const MAX_LUGGAGE_ITEMS_PER_TYPE = 8;
+
+    // Service prices (base)
+    // NOTE: Luggage fee is 0 - all-inclusive in luggage size pricing
+    const servicePrices = {
+      'Luggage': 0,    // All-inclusive in luggagePrices
+      'SeatEscort': 60,
+      'Language': 30
+    };
+
+    // Luggage prices per item with weight info
+    const luggagePrices = {
+      none: 0,
+      small: 30,
+      medium: 60,
+      large: 100
+    };
+    
+    const luggageInfo = {
+      small: { icon: '🎒', name: 'Small', weight: 'Up to 5kg', desc: 'Backpack / Cabin Bag' },
+      medium: { icon: '🧳', name: 'Medium', weight: 'Up to 10kg', desc: 'Standard Suitcase' },
+      large: { icon: '📦', name: 'Large', weight: 'Above 10kg', desc: 'Heavy Suitcase / Trunk' }
+    };
+
+    const serviceNames = {
+      'Luggage': 'Luggage Assistance',
+      'SeatEscort': 'Seat Escorting',
+      'Language': 'Language Help'
+    };
+
+    // LEGACY Luggage state (kept for backward compatibility)
+    let currentLuggageSize = 'none';
+    let currentLuggageQuantity = 0;
+    
+    // NEW: Multi-luggage cart state
+    // Format: { small: 2, medium: 1, large: 0 }
+    let luggageCart = {};
+    let priceUpdateDebounce = null;
+
+    // Calculate total from luggage cart
+    function calculateLuggageCartTotal() {
+      let total = 0;
+      Object.entries(luggageCart).forEach(([type, qty]) => {
+        if (qty > 0 && luggagePrices[type]) {
+          total += luggagePrices[type] * qty;
+        }
+      });
+      return total;
+    }
+    
+    // Get luggage items array for API
+    function getLuggageItemsArray() {
+      return Object.entries(luggageCart)
+        .filter(([type, qty]) => qty > 0)
+        .map(([type, quantity]) => ({ type, quantity }));
+    }
+    
+    // Get total luggage item count
+    function getTotalLuggageCount() {
+      return Object.values(luggageCart).reduce((sum, qty) => sum + qty, 0);
+    }
+
+    // Calculate total (calls server for accurate pricing)
+    function calculateTotal() {
+      let servicesTotal = selectedServices.reduce((sum, svc) => sum + (servicePrices[svc] || 0), 0);
+      
+      // Calculate luggage cost from cart
+      const luggageCost = calculateLuggageCartTotal();
+      
+      // Check service type for round trip multiplier
+      const serviceType = getSelectedServiceType();
+      const isRoundTrip = serviceType === 'round_trip';
+      
+      // Apply round trip multiplier (services + luggage get doubled, platform fee stays same)
+      let subtotal;
+      if (isRoundTrip) {
+        subtotal = (servicesTotal + luggageCost) * 2 + PLATFORM_FEE;
+      } else {
+        subtotal = servicesTotal + luggageCost + PLATFORM_FEE;
+      }
+      
+      const insuranceChecked = document.getElementById('insuranceChk')?.checked || false;
+      const total = subtotal + (insuranceChecked ? INSURANCE_COST : 0);
+      
+      return { 
+        servicesTotal, 
+        luggageCost: isRoundTrip ? luggageCost * 2 : luggageCost,
+        subtotal,
+        total, 
+        insuranceChecked,
+        isRoundTrip
+      };
+    }
+
+    // Update price display with live breakdown
+    function updatePriceDisplay() {
+      const { servicesTotal, luggageCost, total, insuranceChecked, isRoundTrip } = calculateTotal();
+      
+      // Services
+      const servicesTotalEl = document.getElementById('servicesTotal');
+      if (servicesTotalEl) servicesTotalEl.textContent = `₹${servicesTotal}`;
+      
+      // Luggage line - use cart-based display
+      const luggageLine = document.getElementById('luggageLine');
+      const luggageLineLabel = document.getElementById('luggageLineLabel');
+      const luggageLineAmount = document.getElementById('luggageLineAmount');
+      
+      const luggageItems = getLuggageItemsArray();
+      if (luggageItems.length > 0) {
+        // Build display label from cart items
+        const displayParts = luggageItems.map(item => 
+          `${luggageInfo[item.type]?.name || item.type} ×${item.quantity}`
+        );
+        if (luggageLineLabel) luggageLineLabel.textContent = `Luggage (${displayParts.join(', ')})`;
+        if (luggageLineAmount) luggageLineAmount.textContent = `₹${luggageCost}`;
+        if (luggageLine) luggageLine.style.display = 'flex';
+      } else {
+        if (luggageLine) luggageLine.style.display = 'none';
+      }
+      
+      // Round trip line
+      const roundTripLine = document.getElementById('roundTripLine');
+      if (isRoundTrip) {
+        if (roundTripLine) roundTripLine.style.display = 'flex';
+      } else {
+        if (roundTripLine) roundTripLine.style.display = 'none';
+      }
+      
+      // Total
+      const totalAmountEl = document.getElementById('totalAmount');
+      if (totalAmountEl) totalAmountEl.textContent = `₹${total.toFixed(2)}`;
+      // submitTotal span is temporarily removed while submit button shows "Processing..."
+      const submitTotalEl = document.getElementById('submitTotal');
+      if (submitTotalEl) submitTotalEl.textContent = `₹${total.toFixed(2)}`;
+      
+      const insuranceLine = document.getElementById('insuranceLine');
+      if (insuranceLine) insuranceLine.style.display = insuranceChecked ? 'flex' : 'none';
+      
+      // Update selected services display
+      const display = document.getElementById('selectedServicesDisplay');
+      const totalLuggageCount = getTotalLuggageCount();
+      
+      if (selectedServices.length === 0 && totalLuggageCount === 0) {
+        if (display) display.innerHTML = '<span class="no-service">Select services from above ↑</span>';
+      } else {
+        // Filter out 'Luggage' from service tags - luggage is shown separately
+        let tags = selectedServices
+          .filter(svc => svc !== 'Luggage')
+          .map(svc => `
+          <span class="service-tag">
+            ${serviceNames[svc]} — ₹${servicePrices[svc]}
+            <span class="remove" onclick="removeService('${svc}')">✕</span>
+          </span>
+        `);
+        
+        // Add luggage cart items
+        luggageItems.forEach(item => {
+          const info = luggageInfo[item.type];
+          const itemCost = luggagePrices[item.type] * item.quantity;
+          tags.push(`
+            <span class="service-tag" style="background: rgba(16, 185, 129, 0.1); border-color: var(--emerald);">
+              ${info?.icon || '📦'} ${info?.name || item.type} ×${item.quantity} — ₹${itemCost}
+            </span>
+          `);
+        });
+        
+        display.innerHTML = tags.join('');
+      }
+      
+      // Update luggage cart UI
+      renderLuggageCart();
+    }
+
+    // Toggle service selection
+    function toggleService(service, checkbox) {
+      const card = checkbox.closest('.service-card');
+      
+      if (checkbox.checked) {
+        if (!selectedServices.includes(service)) {
+          selectedServices.push(service);
+        }
+        card.classList.add('selected');
+        
+        // Special handling for Luggage service
+        if (service === 'Luggage') {
+          showLuggageDetails();
+        }
+      } else {
+        selectedServices = selectedServices.filter(s => s !== service);
+        card.classList.remove('selected');
+        
+        // Special handling for Luggage service
+        if (service === 'Luggage') {
+          hideLuggageDetails();
+          resetLuggageSelection();
+        }
+      }
+      
+      updatePriceDisplay();
+    }
+
+    // Remove service
+    function removeService(service) {
+      selectedServices = selectedServices.filter(s => s !== service);
+      const checkbox = document.querySelector(`.service-check[data-service="${service}"]`);
+      if (checkbox) {
+        checkbox.checked = false;
+        checkbox.closest('.service-card').classList.remove('selected');
+      }
+      
+      // Special handling for Luggage service
+      if (service === 'Luggage') {
+        hideLuggageDetails();
+        resetLuggageSelection();
+      }
+      
+      updatePriceDisplay();
+    }
+
+    // ==================== LUGGAGE STEPPER LOGIC ====================
+    /**
+     * Show luggage details section
+     */
+    function showLuggageDetails() {
+      const section = document.getElementById('luggageDetailsSection');
+      if (section) {
+        section.classList.remove('hidden');
+      }
+    }
+
+    /**
+     * Hide luggage details section
+     */
+    function hideLuggageDetails() {
+      const section = document.getElementById('luggageDetailsSection');
+      if (section) {
+        section.classList.add('hidden');
+      }
+    }
+
+    /**
+     * Reset luggage selection - clears entire cart
+     */
+    function resetLuggageSelection() {
+      // Clear cart
+      luggageCart = {};
+      
+      // Legacy fields reset
+      currentLuggageSize = 'none';
+      currentLuggageQuantity = 0;
+      
+      // Hide cart UI
+      const cartEl = document.getElementById('luggageCart');
+      if (cartEl) cartEl.classList.add('hidden');
+      
+      renderLuggageCart();
+      updatePriceDisplay();
+    }
+    
+    /**
+     * Add luggage type to cart
+     */
+    function addLuggageToCart(type) {
+      console.log('[addLuggageToCart] Called with type:', type);
+      console.log('[addLuggageToCart] luggagePrices[type]:', luggagePrices[type]);
+      
+      if (!luggagePrices[type]) {
+        console.log('[addLuggageToCart] Invalid type, returning');
+        return;
+      }
+      
+      // Initialize or increment
+      if (!luggageCart[type]) {
+        luggageCart[type] = 1;
+        console.log('[addLuggageToCart] Added new item:', type);
+      } else if (luggageCart[type] < MAX_LUGGAGE_ITEMS_PER_TYPE) {
+        luggageCart[type]++;
+        console.log('[addLuggageToCart] Incremented:', type, 'to', luggageCart[type]);
+      }
+      
+      console.log('[addLuggageToCart] Cart state:', JSON.stringify(luggageCart));
+      
+      // Update legacy fields for backward compatibility (use first/largest item)
+      updateLegacyLuggageFields();
+      
+      renderLuggageCart();
+      updatePriceDisplay();
+    }
+    
+    /**
+     * Update quantity for a cart item
+     */
+    function updateCartItemQuantity(type, delta) {
+      if (!luggageCart[type]) return;
+      
+      const newQty = luggageCart[type] + delta;
+      
+      if (newQty <= 0) {
+        // Remove from cart
+        delete luggageCart[type];
+      } else if (newQty <= MAX_LUGGAGE_ITEMS_PER_TYPE) {
+        luggageCart[type] = newQty;
+      }
+      
+      updateLegacyLuggageFields();
+      renderLuggageCart();
+      updatePriceDisplay();
+    }
+    
+    /**
+     * Remove item from cart
+     */
+    function removeCartItem(type) {
+      delete luggageCart[type];
+      updateLegacyLuggageFields();
+      renderLuggageCart();
+      updatePriceDisplay();
+    }
+    
+    /**
+     * Clear entire luggage cart
+     */
+    function clearLuggageCart() {
+      luggageCart = {};
+      updateLegacyLuggageFields();
+      renderLuggageCart();
+      updatePriceDisplay();
+    }
+    
+    /**
+     * Update legacy fields from cart (backward compatibility)
+     */
+    function updateLegacyLuggageFields() {
+      const items = getLuggageItemsArray();
+      if (items.length === 0) {
+        currentLuggageSize = 'none';
+        currentLuggageQuantity = 0;
+      } else if (items.length === 1) {
+        currentLuggageSize = items[0].type;
+        currentLuggageQuantity = items[0].quantity;
+      } else {
+        // Multiple types - set to 'none' to indicate using new system
+        currentLuggageSize = 'none';
+        currentLuggageQuantity = items.reduce((sum, item) => sum + item.quantity, 0);
+      }
+    }
+    
+    /**
+     * Render luggage cart UI
+     */
+    function renderLuggageCart() {
+      const cartEl = document.getElementById('luggageCart');
+      const cartItemsEl = document.getElementById('luggageCartItems');
+      const cartTotalEl = document.getElementById('luggageCartTotalAmount');
+      
+      if (!cartEl || !cartItemsEl) return;
+      
+      const items = getLuggageItemsArray();
+      
+      if (items.length === 0) {
+        cartEl.classList.add('hidden');
+        return;
+      }
+      
+      cartEl.classList.remove('hidden');
+      
+      // Render cart items
+      cartItemsEl.innerHTML = items.map(item => {
+        const info = luggageInfo[item.type];
+        const itemTotal = luggagePrices[item.type] * item.quantity;
+        return `
+          <div class="luggage-cart-item">
+            <span class="cart-item-icon">${info?.icon || '📦'}</span>
+            <div class="cart-item-info">
+              <span class="cart-item-name">${info?.name || item.type}</span>
+              <span class="cart-item-weight">${info?.weight || ''}</span>
+            </div>
+            <div class="cart-item-stepper">
+              <button type="button" class="cart-stepper-btn" onclick="updateCartItemQuantity('${item.type}', -1)">−</button>
+              <span class="cart-stepper-value">${item.quantity}</span>
+              <button type="button" class="cart-stepper-btn" onclick="updateCartItemQuantity('${item.type}', 1)" ${item.quantity >= MAX_LUGGAGE_ITEMS_PER_TYPE ? 'disabled' : ''}>+</button>
+            </div>
+            <span class="cart-item-price">₹${itemTotal}</span>
+            <button type="button" class="cart-item-remove" onclick="removeCartItem('${item.type}')" title="Remove">🗑</button>
+          </div>
+        `;
+      }).join('');
+      
+      // Update total
+      const total = calculateLuggageCartTotal();
+      const serviceType = getSelectedServiceType();
+      const isRoundTrip = serviceType === 'round_trip';
+      
+      if (cartTotalEl) {
+        cartTotalEl.textContent = isRoundTrip ? `₹${total} × 2 = ₹${total * 2}` : `₹${total}`;
+      }
+    }
+
+    // Initialize luggage stepper event listeners
+    document.addEventListener('DOMContentLoaded', () => {
+      // Size selector clicks
+      document.querySelectorAll('.luggage-size-option').forEach(option => {
+        option.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const size = option.dataset.size;
+          if (size) selectLuggageSize(size);
+        });
+      });
+      
+      // Quantity stepper buttons
+      const minusBtn = document.getElementById('luggageQtyMinus');
+      const plusBtn = document.getElementById('luggageQtyPlus');
+      
+      if (minusBtn) {
+        minusBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          updateLuggageQuantity(-1);
+        });
+      }
+      
+      if (plusBtn) {
+        plusBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          updateLuggageQuantity(1);
+        });
+      }
+      
+      // Service type change should update price (round trip multiplier)
+      document.querySelectorAll('input[name="serviceType"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+          updatePriceDisplay();
+        });
+      });
+      
+      // Insurance checkbox
+      const insuranceChk = document.getElementById('insuranceChk');
+      if (insuranceChk) {
+        insuranceChk.addEventListener('change', updatePriceDisplay);
+      }
+    });
+    // ==================== END LUGGAGE STEPPER LOGIC ====================
+
+    // Submit booking
+    async function submitBooking(e) {
+      e.preventDefault();
+      
+      if (selectedServices.length === 0) {
+        showToast('Please select at least one service');
+        return;
+      }
+      
+      // Get service type from smart flow
+      const selectedServiceType = getSelectedServiceType();
+      
+      // Validate service type is selected
+      if (!selectedServiceType) {
+        showToast('Please select a service type (Boarding, Arrival, or Round Trip)');
+        return;
+      }
+      
+      // Validate smart booking flow based on service type
+      if (selectedServiceType === 'pickup') {
+        if (!selectedPickupStation) {
+          showToast('Please select a pickup station');
+          return;
+        }
+      } else if (selectedServiceType === 'drop') {
+        if (!selectedDropStation) {
+          showToast('Please select a drop station');
+          return;
+        }
+      } else if (selectedServiceType === 'round_trip') {
+        if (!selectedPickupStation || !selectedDropStation) {
+          showToast('Please select both pickup and drop stations for round trip');
+          return;
+        }
+        // Sequence validation
+        if (selectedPickupStation.stopSequence >= selectedDropStation.stopSequence) {
+          showToast('Pickup station must come BEFORE drop station in the train route');
+          return;
+        }
+      }
+      
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Processing...';
+
+      const { total, insuranceChecked } = calculateTotal();
+      
+      // Build booking data based on service type
+      const data = {
+        passengerName: document.getElementById('passengerName').value,
+        trainName: document.getElementById('trainName').value || undefined,
+        coach: document.getElementById('coach').value || undefined,
+        seat: document.getElementById('seat').value || undefined,
+        services: selectedServices,
+        serviceType: selectedServiceType, // pickup, drop, or round_trip
+        language: document.getElementById('language').value,
+        insurance: insuranceChecked,
+        // NEW: Multi-luggage cart items (server calculates price)
+        luggageItems: getLuggageItemsArray(),
+        // LEGACY: Keep for backward compatibility (server uses luggageItems if present)
+        luggageSize: currentLuggageSize,
+        luggageQuantity: currentLuggageQuantity
+        // Note: totalAmount NOT sent - server calculates final price
+      };
+      
+      // Add train number if selected
+      const trainNumberInput = document.getElementById('selectedTrainNumber');
+      if (trainNumberInput && trainNumberInput.value) {
+        data.trainNumber = trainNumberInput.value;
+      }
+      
+      // Handle station data based on service type
+      if (selectedServiceType === 'pickup') {
+        // Pickup: only pickup station needed
+        data.station = selectedPickupStation.stationName;
+        data.stationCode = selectedPickupStation.stationCode;
+        data.pickupStationCode = selectedPickupStation.stationCode;
+        data.pickupStationName = selectedPickupStation.stationName;
+      } else if (selectedServiceType === 'drop') {
+        // Drop: only drop station needed
+        data.station = selectedDropStation.stationName;
+        data.stationCode = selectedDropStation.stationCode;
+        data.dropStationCode = selectedDropStation.stationCode;
+        data.dropStationName = selectedDropStation.stationName;
+      } else if (selectedServiceType === 'round_trip') {
+        // Round trip: both pickup and drop stations
+        data.pickupStationCode = selectedPickupStation.stationCode;
+        data.pickupStationName = selectedPickupStation.stationName;
+        data.dropStationCode = selectedDropStation.stationCode;
+        data.dropStationName = selectedDropStation.stationName;
+        // Set main station to pickup station for display purposes
+        data.station = selectedPickupStation.stationName;
+        data.stationCode = selectedPickupStation.stationCode;
+      }
+
+      try {
+        const token = getToken();
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const res = await fetch('/api/bookings', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+
+        if (result.success || result.booking) {
+          currentBookingId = result.booking?._id || result._id;
+          showToast('Booking confirmed! Finding assistant...');
+          showProgressSection(result.booking || result);
+          startPolling();
+          
+          // Reset smart booking flow and luggage for next booking
+          resetSmartBookingFlow();
+          resetLuggageSelection();
+          hideLuggageDetails();
+        } else {
+          throw new Error(result.message || result.errors?.join('. ') || 'Booking failed');
+        }
+      } catch (err) {
+        showToast(err.message || 'Booking failed. Please try again.');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `Create Booking — <span id="submitTotal">₹${total.toFixed(2)}</span>`;
+      }
+    }
+
+    // Show progress section
+    function showProgressSection(booking) {
+      document.getElementById('book').style.display = 'none';
+      document.getElementById('services').style.display = 'none';
+      document.getElementById('track').classList.add('active');
+      document.getElementById('track').scrollIntoView({ behavior: 'smooth' });
+      
+      document.getElementById('bookingIdDisplay').textContent = `#RM-${booking._id?.slice(-8).toUpperCase() || '0000'}`;
+      updateProgressUI(booking);
+    }
+
+    // Update progress UI
+    function updateProgressUI(booking) {
+      const status = booking.status;
+      const statusText = document.getElementById('statusText');
+      
+      statusText.textContent = status;
+      
+      // Handle cancelled/rejected status immediately
+      if (status === 'Cancelled' || status === 'Rejected') {
+        statusText.style.color = '#ef4444';
+        showCancelledModal(status === 'Rejected' ? 'Cancelled by Admin' : 'Booking Cancelled');
+        return;
+      }
+      
+      // Update steps based on status
+      const steps = {
+        'Pending': 1,
+        'Searching': 1,
+        'Assigned': 2,
+        'Accepted': 2,
+        'Start Pending': 2,
+        'In Progress': 3,
+        'Completion Pending': 3,
+        'Completed': 4
+      };
+      
+      const currentStep = steps[status] || 1;
+      
+      for (let i = 1; i <= 4; i++) {
+        const stepDot = document.getElementById(`step${i}`);
+        const stepLabel = document.getElementById(`step${i}Label`);
+        
+        if (i < currentStep) {
+          stepDot.className = 'step-dot completed';
+          stepDot.innerHTML = '✓';
+          if (stepLabel) stepLabel.classList.add('active');
+        } else if (i === currentStep) {
+          stepDot.className = 'step-dot active';
+          stepDot.innerHTML = i;
+          if (stepLabel) stepLabel.classList.add('active');
+        } else {
+          stepDot.className = 'step-dot';
+          stepDot.innerHTML = i;
+          if (stepLabel) stepLabel.classList.remove('active');
+        }
+      }
+      
+      // Show OTP messages for passenger
+      let otpContainer = document.getElementById('otpMessageContainer');
+      if (!otpContainer) {
+        // Create OTP container if it doesn't exist
+        const trackSection = document.getElementById('track');
+        if (trackSection) {
+          otpContainer = document.createElement('div');
+          otpContainer.id = 'otpMessageContainer';
+          otpContainer.style.cssText = 'margin: 20px 0; padding: 20px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 16px; color: white; text-align: center; display: none;';
+          const progressContainer = trackSection.querySelector('.progress-container');
+          if (progressContainer) {
+            progressContainer.insertAdjacentElement('afterend', otpContainer);
+          }
+        }
+      }
+      
+      if (otpContainer) {
+        if (status === 'Start Pending' && booking.startOtp) {
+          otpContainer.style.display = 'block';
+          otpContainer.innerHTML = `
+            <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">🔐 START OTP - Share with Assistant</div>
+            <div style="font-size: 36px; font-weight: 800; letter-spacing: 8px; font-family: monospace;">${booking.startOtp}</div>
+            <div style="font-size: 12px; opacity: 0.8; margin-top: 8px;">The assistant needs this OTP to start your service</div>
+          `;
+        } else if (status === 'Completion Pending' && booking.completionOtp) {
+          otpContainer.style.display = 'block';
+          otpContainer.innerHTML = `
+            <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">✅ COMPLETION OTP - Share with Assistant</div>
+            <div style="font-size: 36px; font-weight: 800; letter-spacing: 8px; font-family: monospace;">${booking.completionOtp}</div>
+            <div style="font-size: 12px; opacity: 0.8; margin-top: 8px;">The assistant needs this OTP to complete your service</div>
+          `;
+        } else {
+          otpContainer.style.display = 'none';
+        }
+      }
+      
+      // Show/hide assistant card
+      const assistantCard = document.getElementById('assistantCard');
+      const searchingMessage = document.getElementById('searchingMessage');
+      
+      if (booking.assistantId) {
+        const assistant = booking.assistantId;
+        assistantCard.style.display = 'flex';
+        searchingMessage.style.display = 'none';
+        
+        document.getElementById('assistantAvatar').textContent = 
+          (assistant.name || 'A').split(' ').map(n => n[0]).join('').toUpperCase();
+        document.getElementById('assistantName').textContent = assistant.name || 'Assistant';
+        document.getElementById('assistantStation').textContent = assistant.station || booking.station;
+        document.getElementById('assistantRating').textContent = assistant.rating?.toFixed(1) || '4.5';
+        document.getElementById('assistantBookings').textContent = 
+          `${assistant.totalBookingsCompleted || 0} bookings`;
+      } else {
+        assistantCard.style.display = 'none';
+        searchingMessage.style.display = 'block';
+      }
+    }
+
+    // Start polling for updates
+    function startPolling() {
+      if (!currentBookingId) return;
+      
+      pollInterval = setInterval(async () => {
+        try {
+          const token = getToken();
+          const headers = {};
+          if (token) headers['Authorization'] = `Bearer ${token}`;
+          
+          const res = await fetch(`/api/bookings/${currentBookingId}`, { headers });
+          const data = await res.json();
+          
+          if (data.success || data.booking) {
+            const booking = data.booking || data;
+            updateProgressUI(booking);
+            
+            if (booking.status === 'Completed') {
+              clearInterval(pollInterval);
+              showFeedbackModal(booking);
+            } else if (booking.status === 'Cancelled' || booking.status === 'Rejected') {
+              clearInterval(pollInterval);
+              showCancelledModal(booking.status === 'Rejected' ? 'Cancelled by Admin' : 'Booking Cancelled');
+            }
+          }
+        } catch (err) {
+          console.error('Polling error:', err);
+        }
+      }, 5000);
+    }
+
+    // Show cancelled modal and redirect to booking page
+    function showCancelledModal(reason) {
+      // Create modal overlay
+      const modal = document.createElement('div');
+      modal.id = 'cancelledModal';
+      modal.style.cssText = `
+        position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.8); z-index: 10000;
+        display: flex; align-items: center; justify-content: center;
+        backdrop-filter: blur(8px);
+      `;
+      
+      modal.innerHTML = `
+        <div style="
+          background: var(--card-bg); border-radius: 24px; padding: 48px;
+          max-width: 400px; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+        ">
+          <div style="
+            width: 80px; height: 80px; background: #ef4444; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 24px; font-size: 40px;
+          ">❌</div>
+          <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 12px; color: var(--text-primary);">${reason}</h2>
+          <p style="color: var(--text-secondary); margin-bottom: 32px; line-height: 1.6;">
+            Your booking has been cancelled. You can create a new booking request.
+          </p>
+          <button onclick="closeAndRedirectToBooking()" style="
+            padding: 16px 40px; background: var(--text-primary); color: var(--bg-primary);
+            border: none; border-radius: 12px; font-size: 16px; font-weight: 600;
+            cursor: pointer; transition: transform 0.2s;
+          " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+            Book New Assistance
+          </button>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+    }
+
+    function closeAndRedirectToBooking() {
+      // Remove modal
+      const modal = document.getElementById('cancelledModal');
+      if (modal) modal.remove();
+      
+      // Clear booking state
+      currentBookingId = null;
+      
+      // Show booking section, hide tracking
+      document.getElementById('track').classList.remove('active');
+      document.getElementById('book').style.display = '';
+      document.getElementById('services').style.display = '';
+      
+      // Scroll to booking section
+      document.getElementById('book').scrollIntoView({ behavior: 'smooth' });
+      
+      // Update URL
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+
+    // ==================== FEEDBACK MODAL ====================
+    let feedbackBooking = null;
+    let assistantStars = 0;
+    let appStars = 0;
+    let wouldRecommend = null;
+
+    function showFeedbackModal(booking) {
+      console.log('[showFeedbackModal] Booking received:', booking);
+      console.log('[showFeedbackModal] Booking ID:', booking?._id);
+      
+      feedbackBooking = booking;
+      assistantStars = 0;
+      appStars = 0;
+      wouldRecommend = null;
+
+      const assistantName = booking.assistantId?.name || booking.assistantName || 'Your Assistant';
+      
+      const modal = document.createElement('div');
+      modal.id = 'feedbackModal';
+      modal.style.cssText = `
+        position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.85); z-index: 10000;
+        display: flex; align-items: center; justify-content: center;
+        backdrop-filter: blur(8px); padding: 20px;
+      `;
+      
+      modal.innerHTML = `
+        <div style="
+          background: var(--card-bg); border-radius: 24px; padding: 40px;
+          max-width: 480px; width: 100%; box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+          max-height: 90vh; overflow-y: auto;
+        ">
+          <div style="text-align: center; margin-bottom: 32px;">
+            <div style="
+              width: 72px; height: 72px; background: linear-gradient(135deg, #10b981, #059669);
+              border-radius: 50%; display: flex; align-items: center; justify-content: center;
+              margin: 0 auto 20px; font-size: 36px;
+            ">✓</div>
+            <h2 style="font-size: 26px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px;">
+              Service Completed!
+            </h2>
+            <p style="color: var(--text-secondary); font-size: 15px;">
+              How was your experience? Your feedback helps us improve.
+            </p>
+          </div>
+
+          <!-- Assistant Rating -->
+          <div style="margin-bottom: 28px;">
+            <label style="display: block; font-weight: 600; margin-bottom: 12px; color: var(--text-primary);">
+              Rate ${assistantName}
+            </label>
+            <div id="assistantStars" style="display: flex; gap: 8px; justify-content: center;">
+              ${[1,2,3,4,5].map(i => `
+                <span onclick="setAssistantRating(${i})" style="
+                  font-size: 36px; cursor: pointer; transition: transform 0.2s;
+                " onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'"
+                data-star="${i}">☆</span>
+              `).join('')}
+            </div>
+          </div>
+
+          <!-- Assistant Feedback -->
+          <div style="margin-bottom: 28px;">
+            <textarea id="assistantFeedback" placeholder="Tell us about your experience with the assistant (optional)"
+              style="
+                width: 100%; padding: 14px 16px; border: 1px solid var(--border-color);
+                border-radius: 12px; font-size: 14px; resize: none; height: 80px;
+                background: var(--bg-secondary); color: var(--text-primary);
+                font-family: inherit;
+              "></textarea>
+          </div>
+
+          <!-- App Rating -->
+          <div style="margin-bottom: 28px;">
+            <label style="display: block; font-weight: 600; margin-bottom: 12px; color: var(--text-primary);">
+              Rate RailMitra App
+            </label>
+            <div id="appStars" style="display: flex; gap: 8px; justify-content: center;">
+              ${[1,2,3,4,5].map(i => `
+                <span onclick="setAppRating(${i})" style="
+                  font-size: 36px; cursor: pointer; transition: transform 0.2s;
+                " onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'"
+                data-star="${i}">☆</span>
+              `).join('')}
+            </div>
+          </div>
+
+          <!-- App Feedback -->
+          <div style="margin-bottom: 28px;">
+            <textarea id="appFeedback" placeholder="How can we improve the app? (optional)"
+              style="
+                width: 100%; padding: 14px 16px; border: 1px solid var(--border-color);
+                border-radius: 12px; font-size: 14px; resize: none; height: 80px;
+                background: var(--bg-secondary); color: var(--text-primary);
+                font-family: inherit;
+              "></textarea>
+          </div>
+
+          <!-- Would Recommend -->
+          <div style="margin-bottom: 32px; text-align: center;">
+            <label style="display: block; font-weight: 600; margin-bottom: 12px; color: var(--text-primary);">
+              Would you recommend RailMitra?
+            </label>
+            <div style="display: flex; gap: 12px; justify-content: center;">
+              <button id="recommendYes" onclick="setRecommend(true)" style="
+                padding: 12px 32px; border-radius: 10px; font-size: 15px; font-weight: 600;
+                cursor: pointer; transition: all 0.2s; border: 2px solid var(--border-color);
+                background: transparent; color: var(--text-primary);
+              ">👍 Yes</button>
+              <button id="recommendNo" onclick="setRecommend(false)" style="
+                padding: 12px 32px; border-radius: 10px; font-size: 15px; font-weight: 600;
+                cursor: pointer; transition: all 0.2s; border: 2px solid var(--border-color);
+                background: transparent; color: var(--text-primary);
+              ">👎 No</button>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <button id="submitFeedbackBtn" onclick="submitFeedback()" style="
+            width: 100%; padding: 16px; background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 600;
+            cursor: pointer; transition: transform 0.2s, opacity 0.2s;
+          " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+            Submit Feedback
+          </button>
+
+          <button onclick="skipFeedback()" style="
+            width: 100%; padding: 14px; background: transparent; color: var(--text-tertiary);
+            border: none; font-size: 14px; cursor: pointer; margin-top: 12px;
+          ">
+            Skip for now
+          </button>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+    }
+
+    function setAssistantRating(rating) {
+      console.log('[setAssistantRating] Setting to:', rating);
+      assistantStars = rating;
+      document.querySelectorAll('#assistantStars span').forEach((star, idx) => {
+        star.textContent = idx < rating ? '★' : '☆';
+        star.style.color = idx < rating ? '#f59e0b' : 'var(--text-tertiary)';
+      });
+    }
+
+    function setAppRating(rating) {
+      console.log('[setAppRating] Setting to:', rating);
+      appStars = rating;
+      document.querySelectorAll('#appStars span').forEach((star, idx) => {
+        star.textContent = idx < rating ? '★' : '☆';
+        star.style.color = idx < rating ? '#f59e0b' : 'var(--text-tertiary)';
+      });
+    }
+
+    function setRecommend(value) {
+      console.log('[setRecommend] Setting to:', value);
+      wouldRecommend = value;
+      const yesBtn = document.getElementById('recommendYes');
+      const noBtn = document.getElementById('recommendNo');
+      
+      if (value) {
+        yesBtn.style.background = '#10b981';
+        yesBtn.style.color = 'white';
+        yesBtn.style.borderColor = '#10b981';
+        noBtn.style.background = 'transparent';
+        noBtn.style.color = 'var(--text-primary)';
+        noBtn.style.borderColor = 'var(--border-color)';
+      } else {
+        noBtn.style.background = '#ef4444';
+        noBtn.style.color = 'white';
+        noBtn.style.borderColor = '#ef4444';
+        yesBtn.style.background = 'transparent';
+        yesBtn.style.color = 'var(--text-primary)';
+        yesBtn.style.borderColor = 'var(--border-color)';
+      }
+    }
+
+    async function submitFeedback() {
+      if (assistantStars === 0) {
+        showToast('Please rate the assistant');
+        return;
+      }
+      if (appStars === 0) {
+        showToast('Please rate the app');
+        return;
+      }
+
+      const btn = document.getElementById('submitFeedbackBtn');
+      btn.disabled = true;
+      btn.textContent = 'Submitting...';
+      btn.style.opacity = '0.7';
+
+      try {
+        console.log('[submitFeedback] Submitting for booking:', feedbackBooking?._id);
+        
+        const token = getToken();
+        if (!token) {
+          showToast('Please sign in to submit feedback');
+          btn.disabled = false;
+          btn.textContent = 'Submit Feedback';
+          btn.style.opacity = '1';
+          return;
+        }
+        
+        const payload = {
+          bookingId: feedbackBooking?._id,
+          assistantRating: assistantStars,
+          appRating: appStars,
+          assistantFeedback: document.getElementById('assistantFeedback')?.value?.trim() || '',
+          appFeedback: document.getElementById('appFeedback')?.value?.trim() || '',
+          wouldRecommend
+        };
+        
+        console.log('[submitFeedback] Payload:', payload);
+        
+        const res = await fetch('/api/feedback', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        console.log('[submitFeedback] Response status:', res.status);
+        const data = await res.json();
+        console.log('[submitFeedback] Response data:', data);
+        
+        if (data.success) {
+          showFeedbackSuccess();
+        } else {
+          showToast(data.message || 'Failed to submit feedback');
+          btn.disabled = false;
+          btn.textContent = 'Submit Feedback';
+          btn.style.opacity = '1';
+        }
+      } catch (err) {
+        console.error('Feedback error:', err);
+        showToast('Error submitting feedback');
+        btn.disabled = false;
+        btn.textContent = 'Submit Feedback';
+        btn.style.opacity = '1';
+      }
+    }
+
+    function showFeedbackSuccess() {
+      const modal = document.getElementById('feedbackModal');
+      if (modal) {
+        modal.innerHTML = `
+          <div style="
+            background: var(--card-bg); border-radius: 24px; padding: 48px;
+            max-width: 400px; width: 90%; text-align: center; 
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+            animation: scaleIn 0.3s ease;
+          ">
+            <div style="
+              width: 90px; height: 90px; 
+              background: linear-gradient(135deg, #10b981, #059669);
+              border-radius: 50%; display: flex; align-items: center; justify-content: center;
+              margin: 0 auto 24px; font-size: 48px;
+              animation: bounceIn 0.5s ease 0.2s both;
+            ">✓</div>
+            <h2 style="font-size: 28px; font-weight: 700; color: var(--text-primary); margin-bottom: 12px;">
+              Feedback Submitted!
+            </h2>
+            <p style="color: var(--text-secondary); font-size: 16px; margin-bottom: 32px; line-height: 1.6;">
+              Thank you for your feedback! It helps us improve our service for everyone.
+            </p>
+            <button onclick="closeFeedbackAndRedirect()" style="
+              padding: 16px 48px; background: linear-gradient(135deg, #3b82f6, #2563eb);
+              color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 600;
+              cursor: pointer; transition: transform 0.2s;
+            " onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+              Back to Home
+            </button>
+          </div>
+          <style>
+            @keyframes scaleIn {
+              from { transform: scale(0.8); opacity: 0; }
+              to { transform: scale(1); opacity: 1; }
+            }
+            @keyframes bounceIn {
+              0% { transform: scale(0); }
+              50% { transform: scale(1.2); }
+              100% { transform: scale(1); }
+            }
+          </style>
+        `;
+      }
+    }
+
+    function skipFeedback() {
+      closeFeedbackAndRedirect();
+    }
+
+    function closeFeedbackAndRedirect() {
+      const modal = document.getElementById('feedbackModal');
+      if (modal) modal.remove();
+      
+      feedbackBooking = null;
+      currentBookingId = null;
+      
+      // Show booking section, hide tracking
+      document.getElementById('track').classList.remove('active');
+      document.getElementById('book').style.display = '';
+      document.getElementById('services').style.display = '';
+      
+      // Scroll to booking section
+      document.getElementById('book').scrollIntoView({ behavior: 'smooth' });
+      
+      // Update URL
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+
+    // Call assistant
+    function callAssistant() {
+      showToast('Opening phone dialer...');
+    }
+
+    // ==================== TRAIN AUTOCOMPLETE ====================
+    let trainSearchTimeout = null;
+    let selectedTrainData = null;
+    let highlightedIndex = -1;
+    let currentTrainResults = [];
+
+    // Debounce function for performance
+    function debounce(func, wait) {
+      let timeout;
+      return function executedFunction(...args) {
+        const later = () => {
+          clearTimeout(timeout);
+          func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+      };
+    }
+
+    // Initialize train autocomplete
+    function initTrainAutocomplete() {
+      const input = document.getElementById('trainName');
+      const dropdown = document.getElementById('trainDropdown');
+      
+      if (!input || !dropdown) return;
+
+      // Input event with debounce
+      const debouncedSearch = debounce(async (query) => {
+        await searchTrains(query);
+      }, 300);
+
+      input.addEventListener('input', (e) => {
+        const query = e.target.value.trim();
+        highlightedIndex = -1;
+        
+        if (query.length < 2) {
+          hideTrainDropdown();
+          return;
+        }
+        
+        showTrainLoading();
+        debouncedSearch(query);
+      });
+
+      // Keyboard navigation
+      input.addEventListener('keydown', (e) => {
+        if (!dropdown.classList.contains('show')) return;
+        
+        const items = dropdown.querySelectorAll('.train-dropdown-item');
+        
+        switch (e.key) {
+          case 'ArrowDown':
+            e.preventDefault();
+            highlightedIndex = Math.min(highlightedIndex + 1, items.length - 1);
+            updateHighlight(items);
+            break;
+          case 'ArrowUp':
+            e.preventDefault();
+            highlightedIndex = Math.max(highlightedIndex - 1, 0);
+            updateHighlight(items);
+            break;
+          case 'Enter':
+            e.preventDefault();
+            if (highlightedIndex >= 0 && items[highlightedIndex]) {
+              items[highlightedIndex].click();
+            }
+            break;
+          case 'Escape':
+            hideTrainDropdown();
+            break;
+        }
+      });
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.train-autocomplete-wrapper')) {
+          hideTrainDropdown();
+        }
+      });
+
+      // Focus event - show results if there's existing text
+      input.addEventListener('focus', () => {
+        if (input.value.trim().length >= 2 && currentTrainResults.length > 0) {
+          showTrainDropdown();
+        }
+      });
+    }
+
+    function updateHighlight(items) {
+      items.forEach((item, idx) => {
+        item.classList.toggle('highlighted', idx === highlightedIndex);
+        if (idx === highlightedIndex) {
+          item.scrollIntoView({ block: 'nearest' });
+        }
+      });
+    }
+
+    async function searchTrains(query) {
+      try {
+        const res = await fetch(`/api/trains?search=${encodeURIComponent(query)}&limit=7`);
+        const data = await res.json();
+        
+        if (data.success && data.trains) {
+          currentTrainResults = data.trains;
+          renderTrainResults(data.trains, query);
+        } else {
+          renderNoResults();
+        }
+      } catch (err) {
+        console.error('Train search error:', err);
+        renderTrainError();
+      }
+    }
+
+    function renderTrainResults(trains, query) {
+      const dropdown = document.getElementById('trainDropdown');
+      
+      if (trains.length === 0) {
+        renderNoResults();
+        return;
+      }
+
+      const html = trains.map((train, idx) => {
+        const typeClass = getTrainTypeClass(train.type);
+        const highlightedName = highlightMatch(train.trainName, query);
+        const highlightedNumber = highlightMatch(train.trainNumber, query);
+        const highlightedFrom = highlightMatch(train.sourceStation, query);
+        const highlightedTo = highlightMatch(train.destinationStation, query);
+        
+        // Show total stops if available
+        const stopsInfo = train.totalStops ? ` (${train.totalStops} stops)` : '';
+        
+        return `
+          <div class="train-dropdown-item" data-index="${idx}" onclick="selectTrain(${idx})">
+            <div class="train-icon">🚆</div>
+            <div class="train-info">
+              <div class="train-main">
+                <span class="train-number">${highlightedNumber}</span>
+                <span class="train-name" title="${train.trainName}">${highlightedName}</span>
+              </div>
+              <div class="train-route">
+                📍 ${highlightedFrom} → ${highlightedTo}${stopsInfo}
+              </div>
+            </div>
+            <span class="train-type-badge ${typeClass}">${train.type || 'Express'}</span>
+          </div>
+        `;
+      }).join('');
+
+      dropdown.innerHTML = html;
+      showTrainDropdown();
+    }
+
+    function highlightMatch(text, query) {
+      if (!query || !text) return text;
+      const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+      return text.replace(regex, '<span class="train-match-highlight">$1</span>');
+    }
+
+    function getTrainTypeClass(type) {
+      if (!type) return 'train-type-express';
+      const typeUpper = type.toUpperCase();
+      
+      if (typeUpper.includes('RAJDHANI')) return 'train-type-rajdhani';
+      if (typeUpper.includes('SHATABDI')) return 'train-type-shatabdi';
+      if (typeUpper.includes('VANDE')) return 'train-type-vande';
+      if (typeUpper.includes('DURONTO')) return 'train-type-duronto';
+      if (typeUpper.includes('TEJAS')) return 'train-type-tejas';
+      if (typeUpper.includes('HUMSAFAR')) return 'train-type-humsafar';
+      if (typeUpper.includes('GARIB')) return 'train-type-garib';
+      if (typeUpper.includes('SUPERFAST') || typeUpper === 'SF') return 'train-type-superfast';
+      if (typeUpper.includes('MAIL')) return 'train-type-mail';
+      if (typeUpper.includes('PASSENGER')) return 'train-type-passenger';
+      if (typeUpper.includes('LOCAL')) return 'train-type-local';
+      if (typeUpper.includes('SPECIAL')) return 'train-type-special';
+      
+      return 'train-type-express';
+    }
+
+    function selectTrain(index) {
+      const train = currentTrainResults[index];
+      if (!train) return;
+
+      const input = document.getElementById('trainName');
+      const hiddenInput = document.getElementById('selectedTrainId');
+      const hiddenTrainNumber = document.getElementById('selectedTrainNumber');
+      
+      input.value = `${train.trainNumber} - ${train.trainName}`;
+      if (hiddenInput) hiddenInput.value = train._id || '';
+      if (hiddenTrainNumber) hiddenTrainNumber.value = train.trainNumber || '';
+      selectedTrainData = train;
+      
+      hideTrainDropdown();
+      showToast(`Selected: ${train.trainName}`);
+      
+      // SMART FLOW: Reset everything and fetch stations, then show service type selector
+      resetSmartBookingFlow();
+      fetchAndCacheStations(train.trainNumber);
+    }
+
+    // ==================== SMART BOOKING FLOW LOGIC ====================
+    
+    // Cached stations for current train
+    let cachedStations = [];
+    let currentTrainNumber = null;
+    
+    // Selected station data
+    let selectedPickupStation = null;
+    let selectedDropStation = null;
+    
+    // LRU-style cache for station data with max size
+    const STATION_CACHE_MAX_SIZE = 50;
+    const stationCache = new Map();
+    
+    // AbortController for cancelling pending requests
+    let stationFetchController = null;
+    
+    /**
+     * Reset entire smart booking flow
+     */
+    function resetSmartBookingFlow() {
+      // Reset service type
+      const serviceTypeRadios = document.querySelectorAll('input[name="serviceType"]');
+      serviceTypeRadios.forEach(r => r.checked = false);
+      
+      // Hide all conditional elements
+      document.getElementById('serviceTypeWrapper')?.classList.add('hidden');
+      document.getElementById('pickupOnlyWrapper')?.classList.add('hidden');
+      document.getElementById('dropOnlyWrapper')?.classList.add('hidden');
+      document.getElementById('roundTripStationsWrapper')?.classList.add('hidden');
+      
+      // Reset station data
+      selectedPickupStation = null;
+      selectedDropStation = null;
+      cachedStations = [];
+      
+      // Reset dropdowns
+      resetAllStationDropdowns();
+      
+      // Update booking button state
+      updateBookingButtonState();
+    }
+    
+    /**
+     * Reset all station dropdown elements
+     */
+    function resetAllStationDropdowns() {
+      const dropdowns = ['pickupOnlySelect', 'dropOnlySelect', 'pickupStationSelect', 'dropStationSelect'];
+      dropdowns.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.innerHTML = '<option value="">Loading stations...</option>';
+          el.disabled = true;
+        }
+      });
+      
+      // Reset info displays
+      const infoDisplays = ['pickupOnlyInfo', 'dropOnlyInfo', 'pickupStationInfo', 'dropStationInfo'];
+      infoDisplays.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.textContent = '';
+          el.className = el.className.replace(/\s*(visible|valid|invalid)/g, '');
+        }
+      });
+    }
+    
+    /**
+     * Fetch and cache stations for a train - SINGLE API CALL
+     */
+    async function fetchAndCacheStations(trainNumber) {
+      // Check cache first
+      if (stationCache.has(trainNumber)) {
+        const cached = stationCache.get(trainNumber);
+        // Refresh LRU position
+        stationCache.delete(trainNumber);
+        stationCache.set(trainNumber, cached);
+        cachedStations = cached;
+        currentTrainNumber = trainNumber;
+        showServiceTypeSelector();
+        return;
+      }
+      
+      // Cancel any pending request
+      if (stationFetchController) {
+        stationFetchController.abort();
+      }
+      stationFetchController = new AbortController();
+      
+      try {
+        const response = await fetch(
+          `/api/trains/${encodeURIComponent(trainNumber)}/stations`,
+          { signal: stationFetchController.signal }
+        );
+        
+        if (!response.ok) {
+          throw new Error(response.status === 404 ? 'Train not found' : 'Failed to fetch stations');
+        }
+        
+        const data = await response.json();
+        
+        if (!data.success || !data.stations?.length) {
+          throw new Error('No stations available for this train');
+        }
+        
+        // Cache with LRU eviction
+        if (stationCache.size >= STATION_CACHE_MAX_SIZE) {
+          const firstKey = stationCache.keys().next().value;
+          stationCache.delete(firstKey);
+        }
+        stationCache.set(trainNumber, data.stations);
+        
+        cachedStations = data.stations;
+        currentTrainNumber = trainNumber;
+        
+        // Show service type selector
+        showServiceTypeSelector();
+        
+      } catch (err) {
+        if (err.name === 'AbortError') return;
+        console.error('Station fetch error:', err);
+        showToast(err.message || 'Failed to load stations');
+      } finally {
+        stationFetchController = null;
+      }
+    }
+    
+    /**
+     * Show service type selector (appears after train selection)
+     */
+    function showServiceTypeSelector() {
+      const wrapper = document.getElementById('serviceTypeWrapper');
+      if (wrapper) {
+        wrapper.classList.remove('hidden');
+      }
+    }
+    
+    /**
+     * Handle service type selection change
+     */
+    function handleServiceTypeChange(serviceType) {
+      // Hide all station wrappers first
+      document.getElementById('pickupOnlyWrapper')?.classList.add('hidden');
+      document.getElementById('dropOnlyWrapper')?.classList.add('hidden');
+      document.getElementById('roundTripStationsWrapper')?.classList.add('hidden');
+      
+      // Reset validation
+      document.getElementById('roundTripValidation')?.classList.add('hidden');
+      
+      // Reset selected stations
+      selectedPickupStation = null;
+      selectedDropStation = null;
+      
+      if (!serviceType || cachedStations.length === 0) {
+        updateBookingButtonState();
+        return;
+      }
+      
+      // Show appropriate station selector based on service type
+      switch (serviceType) {
+        case 'pickup':
+          populatePickupOnlyDropdown();
+          document.getElementById('pickupOnlyWrapper')?.classList.remove('hidden');
+          break;
+          
+        case 'drop':
+          populateDropOnlyDropdown();
+          document.getElementById('dropOnlyWrapper')?.classList.remove('hidden');
+          break;
+          
+        case 'round_trip':
+          populateRoundTripDropdowns();
+          document.getElementById('roundTripStationsWrapper')?.classList.remove('hidden');
+          break;
+      }
+      
+      updateBookingButtonState();
+    }
+    
+    /**
+     * Populate pickup/boarding dropdown (excludes terminal - can't board at last stop)
+     * PICKUP = Boarding Assistance (Platform → Train)
+     */
+    function populatePickupOnlyDropdown() {
+      const select = document.getElementById('pickupOnlySelect');
+      if (!select) return;
+      
+      const options = ['<option value="">Select your boarding station...</option>'];
+      
+      cachedStations.forEach((station, index) => {
+        const isLast = index === cachedStations.length - 1;
+        if (isLast) return; // Cannot board at terminal (train ends here)
+        
+        const isFirst = index === 0;
+        const timeInfo = station.departureTime ? ` (Dep: ${station.departureTime})` : '';
+        const originBadge = isFirst ? ' [Origin]' : '';
+        
+        options.push(`<option value="${escapeHtml(station.stationCode)}" 
+          data-name="${escapeHtml(station.stationName)}"
+          data-departure="${station.departureTime || ''}"
+          data-sequence="${station.stopSequence || index + 1}">
+          ${escapeHtml(station.stationName)} [${escapeHtml(station.stationCode)}]${timeInfo}${originBadge}
+        </option>`);
+      });
+      
+      select.innerHTML = options.join('');
+      select.disabled = false;
+    }
+    
+    /**
+     * Populate drop/arrival dropdown (excludes origin - can't arrive at first stop)
+     * DROP = Arrival Assistance (Train → Platform)
+     */
+    function populateDropOnlyDropdown() {
+      const select = document.getElementById('dropOnlySelect');
+      if (!select) return;
+      
+      const options = ['<option value="">Select your arrival/exit station...</option>'];
+      
+      cachedStations.forEach((station, index) => {
+        const isFirst = index === 0;
+        if (isFirst) return; // Cannot arrive at origin (train starts here)
+        
+        const isLast = index === cachedStations.length - 1;
+        const timeInfo = station.arrivalTime ? ` (Arr: ${station.arrivalTime})` : '';
+        const terminalBadge = isLast ? ' [Terminal]' : '';
+        
+        options.push(`<option value="${escapeHtml(station.stationCode)}" 
+          data-name="${escapeHtml(station.stationName)}"
+          data-arrival="${station.arrivalTime || ''}"
+          data-sequence="${station.stopSequence || index + 1}">
+          ${escapeHtml(station.stationName)} [${escapeHtml(station.stationCode)}]${timeInfo}${terminalBadge}
+        </option>`);
+      });
+      
+      select.innerHTML = options.join('');
+      select.disabled = false;
+    }
+    
+    /**
+     * Populate round trip dropdowns
+     * PICKUP = Boarding (Platform → Train) - exclude terminal
+     * DROP = Arrival (Train → Platform) - exclude origin
+     */
+    function populateRoundTripDropdowns() {
+      const pickupSelect = document.getElementById('pickupStationSelect');
+      const dropSelect = document.getElementById('dropStationSelect');
+      
+      if (!pickupSelect || !dropSelect) return;
+      
+      // Pickup/Boarding options (exclude terminal - can't board at last stop)
+      const pickupOptions = ['<option value="">Select boarding station...</option>'];
+      cachedStations.forEach((station, index) => {
+        if (index === cachedStations.length - 1) return; // Exclude terminal
+        const timeInfo = station.departureTime ? ` (Dep: ${station.departureTime})` : '';
+        const isFirst = index === 0;
+        const originBadge = isFirst ? ' [Origin]' : '';
+        pickupOptions.push(`<option value="${escapeHtml(station.stationCode)}" 
+          data-name="${escapeHtml(station.stationName)}"
+          data-departure="${station.departureTime || ''}"
+          data-sequence="${station.stopSequence || index + 1}">
+          ${escapeHtml(station.stationName)} [${escapeHtml(station.stationCode)}]${timeInfo}${originBadge}
+        </option>`);
+      });
+      
+      // Drop/Arrival options (exclude origin - can't arrive at first stop)
+      const dropOptions = ['<option value="">Select arrival/exit station...</option>'];
+      cachedStations.forEach((station, index) => {
+        if (index === 0) return; // Exclude origin
+        const timeInfo = station.arrivalTime ? ` (Arr: ${station.arrivalTime})` : '';
+        const isLast = index === cachedStations.length - 1;
+        const terminalBadge = isLast ? ' [Terminal]' : '';
+        dropOptions.push(`<option value="${escapeHtml(station.stationCode)}" 
+          data-name="${escapeHtml(station.stationName)}"
+          data-arrival="${station.arrivalTime || ''}"
+          data-sequence="${station.stopSequence || index + 1}">
+          ${escapeHtml(station.stationName)} [${escapeHtml(station.stationCode)}]${timeInfo}${terminalBadge}
+        </option>`);
+      });
+      
+      pickupSelect.innerHTML = pickupOptions.join('');
+      dropSelect.innerHTML = dropOptions.join('');
+      pickupSelect.disabled = false;
+      dropSelect.disabled = false;
+    }
+    
+    /**
+     * Handle pickup-only station selection
+     */
+    function handlePickupOnlyChange(event) {
+      const select = event.target;
+      const option = select.options[select.selectedIndex];
+      const infoEl = document.getElementById('pickupOnlyInfo');
+      
+      if (!option?.value) {
+        selectedPickupStation = null;
+        infoEl?.classList.remove('visible', 'valid');
+        updateBookingButtonState();
+        return;
+      }
+      
+      selectedPickupStation = {
+        stationCode: option.value,
+        stationName: option.dataset.name,
+        arrivalTime: option.dataset.arrival,
+        stopSequence: parseInt(option.dataset.sequence) || 0
+      };
+      
+      if (infoEl) {
+        infoEl.textContent = `✓ Assistant will help you board at ${selectedPickupStation.stationName}`;
+        infoEl.className = 'smart-station-info visible valid';
+      }
+      
+      updateBookingButtonState();
+    }
+    
+    /**
+     * Handle drop-only station selection
+     */
+    function handleDropOnlyChange(event) {
+      const select = event.target;
+      const option = select.options[select.selectedIndex];
+      const infoEl = document.getElementById('dropOnlyInfo');
+      
+      if (!option?.value) {
+        selectedDropStation = null;
+        infoEl?.classList.remove('visible', 'valid');
+        updateBookingButtonState();
+        return;
+      }
+      
+      selectedDropStation = {
+        stationCode: option.value,
+        stationName: option.dataset.name,
+        departureTime: option.dataset.departure,
+        stopSequence: parseInt(option.dataset.sequence) || 0
+      };
+      
+      if (infoEl) {
+        infoEl.textContent = `✓ Assistant will help you exit at ${selectedDropStation.stationName}`;
+        infoEl.className = 'smart-station-info visible valid';
+      }
+      
+      updateBookingButtonState();
+    }
+    
+    /**
+     * Handle round trip station selection with validation
+     */
+    function handleRoundTripPickupChange(event) {
+      const select = event.target;
+      const option = select.options[select.selectedIndex];
+      
+      if (!option?.value) {
+        selectedPickupStation = null;
+      } else {
+        selectedPickupStation = {
+          stationCode: option.value,
+          stationName: option.dataset.name,
+          arrivalTime: option.dataset.arrival,
+          stopSequence: parseInt(option.dataset.sequence) || 0
+        };
+      }
+      
+      validateRoundTripSelection();
+      updateBookingButtonState();
+    }
+    
+    function handleRoundTripDropChange(event) {
+      const select = event.target;
+      const option = select.options[select.selectedIndex];
+      
+      if (!option?.value) {
+        selectedDropStation = null;
+      } else {
+        selectedDropStation = {
+          stationCode: option.value,
+          stationName: option.dataset.name,
+          departureTime: option.dataset.departure,
+          stopSequence: parseInt(option.dataset.sequence) || 0
+        };
+      }
+      
+      validateRoundTripSelection();
+      updateBookingButtonState();
+    }
+    
+    /**
+     * Validate round trip station selection
+     */
+    function validateRoundTripSelection() {
+      const validationDiv = document.getElementById('roundTripValidation');
+      const validationText = document.getElementById('roundTripValidationText');
+      const pickupInfo = document.getElementById('pickupStationInfo');
+      const dropInfo = document.getElementById('dropStationInfo');
+      
+      // Reset info displays
+      if (pickupInfo) pickupInfo.textContent = '';
+      if (dropInfo) dropInfo.textContent = '';
+      
+      // Both must be selected
+      if (!selectedPickupStation || !selectedDropStation) {
+        validationDiv?.classList.add('hidden');
+        return false;
+      }
+      
+      // Cannot be same station
+      if (selectedPickupStation.stationCode === selectedDropStation.stationCode) {
+        validationText.textContent = 'Pickup and drop stations must be different';
+        validationDiv?.classList.remove('hidden');
+        return false;
+      }
+      
+      // Pickup must come BEFORE drop (by stop sequence)
+      if (selectedPickupStation.stopSequence >= selectedDropStation.stopSequence) {
+        validationText.textContent = 'Pickup station must come before drop station on the route';
+        validationDiv?.classList.remove('hidden');
+        return false;
+      }
+      
+      // Valid selection
+      validationDiv?.classList.add('hidden');
+      
+      if (pickupInfo) {
+        // PICKUP = Boarding (Platform → Train) - passenger boards here
+        pickupInfo.textContent = `✓ Board at stop ${selectedPickupStation.stopSequence}`;
+        pickupInfo.className = 'station-info valid';
+      }
+      if (dropInfo) {
+        // DROP = Arrival (Train → Platform) - passenger exits here
+        dropInfo.textContent = `✓ Exit at stop ${selectedDropStation.stopSequence}`;
+        dropInfo.className = 'station-info valid';
+      }
+      
+      return true;
+    }
+    
+    /**
+     * Get currently selected service type
+     */
+    function getSelectedServiceType() {
+      const selected = document.querySelector('input[name="serviceType"]:checked');
+      return selected?.value || null;
+    }
+    
+    /**
+     * Update booking button state based on form validity
+     */
+    function updateBookingButtonState() {
+      const btn = document.getElementById('submitBtn');
+      if (!btn) return;
+      
+      const trainSelected = !!document.getElementById('selectedTrainNumber')?.value;
+      const serviceType = getSelectedServiceType();
+      
+      let isValid = trainSelected && !!serviceType;
+      
+      if (isValid) {
+        switch (serviceType) {
+          case 'pickup':
+            isValid = !!selectedPickupStation;
+            break;
+          case 'drop':
+            isValid = !!selectedDropStation;
+            break;
+          case 'round_trip':
+            isValid = validateRoundTripSelection();
+            break;
+        }
+      }
+      
+      btn.disabled = !isValid;
+      
+      // Visual feedback
+      if (isValid) {
+        btn.classList.remove('btn-disabled');
+      } else {
+        btn.classList.add('btn-disabled');
+      }
+    }
+    
+    // ==================== EVENT LISTENERS ====================
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      // Service type radio buttons
+      const serviceTypeRadios = document.querySelectorAll('input[name="serviceType"]');
+      serviceTypeRadios.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+          handleServiceTypeChange(e.target.value);
+        });
+      });
+      
+      // Pickup-only dropdown
+      const pickupOnlySelect = document.getElementById('pickupOnlySelect');
+      if (pickupOnlySelect) {
+        pickupOnlySelect.addEventListener('change', handlePickupOnlyChange);
+      }
+      
+      // Drop-only dropdown
+      const dropOnlySelect = document.getElementById('dropOnlySelect');
+      if (dropOnlySelect) {
+        dropOnlySelect.addEventListener('change', handleDropOnlyChange);
+      }
+      
+      // Round trip dropdowns
+      const pickupStationSelect = document.getElementById('pickupStationSelect');
+      const dropStationSelect = document.getElementById('dropStationSelect');
+      
+      if (pickupStationSelect) {
+        pickupStationSelect.addEventListener('change', handleRoundTripPickupChange);
+      }
+      if (dropStationSelect) {
+        dropStationSelect.addEventListener('change', handleRoundTripDropChange);
+      }
+      
+      // Watch for train input being cleared
+      const trainInput = document.getElementById('trainName');
+      if (trainInput) {
+        trainInput.addEventListener('input', (e) => {
+          if (!e.target.value.trim()) {
+            resetSmartBookingFlow();
+          }
+        });
+      }
+      
+      // Initial button state
+      updateBookingButtonState();
+    });
+    
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+      stationCache.clear();
+      currentTrainResults.length = 0;
+      if (stationFetchController) {
+        stationFetchController.abort();
+      }
+    });
+
+    // ==================== END SMART BOOKING FLOW ====================
+
+    /**
+     * Escape HTML to prevent XSS - optimized with lookup table
+     */
+    const HTML_ESCAPE_MAP = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    };
+    const HTML_ESCAPE_REGEX = /[&<>"']/g;
+    
+    function escapeHtml(text) {
+      if (!text) return '';
+      return String(text).replace(HTML_ESCAPE_REGEX, char => HTML_ESCAPE_MAP[char]);
+    }
+
+    function renderNoResults() {
+      const dropdown = document.getElementById('trainDropdown');
+      dropdown.innerHTML = `
+        <div class="train-dropdown-empty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <p style="margin: 0; font-weight: 500;">No trains found</p>
+          <p style="margin: 4px 0 0; font-size: 12px;">Try a different name or number</p>
+        </div>
+      `;
+      showTrainDropdown();
+    }
+
+    function renderTrainError() {
+      const dropdown = document.getElementById('trainDropdown');
+      dropdown.innerHTML = `
+        <div class="train-dropdown-empty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: #ef4444;">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="15" y1="9" x2="9" y2="15"></line>
+            <line x1="9" y1="9" x2="15" y2="15"></line>
+          </svg>
+          <p style="margin: 0; font-weight: 500; color: #ef4444;">Search failed</p>
+          <p style="margin: 4px 0 0; font-size: 12px;">Please try again</p>
+        </div>
+      `;
+      showTrainDropdown();
+    }
+
+    function showTrainLoading() {
+      const dropdown = document.getElementById('trainDropdown');
+      dropdown.innerHTML = `
+        <div class="train-dropdown-loading">
+          <div class="spinner"></div>
+          <p style="margin: 0;">Searching trains...</p>
+        </div>
+      `;
+      showTrainDropdown();
+    }
+
+    function showTrainDropdown() {
+      const dropdown = document.getElementById('trainDropdown');
+      if (dropdown) dropdown.classList.add('show');
+    }
+
+    function hideTrainDropdown() {
+      const dropdown = document.getElementById('trainDropdown');
+      if (dropdown) dropdown.classList.remove('show');
+      highlightedIndex = -1;
+    }
+    // ==================== END TRAIN AUTOCOMPLETE ====================
+
+    // Init - ensure checkAuth runs whether DOM is ready or not
+    function initApp() {
+      // Check authentication status
+      const token = localStorage.getItem('railcare_token');
+      console.log('[Init] Page loaded, token:', token ? 'EXISTS' : 'NULL');
+      checkAuth();
+      
+      // Initialize train autocomplete
+      initTrainAutocomplete();
+      
+      // Setup service card click handlers
+      document.querySelectorAll('.service-card').forEach(card => {
+        card.addEventListener('click', (e) => {
+          console.log('[ServiceCard Click] Target:', e.target);
+          console.log('[ServiceCard Click] Target classes:', e.target.className);
+          console.log('[ServiceCard Click] closest .luggage-type-card:', e.target.closest('.luggage-type-card'));
+          
+          // Don't toggle if clicking on checkbox directly
+          if (e.target.type === 'checkbox') return;
+          
+          // Don't toggle if clicking inside luggage section (luggage cards, cart, buttons, etc.)
+          if (e.target.closest('.luggage-section') || 
+              e.target.closest('.luggage-type-card') || 
+              e.target.closest('.luggage-cart') ||
+              e.target.closest('.luggage-cart-item') ||
+              e.target.closest('.cart-stepper-btn') ||
+              e.target.closest('.cart-item-remove') ||
+              e.target.closest('.clear-cart-btn')) {
+            console.log('[ServiceCard Click] Skipping toggle - inside luggage section');
+            return;
+          }
+          
+          const checkbox = card.querySelector('.service-check');
+          if (checkbox) {
+            checkbox.checked = !checkbox.checked;
+            toggleService(checkbox.dataset.service, checkbox);
+          }
+        });
+      });
+
+      // Setup checkbox change handlers
+      document.querySelectorAll('.service-check').forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+          toggleService(checkbox.dataset.service, checkbox);
+        });
+      });
+
+      // Setup insurance checkbox
+      document.getElementById('insuranceChk').addEventListener('change', updatePriceDisplay);
+
+      // Initial price display
+      updatePriceDisplay();
+
+      // Check for existing booking in URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const bookingId = urlParams.get('booking');
+      
+      if (bookingId) {
+        currentBookingId = bookingId;
+        document.getElementById('book').style.display = 'none';
+        document.getElementById('services').style.display = 'none';
+        document.getElementById('track').classList.add('active');
+        startPolling();
+        
+        fetch(`/api/bookings/${bookingId}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.success || data.booking) {
+              updateProgressUI(data.booking || data);
+            }
+          })
+          .catch(console.error);
+      }
+    }
+
+    // Run initApp when DOM is ready or immediately if already loaded
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initApp);
+    } else {
+      initApp();
+    }
+  </script>
+</body>
+</html>

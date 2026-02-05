@@ -1,0 +1,111 @@
+/* RailCare - Swiss style (black & white) */
+:root{--bg:#ffffff;--fg:#000000;--muted:#6b6b6b}
+html,body{height:100%}
+body{font-family:Helvetica,Arial,'Helvetica Neue',sans-serif;background:var(--bg);color:var(--fg);margin:0;padding:0}
+
+header.site-header{display:flex;align-items:center;justify-content:space-between;padding:20px 32px;border-bottom:1px solid #eee;background:linear-gradient(180deg,#fff,#fafafa)}
+.brand{font-size:28px;font-weight:700;letter-spacing:0.6px}
+.brand small{display:block;font-size:12px;font-weight:400;opacity:0.7}
+
+.header-user{display:flex;align-items:center;gap:12px}
+
+.main{max-width:1080px;margin:36px auto;padding:24px}
+.card{background:#fff;border:1px solid #eee;padding:18px;margin-bottom:18px;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,0.04)}
+h1{font-size:28px;margin:0 0 14px}
+h2{font-size:18px;margin:0 0 12px}
+label{display:block;margin:10px 0 6px;font-weight:600}
+input,select,textarea{width:100%;padding:10px;margin-bottom:12px;border:1px solid #e3e3e3;border-radius:8px;background:linear-gradient(180deg,#fff,#fff);box-shadow:inset 0 1px 0 rgba(255,255,255,0.6)}
+button{background:#111;color:#fff;padding:10px 14px;border:none;cursor:pointer;border-radius:8px;font-weight:700;letter-spacing:0.3px;box-shadow:0 6px 12px rgba(0,0,0,0.08);transition:all .16s ease}
+button:hover{transform:translateY(-2px);box-shadow:0 10px 20px rgba(0,0,0,0.12)}
+button:active{transform:translateY(0);box-shadow:0 6px 12px rgba(0,0,0,0.06)}
+button.ghost{background:transparent;color:var(--fg);border:1px solid #111}
+
+/* button variations */
+.btn-secondary{background:#f5f5f5;color:#111;border:1px solid #e6e6e6}
+.btn-danger{background:#b91c1c;color:#fff}
+.btn-outline{background:transparent;border:1px solid #ddd;color:var(--fg)}
+
+/* Passenger-specific layout helpers */
+.passenger-hero{padding:18px;border-radius:10px;margin-bottom:18px;background:linear-gradient(180deg,#fff,#fbfbfb);box-shadow:0 6px 18px rgba(0,0,0,0.03)}
+.passenger-grid{display:block;gap:20px}
+@media (min-width:900px){ .passenger-grid{display:grid;grid-template-columns:1fr 420px;align-items:start} }
+
+/* Universal responsive tweaks for all portals */
+@media (max-width:1024px){
+	.main{padding:12px;margin:10px}
+	.passenger-grid, .stats-grid, .content-grid, .app-details {
+		grid-template-columns:1fr!important;
+		display:block!important;
+	}
+	.navbar, header.site-header{padding:12px}
+	.footer-inner{flex-direction:column;gap:16px;text-align:center}
+	.footer-links{justify-content:center}
+}
+@media (max-width:768px){
+	.main{padding:6px;margin:0}
+	.navbar, header.site-header{padding:8px}
+	.nav-links{display:none!important}
+	.tabs, .tab-bar, .overflow-x, .table-responsive{overflow-x:auto;white-space:nowrap;}
+	.booking-item, .stats-grid, .app-details, .content-grid{grid-template-columns:1fr!important;display:block!important}
+	.page-header{flex-direction:column;gap:12px}
+	.card, .result-card{padding:10px}
+	.btn-large, button{font-size:15px;padding:10px 12px}
+}
+@media (max-width:480px){
+	.main, .auth-container{padding:2px;margin:0;max-width:100vw}
+	.card, .result-card{padding:6px}
+	.footer-inner{padding:0 2px}
+	.btn-large, button{font-size:14px;padding:8px 8px}
+	h1{font-size:22px}
+	h2{font-size:16px}
+	.navbar, header.site-header{padding:4px}
+}
+.panel-muted{color:var(--muted);font-size:14px}
+.btn-primary{background:#fff;color:#111;border:1px solid #111}
+.btn-primary:hover{background:#111;color:#fff}
+.btn-large{padding:12px 18px;font-size:16px}
+.result-card{background:#fff;border:1px solid #f0f0f0;padding:16px;border-radius:10px}
+small{color:var(--muted)}
+.field-row{display:flex;gap:12px}
+.field-row > *{flex:1}
+.checks{display:flex;gap:12px;flex-wrap:wrap}
+.muted{color:var(--muted)}
+
+.price{font-size:18px;font-weight:700}
+.align-right{text-align:right}
+
+/* nicer card header and small utilities */
+.card h3{margin-top:0}
+.card .card-actions{display:flex;gap:8px;align-items:center}
+.small-muted{font-size:13px;color:var(--muted)}
+
+/* responsive tweaks */
+@media (max-width:720px){
+	.main{padding:16px;margin:20px}
+	header.site-header{padding:12px}
+	.field-row{flex-direction:column}
+}
+
+/* Status badges */
+.status-badge{display:inline-block;padding:4px 8px;border-radius:999px;font-weight:700;font-size:13px;color:#fff}
+.status-pending{background: #f59e0b} /* amber */
+.status-accepted{background: #0ea5a4} /* teal */
+.status-inprogress{background: #0284c7} /* blue */
+.status-completion-pending{background:#7c3aed} /* purple */
+.status-completed{background:#111 /* black */}
+.status-rejected{background:#b91c1c}
+
+/* blink animation for attention-grabbing statuses */
+@keyframes rc-blink { 0%{opacity:1} 50%{opacity:0.15} 100%{opacity:1} }
+.blink{animation: rc-blink 1.2s linear infinite}
+
+/* small helper to align status outputs inside cards */
+.status-line{margin-top:6px}
+
+/* Dark theme (simple) */
+.dark-theme{ --bg:#0b0b0b; --fg:#f6f6f6; --muted:#9a9a9a }
+.dark-theme body, .dark-theme .main { background: var(--bg); color: var(--fg) }
+.dark-theme .card { background:#111;border-color:#222; box-shadow:0 6px 18px rgba(0,0,0,0.6) }
+.dark-theme input, .dark-theme select, .dark-theme textarea { background:#111; border-color:#2a2a2a; color:var(--fg) }
+.dark-theme header.site-header{background:linear-gradient(180deg,#111,#0e0e0e);border-bottom-color:#222}
+.dark-theme .btn-secondary{background:#222;color:#fff}

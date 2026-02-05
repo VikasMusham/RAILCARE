@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assistant Registration - RailMitra</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .registration-form {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #333;
+    }
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+    }
+    .file-input-wrapper {
+      position: relative;
+      border: 2px dashed #ccc;
+      border-radius: 4px;
+      padding: 20px;
+      text-align: center;
+      transition: border-color 0.3s;
+      cursor: pointer;
+    }
+    .file-input-wrapper:hover {
+      border-color: #007bff;
+    }
+    .file-input-wrapper.has-file {
+      border-color: #28a745;
+      background: #f8fff8;
+    }
+    .file-input-wrapper input[type="file"] {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+    .file-label {
+      display: block;
+      color: #666;
+      font-size: 14px;
+    }
+    .file-label.selected {
+      color: #28a745;
+      font-weight: 600;
+    }
+    .file-info {
+      font-size: 12px;
+      color: #888;
+      margin-top: 4px;
+    }
+    .preview-container {
+      margin-top: 10px;
+      display: none;
+    }
+    .preview-container.visible {
+      display: block;
+    }
+    .preview-container img {
+      max-width: 150px;
+      max-height: 150px;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+    }
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .submit-btn:hover {
+      background: #0056b3;
+    }
+    .submit-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .message {
+      padding: 12px;
+      border-radius: 4px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .message.success {
+      display: block;
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .message.error {
+      display: block;
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    .required-star {
+      color: #dc3545;
+    }
+    .document-requirements {
+      background: #f8f9fa;
+      padding: 12px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-size: 13px;
+    }
+    .document-requirements h4 {
+      margin: 0 0 8px 0;
+      font-size: 14px;
+    }
+    .document-requirements ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+    .verification-status {
+      text-align: center;
+      padding: 20px;
+      margin-top: 20px;
+      border-radius: 4px;
+    }
+    .verification-status.pending {
+      background: #fff3cd;
+      color: #856404;
+    }
+    .verification-status.verified {
+      background: #d4edda;
+      color: #155724;
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">RailMitra <small>Station Assistance</small></div>
+    <nav>
+      <a href="index.html" class="ghost">Home</a>
+      <span style="margin:0 8px;color:#ccc">•</span>
+      <a href="passenger.html" class="ghost">Passenger</a>
+      <span style="margin:0 8px;color:#ccc">•</span>
+      <a href="admin.html" class="ghost">Admin</a>
+      <span style="margin:0 8px;color:#ccc">•</span>
+      <a href="login.html" class="ghost">Login</a>
+    </nav>
+  </header>
+
+  <main class="main">
+    <div class="container">
+      <div class="card registration-form">
+        <h1>🚆 Assistant Registration</h1>
+        <p style="color: #666; margin-bottom: 20px;">
+          Join RailMitra as a station assistant to help passengers.
+        </p>
+
+        <div id="message" class="message"></div>
+
+        <div class="document-requirements">
+          <h4>📋 Document Requirements</h4>
+          <ul>
+            <li>Aadhaar Card (JPG, PNG, or PDF - max 5MB)</li>
+            <li>PAN Card (JPG, PNG, or PDF - max 5MB)</li>
+            <li>Recent Photo (JPG or PNG - max 5MB)</li>
+          </ul>
+        </div>
+
+        <form id="registrationForm" enctype="multipart/form-data">
+          <!-- Personal Information -->
+          <div class="form-group">
+            <label>Full Name <span class="required-star">*</span></label>
+            <input type="text" id="name" name="name" required placeholder="Enter your full name">
+          </div>
+
+          <div class="form-group">
+            <label>Phone Number <span class="required-star">*</span></label>
+            <input type="tel" id="phone" name="phone" required placeholder="10-digit phone number" pattern="[0-9]{10}">
+          </div>
+
+          <div class="form-group">
+            <label>Station <span class="required-star">*</span></label>
+            <select id="station" name="station" required>
+              <option value="">Select your station</option>
+              <option value="Secunderabad">Secunderabad</option>
+              <option value="Kacheguda">Kacheguda</option>
+              <option value="Hyderabad Deccan">Hyderabad Deccan</option>
+              <option value="Kazipet">Kazipet</option>
+              <option value="Vijayawada">Vijayawada</option>
+              <option value="Warangal">Warangal</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Languages Known (comma separated)</label>
+            <input type="text" id="languages" name="languages" placeholder="e.g., Telugu, Hindi, English">
+          </div>
+
+          <!-- Document Uploads -->
+          <h3 style="margin: 24px 0 16px; border-top: 1px solid #eee; padding-top: 24px;">
+            📄 Document Uploads
+          </h3>
+
+          <div class="form-group">
+            <label>Aadhaar Card <span class="required-star">*</span></label>
+            <div class="file-input-wrapper" id="aadharWrapper">
+              <input type="file" id="aadhar" name="aadhar" accept=".jpg,.jpeg,.png,.pdf" required>
+              <span class="file-label" id="aadharLabel">Click or drag to upload Aadhaar</span>
+              <div class="file-info">JPG, PNG or PDF (max 5MB)</div>
+            </div>
+            <div class="preview-container" id="aadharPreview"></div>
+          </div>
+
+          <div class="form-group">
+            <label>PAN Card <span class="required-star">*</span></label>
+            <div class="file-input-wrapper" id="panWrapper">
+              <input type="file" id="pan" name="pan" accept=".jpg,.jpeg,.png,.pdf" required>
+              <span class="file-label" id="panLabel">Click or drag to upload PAN Card</span>
+              <div class="file-info">JPG, PNG or PDF (max 5MB)</div>
+            </div>
+            <div class="preview-container" id="panPreview"></div>
+          </div>
+
+          <div class="form-group">
+            <label>Profile Photo <span class="required-star">*</span></label>
+            <div class="file-input-wrapper" id="photoWrapper">
+              <input type="file" id="photo" name="photo" accept=".jpg,.jpeg,.png" required>
+              <span class="file-label" id="photoLabel">Click or drag to upload Photo</span>
+              <div class="file-info">JPG or PNG only (max 5MB)</div>
+            </div>
+            <div class="preview-container" id="photoPreview"></div>
+          </div>
+
+          <button type="submit" class="submit-btn" id="submitBtn">
+            🚀 Register as Assistant
+          </button>
+        </form>
+
+        <div id="verificationStatus" class="verification-status" style="display: none;"></div>
+      </div>
+    </div>
+  </main>
+
+  <script src="auth.js"></script>
+  <script>
+    const form = document.getElementById('registrationForm');
+    const messageDiv = document.getElementById('message');
+    const submitBtn = document.getElementById('submitBtn');
+    const verificationStatus = document.getElementById('verificationStatus');
+
+    // File input handling
+    const fileInputs = [
+      { input: 'aadhar', wrapper: 'aadharWrapper', label: 'aadharLabel', preview: 'aadharPreview' },
+      { input: 'pan', wrapper: 'panWrapper', label: 'panLabel', preview: 'panPreview' },
+      { input: 'photo', wrapper: 'photoWrapper', label: 'photoLabel', preview: 'photoPreview' }
+    ];
+
+    fileInputs.forEach(({ input, wrapper, label, preview }) => {
+      const inputEl = document.getElementById(input);
+      const wrapperEl = document.getElementById(wrapper);
+      const labelEl = document.getElementById(label);
+      const previewEl = document.getElementById(preview);
+
+      inputEl.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          // Validate file size (5MB)
+          if (file.size > 5 * 1024 * 1024) {
+            showMessage('File too large. Maximum size is 5MB.', 'error');
+            inputEl.value = '';
+            return;
+          }
+
+          // Validate file type
+          const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+          if (!allowedTypes.includes(file.type)) {
+            showMessage('Invalid file type. Only JPG, PNG, and PDF are allowed.', 'error');
+            inputEl.value = '';
+            return;
+          }
+
+          // Update UI
+          wrapperEl.classList.add('has-file');
+          labelEl.textContent = `✓ ${file.name}`;
+          labelEl.classList.add('selected');
+
+          // Show preview for images
+          if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              previewEl.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+              previewEl.classList.add('visible');
+            };
+            reader.readAsDataURL(file);
+          } else {
+            previewEl.innerHTML = '<p style="color:#666">📄 PDF file selected</p>';
+            previewEl.classList.add('visible');
+          }
+        } else {
+          wrapperEl.classList.remove('has-file');
+          labelEl.textContent = `Click or drag to upload`;
+          labelEl.classList.remove('selected');
+          previewEl.classList.remove('visible');
+          previewEl.innerHTML = '';
+        }
+      });
+    });
+
+    function showMessage(text, type) {
+      messageDiv.textContent = text;
+      messageDiv.className = `message ${type}`;
+      messageDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // Validate all required files
+      const aadhar = document.getElementById('aadhar').files[0];
+      const pan = document.getElementById('pan').files[0];
+      const photo = document.getElementById('photo').files[0];
+
+      if (!aadhar || !pan || !photo) {
+        showMessage('Please upload all required documents.', 'error');
+        return;
+      }
+
+      // Disable submit button
+      submitBtn.disabled = true;
+      submitBtn.textContent = '⏳ Uploading...';
+
+      try {
+        const formData = new FormData(form);
+
+        const response = await fetch('/api/assistants/register-with-docs', {
+          method: 'POST',
+          body: formData
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          showMessage('✅ Registration successful! Your documents are pending verification.', 'success');
+          
+          // Store assistant ID
+          localStorage.setItem('railmitra_assistantId', result.assistant._id);
+          
+          // Show verification status
+          verificationStatus.style.display = 'block';
+          verificationStatus.className = 'verification-status pending';
+          verificationStatus.innerHTML = `
+            <h3>⏳ Waiting for Admin Approval</h3>
+            <p>Your registration has been submitted. An admin will verify your documents shortly.</p>
+            <p>Assistant ID: <strong>${result.assistant._id}</strong></p>
+          `;
+
+          // Hide form
+          form.style.display = 'none';
+
+          // Poll for verification status
+          pollVerificationStatus(result.assistant._id);
+        } else {
+          showMessage(result.message || 'Registration failed. Please try again.', 'error');
+          submitBtn.disabled = false;
+          submitBtn.textContent = '🚀 Register as Assistant';
+        }
+      } catch (err) {
+        console.error('Registration error:', err);
+        showMessage('Network error. Please check your connection and try again.', 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = '🚀 Register as Assistant';
+      }
+    });
+
+    // Poll for verification status
+    async function pollVerificationStatus(assistantId) {
+      try {
+        const response = await fetch(`/api/assistants/${assistantId}`);
+        const data = await response.json();
+
+        if (data.success && data.assistant) {
+          if (data.assistant.verified) {
+            verificationStatus.className = 'verification-status verified';
+            verificationStatus.innerHTML = `
+              <h3>✅ Verified by RailMitra</h3>
+              <p>Congratulations! Your account has been verified. You can now accept booking requests.</p>
+              <a href="assistant.html" class="submit-btn" style="display:inline-block;text-decoration:none;margin-top:12px;">
+                Go to Dashboard →
+              </a>
+            `;
+            return; // Stop polling
+          } else {
+            // Update remark if any
+            if (data.assistant.documentsRemark) {
+              verificationStatus.innerHTML = `
+                <h3>⏳ Waiting for Admin Approval</h3>
+                <p>${data.assistant.documentsRemark}</p>
+              `;
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Poll error:', err);
+      }
+
+      // Continue polling every 10 seconds
+      setTimeout(() => pollVerificationStatus(assistantId), 10000);
+    }
+
+    // Check if already registered
+    const storedId = localStorage.getItem('railmitra_assistantId');
+    if (storedId) {
+      fetch(`/api/assistants/${storedId}`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.success && data.assistant) {
+            form.style.display = 'none';
+            verificationStatus.style.display = 'block';
+            
+            if (data.assistant.verified) {
+              verificationStatus.className = 'verification-status verified';
+              verificationStatus.innerHTML = `
+                <h3>✅ Verified by RailMitra</h3>
+                <p>Your account is verified. You can accept booking requests.</p>
+                <a href="assistant.html" class="submit-btn" style="display:inline-block;text-decoration:none;margin-top:12px;">
+                  Go to Dashboard →
+                </a>
+              `;
+            } else {
+              verificationStatus.className = 'verification-status pending';
+              verificationStatus.innerHTML = `
+                <h3>⏳ Waiting for Admin Approval</h3>
+                <p>Your documents are under review.</p>
+                ${data.assistant.documentsRemark ? `<p><em>${data.assistant.documentsRemark}</em></p>` : ''}
+              `;
+              pollVerificationStatus(storedId);
+            }
+          }
+        })
+        .catch(() => {
+          localStorage.removeItem('railmitra_assistantId');
+        });
+    }
+  </script>
+</body>
+</html>

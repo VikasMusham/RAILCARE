@@ -1,0 +1,2852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RailMitra • Assistant Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Swiss Design - Monochrome Palette */
+      --pure-black: #000000;
+      --rich-black: #0a0a0a;
+      --charcoal: #141414;
+      --graphite: #1a1a1a;
+      --slate: #252525;
+      --steel: #333333;
+      --silver: #666666;
+      --pearl: #999999;
+      --cloud: #cccccc;
+      --snow: #f5f5f5;
+      --pure-white: #ffffff;
+      
+      /* Accent Colors */
+      --emerald: #10b981;
+      --amber: #f59e0b;
+      --ruby: #ef4444;
+      --sapphire: #3b82f6;
+      
+      /* Typography Scale */
+      --text-xs: 11px;
+      --text-sm: 13px;
+      --text-base: 15px;
+      --text-lg: 17px;
+      --text-xl: 20px;
+      --text-2xl: 24px;
+      --text-3xl: 32px;
+      --text-4xl: 40px;
+      
+      /* Spacing */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 20px;
+      --space-6: 24px;
+      --space-8: 32px;
+      --space-10: 40px;
+      --space-12: 48px;
+      --space-16: 64px;
+      
+      /* Radius */
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 24px;
+      --radius-full: 9999px;
+      
+      /* Transitions */
+      --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+      --duration-fast: 150ms;
+      --duration-base: 250ms;
+    }
+
+    /* Light Mode */
+    body {
+      --bg-primary: var(--pure-white);
+      --bg-secondary: var(--snow);
+      --bg-tertiary: var(--cloud);
+      --text-primary: var(--pure-black);
+      --text-secondary: var(--silver);
+      --text-tertiary: var(--pearl);
+      --border-color: rgba(0, 0, 0, 0.08);
+      --card-bg: var(--pure-white);
+      --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 8px 32px rgba(0, 0, 0, 0.04);
+      --input-bg: var(--snow);
+    }
+
+    /* Dark Mode */
+    body.dark {
+      --bg-primary: var(--rich-black);
+      --bg-secondary: var(--charcoal);
+      --bg-tertiary: var(--graphite);
+      --text-primary: var(--pure-white);
+      --text-secondary: var(--pearl);
+      --text-tertiary: var(--silver);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --card-bg: var(--graphite);
+      --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 8px 32px rgba(0, 0, 0, 0.2);
+      --input-bg: var(--slate);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    /* Navigation */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      padding: var(--space-4) var(--space-8);
+      background: var(--bg-primary);
+      border-bottom: 1px solid var(--border-color);
+      backdrop-filter: blur(20px);
+    }
+
+    .navbar-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      text-decoration: none;
+      color: var(--text-primary);
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--text-primary);
+      color: var(--bg-primary);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .logo-text {
+      font-size: var(--text-xl);
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: var(--space-8);
+    }
+
+    .nav-link {
+      font-size: var(--text-sm);
+      font-weight: 500;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color var(--duration-fast) var(--ease-out);
+    }
+
+    .nav-link:hover, .nav-link.active {
+      color: var(--text-primary);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      position: relative;
+    }
+
+    .theme-toggle {
+      width: 40px;
+      height: 40px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-md);
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .theme-toggle:hover {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+    }
+
+    .btn-primary {
+      padding: var(--space-3) var(--space-6);
+      background: var(--text-primary);
+      color: var(--bg-primary);
+      border: none;
+      border-radius: var(--radius-full);
+      font-size: var(--text-sm);
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Main Container */
+    .main-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 120px var(--space-8) var(--space-16);
+    }
+
+    /* Page Header */
+    .page-header {
+      margin-bottom: var(--space-10);
+    }
+
+    .page-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-4);
+      background: var(--bg-secondary);
+      border-radius: var(--radius-full);
+      font-size: var(--text-xs);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-secondary);
+      margin-bottom: var(--space-4);
+    }
+
+    .page-title {
+      font-size: var(--text-4xl);
+      font-weight: 800;
+      letter-spacing: -2px;
+      margin-bottom: var(--space-3);
+    }
+
+    .page-description {
+      font-size: var(--text-lg);
+      color: var(--text-secondary);
+      max-width: 600px;
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-6);
+      margin-bottom: var(--space-10);
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      box-shadow: var(--card-shadow);
+    }
+
+    .stat-label {
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+      margin-bottom: var(--space-2);
+    }
+
+    .stat-value {
+      font-size: var(--text-3xl);
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+
+    .stat-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-1);
+      padding: var(--space-1) var(--space-3);
+      border-radius: var(--radius-full);
+      font-size: var(--text-xs);
+      font-weight: 600;
+      margin-top: var(--space-2);
+    }
+
+    .stat-badge.success { background: rgba(16, 185, 129, 0.1); color: var(--emerald); }
+    .stat-badge.warning { background: rgba(245, 158, 11, 0.1); color: var(--amber); }
+    .stat-badge.danger { background: rgba(239, 68, 68, 0.1); color: var(--ruby); }
+
+    /* Content Grid */
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 400px;
+      gap: var(--space-8);
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-xl);
+      padding: var(--space-8);
+      box-shadow: var(--card-shadow);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-6);
+    }
+
+    .card-title {
+      font-size: var(--text-xl);
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .card-subtitle {
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+      margin-top: var(--space-1);
+    }
+
+    /* Form Styles */
+    .form-group {
+      margin-bottom: var(--space-5);
+    }
+
+    .form-label {
+      display: block;
+      font-size: var(--text-sm);
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: var(--space-2);
+    }
+
+    .form-input, .form-select {
+      width: 100%;
+      padding: var(--space-4) var(--space-5);
+      background: var(--input-bg);
+      border: 2px solid transparent;
+      border-radius: var(--radius-md);
+      font-size: var(--text-base);
+      color: var(--text-primary);
+      transition: all var(--duration-fast) var(--ease-out);
+      font-family: inherit;
+    }
+
+    .form-input:focus, .form-select:focus {
+      outline: none;
+      border-color: var(--text-primary);
+      background: var(--bg-primary);
+    }
+
+    /* Buttons */
+    .btn {
+      padding: var(--space-3) var(--space-6);
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: var(--text-sm);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .btn-dark {
+      background: var(--text-primary);
+      color: var(--bg-primary);
+    }
+
+    .btn-dark:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-secondary {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-tertiary);
+    }
+
+    .btn-success { background: var(--emerald); color: white; }
+    .btn-danger { background: var(--ruby); color: white; }
+    .btn-warning { background: var(--amber); color: white; }
+
+    /* Profile Card */
+    .profile-card {
+      text-align: center;
+      padding: var(--space-8);
+    }
+
+    .profile-avatar {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: var(--bg-secondary);
+      margin: 0 auto var(--space-5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      border: 3px solid var(--border-color);
+      overflow: hidden;
+    }
+
+    .profile-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .profile-name {
+      font-size: var(--text-2xl);
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: var(--space-2);
+    }
+
+    .profile-station {
+      font-size: var(--text-base);
+      color: var(--text-secondary);
+      margin-bottom: var(--space-4);
+    }
+
+    .profile-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-4);
+      border-radius: var(--radius-full);
+      font-size: var(--text-sm);
+      font-weight: 600;
+    }
+
+    .profile-badge.verified {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--emerald);
+    }
+
+    .profile-badge.pending {
+      background: rgba(245, 158, 11, 0.1);
+      color: var(--amber);
+    }
+
+    .profile-stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-4);
+      margin-top: var(--space-6);
+      padding-top: var(--space-6);
+      border-top: 1px solid var(--border-color);
+    }
+
+    .profile-stat {
+      text-align: center;
+    }
+
+    .profile-stat-value {
+      font-size: var(--text-2xl);
+      font-weight: 700;
+    }
+
+    .profile-stat-label {
+      font-size: var(--text-xs);
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .profile-actions {
+      display: flex;
+      gap: var(--space-3);
+      margin-top: var(--space-6);
+    }
+
+    .profile-actions .btn {
+      flex: 1;
+    }
+
+    /* Booking Cards */
+    .booking-card {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      margin-bottom: var(--space-4);
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .booking-card:hover {
+      background: var(--bg-tertiary);
+    }
+
+    .booking-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: var(--space-4);
+    }
+
+    .booking-passenger {
+      font-size: var(--text-lg);
+      font-weight: 600;
+    }
+
+    .booking-status {
+      padding: var(--space-1) var(--space-3);
+      border-radius: var(--radius-full);
+      font-size: var(--text-xs);
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .status-pending { background: rgba(245, 158, 11, 0.1); color: var(--amber); }
+    .status-accepted { background: rgba(59, 130, 246, 0.1); color: var(--sapphire); }
+    .status-progress { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+    .status-completed { background: rgba(16, 185, 129, 0.1); color: var(--emerald); }
+
+    .booking-details {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-3);
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+      margin-bottom: var(--space-4);
+    }
+
+    .booking-detail {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .booking-detail svg {
+      width: 16px;
+      height: 16px;
+      opacity: 0.6;
+    }
+
+    .booking-services {
+      display: flex;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+      margin-bottom: var(--space-4);
+    }
+
+    .service-tag {
+      padding: var(--space-1) var(--space-3);
+      background: var(--card-bg);
+      border-radius: var(--radius-sm);
+      font-size: var(--text-xs);
+      font-weight: 500;
+    }
+
+    .booking-actions {
+      display: flex;
+      gap: var(--space-3);
+    }
+
+    .booking-actions .btn {
+      flex: 1;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: var(--space-16) var(--space-8);
+      color: var(--text-secondary);
+    }
+
+    .empty-state svg {
+      width: 64px;
+      height: 64px;
+      margin-bottom: var(--space-4);
+      opacity: 0.3;
+    }
+
+    .empty-state h3 {
+      font-size: var(--text-lg);
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: var(--space-2);
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      padding: var(--space-8);
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--card-bg);
+      border-radius: var(--radius-xl);
+      padding: var(--space-8);
+      max-width: 500px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-6);
+    }
+
+    .modal-title {
+      font-size: var(--text-xl);
+      font-weight: 700;
+    }
+
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: var(--bg-secondary);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-secondary);
+    }
+
+    .modal-close:hover {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+
+    /* Feedback List */
+    .feedback-item {
+      padding: var(--space-4);
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-3);
+    }
+
+    .feedback-rating {
+      color: var(--amber);
+      margin-bottom: var(--space-2);
+    }
+
+    .feedback-comment {
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+    }
+
+    .feedback-date {
+      font-size: var(--text-xs);
+      color: var(--text-tertiary);
+      margin-top: var(--space-2);
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+      .nav-links {
+        display: none;
+      }
+      .main-container {
+        padding: 100px var(--space-4) var(--space-8);
+      }
+    }
+
+    /* Loading */
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading {
+      width: 20px;
+      height: 20px;
+      border: 2px solid transparent;
+      border-top-color: currentColor;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    /* Document Links */
+    .doc-links {
+      display: flex;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+      margin-top: var(--space-4);
+    }
+
+    .doc-link {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-4);
+      background: var(--bg-secondary);
+      border-radius: var(--radius-sm);
+      font-size: var(--text-sm);
+      color: var(--text-primary);
+      text-decoration: none;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .doc-link:hover {
+      background: var(--bg-tertiary);
+    }
+
+    /* Profile Dropdown Styles */
+    .profile-section {
+      display: none;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .profile-section.active {
+      display: flex;
+    }
+
+    .profile-trigger {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-2) var(--space-3);
+      background: var(--bg-secondary);
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+      border: 1px solid var(--border-color);
+    }
+
+    .profile-trigger:hover {
+      background: var(--bg-tertiary);
+    }
+
+    .profile-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--emerald), var(--sapphire));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: var(--text-sm);
+      color: white;
+      overflow: hidden;
+    }
+
+    .profile-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .profile-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .profile-greeting {
+      font-size: var(--text-xs);
+      color: var(--text-secondary);
+    }
+
+    .profile-name {
+      font-size: var(--text-sm);
+      font-weight: 600;
+      color: var(--text-primary);
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .profile-dropdown-icon {
+      color: var(--text-secondary);
+      transition: transform var(--duration-fast) var(--ease-out);
+    }
+
+    .profile-trigger.open .profile-dropdown-icon {
+      transform: rotate(180deg);
+    }
+
+    .profile-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      min-width: 280px;
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--card-shadow-hover);
+      border: 1px solid var(--border-color);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-10px);
+      transition: all var(--duration-fast) var(--ease-out);
+      z-index: 1000;
+      overflow: hidden;
+    }
+
+    .profile-dropdown.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .dropdown-header {
+      padding: var(--space-5);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+    }
+
+    .dropdown-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--emerald), var(--sapphire));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: var(--text-xl);
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .dropdown-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .avatar-upload {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0,0,0,0.6);
+      color: white;
+      font-size: 10px;
+      text-align: center;
+      padding: 2px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity var(--duration-fast);
+    }
+
+    .dropdown-avatar:hover .avatar-upload {
+      opacity: 1;
+    }
+
+    .dropdown-user-info h4 {
+      font-size: var(--text-base);
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+
+    .dropdown-user-info p {
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+    }
+
+    .dropdown-menu {
+      padding: var(--space-2);
+    }
+
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      text-decoration: none;
+      font-size: var(--text-sm);
+      transition: background var(--duration-fast);
+      cursor: pointer;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+    }
+
+    .dropdown-item:hover {
+      background: var(--bg-secondary);
+    }
+
+    .dropdown-item svg {
+      width: 18px;
+      height: 18px;
+      color: var(--text-secondary);
+    }
+
+    .dropdown-item.danger {
+      color: var(--ruby);
+    }
+
+    .dropdown-item.danger svg {
+      color: var(--ruby);
+    }
+
+    .dropdown-divider {
+      height: 1px;
+      background: var(--border-color);
+      margin: var(--space-2) 0;
+    }
+
+    .sign-in-btn {
+      display: inline-flex;
+    }
+
+    .sign-in-btn.hidden {
+      display: none;
+    }
+
+    /* Settings Modal */
+    .settings-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 3000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all var(--duration-base);
+    }
+
+    .settings-modal.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .settings-content {
+      background: var(--card-bg);
+      border-radius: var(--radius-xl);
+      width: 100%;
+      max-width: 480px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.3);
+    }
+
+    .settings-header {
+      padding: var(--space-6);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .settings-header h3 {
+      font-size: var(--text-xl);
+      font-weight: 600;
+    }
+
+    .settings-close {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--bg-secondary);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-primary);
+    }
+
+    .settings-body {
+      padding: var(--space-6);
+    }
+
+    .settings-section {
+      margin-bottom: var(--space-6);
+    }
+
+    .settings-section h4 {
+      font-size: var(--text-sm);
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: var(--space-4);
+    }
+
+    .settings-avatar-section {
+      display: flex;
+      align-items: center;
+      gap: var(--space-5);
+      margin-bottom: var(--space-6);
+    }
+
+    .settings-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--emerald), var(--sapphire));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: var(--text-3xl);
+      color: white;
+      overflow: hidden;
+    }
+
+    .settings-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .settings-avatar-actions {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
+    .avatar-upload-btn {
+      padding: var(--space-2) var(--space-4);
+      background: var(--text-primary);
+      color: var(--bg-primary);
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: var(--text-sm);
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .avatar-remove-btn {
+      padding: var(--space-2) var(--space-4);
+      background: transparent;
+      color: var(--ruby);
+      border: 1px solid var(--ruby);
+      border-radius: var(--radius-md);
+      font-size: var(--text-sm);
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .settings-input-group {
+      margin-bottom: var(--space-4);
+    }
+
+    .settings-input-group label {
+      display: block;
+      font-size: var(--text-sm);
+      font-weight: 500;
+      margin-bottom: var(--space-2);
+      color: var(--text-primary);
+    }
+
+    .settings-input {
+      width: 100%;
+      padding: var(--space-3) var(--space-4);
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      font-size: var(--text-base);
+      color: var(--text-primary);
+    }
+
+    .settings-input:focus {
+      outline: none;
+      border-color: var(--text-primary);
+    }
+
+    .settings-footer {
+      padding: var(--space-6);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      gap: var(--space-3);
+      justify-content: flex-end;
+    }
+
+    .settings-save-btn {
+      padding: var(--space-3) var(--space-6);
+      background: var(--text-primary);
+      color: var(--bg-primary);
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: var(--text-sm);
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .settings-cancel-btn {
+      padding: var(--space-3) var(--space-6);
+      background: transparent;
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      font-size: var(--text-sm);
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    #avatarInput {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <a href="passenger-premium.html" class="logo">
+        <div class="logo-icon">🚄</div>
+        <span class="logo-text">RailMitra</span>
+      </a>
+      
+      <div class="nav-links">
+        <a href="assistant-premium.html" class="nav-link active">My Dashboard</a>
+        <a href="passenger-premium.html" class="nav-link">Passenger Portal</a>
+      </div>
+      
+      <div class="nav-actions">
+        <button class="theme-toggle" onclick="toggleTheme()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+          </svg>
+        </button>
+        
+        <!-- Sign In Button (shown when not logged in) -->
+        <a href="login-premium.html" class="btn-primary sign-in-btn" id="signInBtn">Sign In</a>
+        
+        <!-- Profile Section (shown when logged in) -->
+        <div class="profile-section" id="profileSection">
+          <div class="profile-trigger" onclick="toggleProfileDropdown()">
+            <div class="profile-avatar" id="navAvatar">
+              <span id="navAvatarInitials">A</span>
+              <img id="navAvatarImg" src="" alt="" style="display: none;">
+            </div>
+            <div class="profile-info">
+              <span class="profile-greeting">Hello,</span>
+              <span class="profile-name" id="navUserName">Assistant</span>
+            </div>
+            <svg class="profile-dropdown-icon" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </div>
+          
+          <!-- Dropdown Menu -->
+          <div class="profile-dropdown" id="profileDropdown">
+            <div class="dropdown-header">
+              <div class="dropdown-avatar" id="dropdownAvatar">
+                <span id="dropdownAvatarInitials">A</span>
+                <img id="dropdownAvatarImg" src="" alt="" style="display: none;">
+                <label class="avatar-upload" for="avatarInput">📷 Change</label>
+              </div>
+              <div class="dropdown-user-info">
+                <h4 id="dropdownUserName">Assistant Name</h4>
+                <p id="dropdownUserPhone">Assistant Account</p>
+              </div>
+            </div>
+            
+            <div class="dropdown-menu">
+              <a href="#" class="dropdown-item" onclick="openSettings(); return false;">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                Settings
+              </a>
+              <div class="dropdown-divider"></div>
+              <button class="dropdown-item danger" onclick="logoutUser()">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                </svg>
+                Sign Out
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <input type="file" id="avatarInput" accept="image/*" onchange="handleAvatarUpload(event)">
+      </div>
+    </div>
+  </nav>
+
+  <!-- Settings Modal -->
+  <div class="settings-modal" id="settingsModal">
+    <div class="settings-content">
+      <div class="settings-header">
+        <h3>Settings</h3>
+        <button class="settings-close" onclick="closeSettings()">✕</button>
+      </div>
+      <div class="settings-body">
+        <div class="settings-avatar-section">
+          <div class="settings-avatar" id="settingsAvatar">
+            <span id="settingsAvatarInitials">A</span>
+            <img id="settingsAvatarImg" src="" alt="" style="display: none;">
+          </div>
+          <div class="settings-avatar-actions">
+            <button class="avatar-upload-btn" onclick="document.getElementById('avatarInput').click()">Upload Photo</button>
+            <button class="avatar-remove-btn" onclick="removeAvatar()">Remove Photo</button>
+          </div>
+        </div>
+        
+        <div class="settings-section">
+          <h4>Profile Information</h4>
+          <div class="settings-input-group">
+            <label>Full Name</label>
+            <input type="text" class="settings-input" id="settingsName" placeholder="Your name">
+          </div>
+          <div class="settings-input-group">
+            <label>Phone Number</label>
+            <input type="text" class="settings-input" id="settingsPhone" placeholder="+91 XXXXX XXXXX" disabled>
+          </div>
+        </div>
+      </div>
+      <div class="settings-footer">
+        <button class="settings-cancel-btn" onclick="closeSettings()">Cancel</button>
+        <button class="settings-save-btn" onclick="saveSettings()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <div class="main-container">
+    
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="page-badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+        Assistant Portal
+      </div>
+      <h1 class="page-title">Dashboard</h1>
+      <p class="page-description">Manage your bookings, track your performance, and provide excellent service to passengers.</p>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card">
+        <div class="stat-label">Today's Bookings</div>
+        <div class="stat-value" id="statToday">0</div>
+        <div class="stat-badge success">Active</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Completed</div>
+        <div class="stat-value" id="statCompleted">0</div>
+        <div class="stat-badge success">This Week</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Rating</div>
+        <div class="stat-value" id="statRating">—</div>
+        <div class="stat-badge warning">Average</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Earnings</div>
+        <div class="stat-value" id="statEarnings">₹0</div>
+        <div class="stat-badge success">This Month</div>
+      </div>
+    </div>
+
+    <!-- Content Grid -->
+    <div class="content-grid">
+      
+      <!-- Bookings Section -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Pending Bookings</h2>
+            <p class="card-subtitle">Accept or manage incoming requests</p>
+          </div>
+          <button class="btn btn-secondary" onclick="loadBookings()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+            </svg>
+            Refresh
+          </button>
+        </div>
+        
+        <div id="bookingsList">
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <h3>No pending bookings</h3>
+            <p>New booking requests will appear here</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile Section -->
+      <div>
+        <!-- Registration Card (shown when not registered) -->
+        <div class="card" id="registerCard">
+          <h2 class="card-title" style="margin-bottom: var(--space-6);">Register as Assistant</h2>
+          
+          <div id="registerFormSection">
+            <div class="form-group">
+              <label class="form-label">Full Name</label>
+              <input type="text" id="aName" class="form-input" placeholder="Enter your name">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Station</label>
+              <select id="aStation" class="form-select">
+                <option value="">Select station</option>
+                <option>Secunderabad</option>
+                <option>Kacheguda</option>
+                <option>Hyderabad Deccan</option>
+                <option>Kazipet</option>
+                <option>Vijayawada</option>
+                <option>Warangal</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Languages (comma separated)</label>
+              <input type="text" id="aLangs" class="form-input" placeholder="Telugu, Hindi, English">
+            </div>
+            
+            <button class="btn btn-dark" style="width: 100%;" id="registerBtn">
+              Register & Load
+            </button>
+          </div>
+        </div>
+
+        <!-- Profile Card (shown when registered) -->
+        <div class="card profile-card" id="profileCard" style="display: none;">
+          <div class="profile-avatar" id="profileAvatar">👷</div>
+          <h3 class="profile-name" id="profileName">—</h3>
+          <p class="profile-station" id="profileStation">—</p>
+          <div class="profile-badge verified" id="profileBadge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+            <span id="profileBadgeText">Verified</span>
+          </div>
+          
+          <div class="profile-stats">
+            <div class="profile-stat">
+              <div class="profile-stat-value" id="profileRating">—</div>
+              <div class="profile-stat-label">Rating</div>
+            </div>
+            <div class="profile-stat">
+              <div class="profile-stat-value" id="profileJobs">0</div>
+              <div class="profile-stat-label">Jobs Done</div>
+            </div>
+          </div>
+          
+          <div class="doc-links" id="docLinks"></div>
+          
+          <div class="profile-actions">
+            <button class="btn btn-secondary" onclick="showEditModal()">Edit Profile</button>
+            <button class="btn btn-secondary" onclick="showFeedbackModal()">Feedback</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Booking History Section -->
+  <div class="container" style="max-width: 1200px; margin: 0 auto 40px; padding: 0 24px;">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">📜 Booking History</h2>
+          <p class="card-subtitle">Your completed and past services</p>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+          <select id="historyFilter" onchange="loadBookingHistory()" style="
+            padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border-color);
+            background: var(--bg-secondary); color: var(--text-primary); font-size: 13px;
+            cursor: pointer;
+          ">
+            <option value="all">All History</option>
+            <option value="completed">Completed</option>
+            <option value="rejected">Rejected/Cancelled</option>
+          </select>
+          <button class="btn btn-secondary" onclick="loadBookingHistory()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+            </svg>
+            Refresh
+          </button>
+        </div>
+      </div>
+      <div id="historyStats" style="display: none; padding: 16px 20px; background: var(--bg-secondary); border-radius: 12px; margin-bottom: 20px;">
+      </div>
+      <div id="bookingHistoryList">
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <h3>No completed bookings yet</h3>
+          <p>Your service history will appear here</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Profile Modal -->
+  <div class="modal-overlay" id="editModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Edit Profile</h3>
+        <button class="modal-close" onclick="closeModal('editModal')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Name</label>
+        <input type="text" id="editName" class="form-input">
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Station</label>
+        <select id="editStation" class="form-select">
+          <option>Secunderabad</option>
+          <option>Kacheguda</option>
+          <option>Hyderabad Deccan</option>
+          <option>Kazipet</option>
+          <option>Vijayawada</option>
+          <option>Warangal</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Languages</label>
+        <input type="text" id="editLangs" class="form-input" placeholder="Telugu, Hindi, English">
+      </div>
+      
+      <button class="btn btn-dark" style="width: 100%;" onclick="saveProfile()">Save Changes</button>
+    </div>
+  </div>
+
+  <!-- Feedback Modal -->
+  <div class="modal-overlay" id="feedbackModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Your Feedback</h3>
+        <button class="modal-close" onclick="closeModal('feedbackModal')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div id="feedbackList">
+        <p style="color: var(--text-secondary);">Loading feedback...</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="auth.js"></script>
+  <script>
+    // ==================== TOAST NOTIFICATION ====================
+    function showToast(message, duration = 4000) {
+      // Remove existing toast if any
+      const existingToast = document.getElementById('assistantToast');
+      if (existingToast) existingToast.remove();
+      
+      const toast = document.createElement('div');
+      toast.id = 'assistantToast';
+      toast.style.cssText = `
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--text-primary);
+        color: var(--bg-primary);
+        padding: 16px 24px;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 500;
+        z-index: 10000;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        animation: slideUp 0.3s ease-out;
+      `;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.style.animation = 'fadeOut 0.3s ease-out forwards';
+        setTimeout(() => toast.remove(), 300);
+      }, duration);
+    }
+    
+    // ==================== THEME ====================
+    function toggleTheme() {
+      document.body.classList.toggle('dark');
+      localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+    }
+    if (localStorage.getItem('theme') === 'dark') {
+      document.body.classList.add('dark');
+    }
+
+    // ==================== USER PROFILE ====================
+    let navCurrentUser = null;
+    let userAvatar = null;
+
+    function getToken() {
+      return localStorage.getItem('railcare_token');
+    }
+
+    function checkAuthNav() {
+      const token = getToken();
+      if (!token) {
+        showSignInButton();
+        return;
+      }
+
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const expiry = payload.exp * 1000;
+        
+        if (expiry < Date.now()) {
+          localStorage.removeItem('railcare_token');
+          showSignInButton();
+          return;
+        }
+
+        navCurrentUser = { name: payload.name, phone: '', role: payload.role };
+        userAvatar = localStorage.getItem('railcare_avatar');
+        showUserProfile(navCurrentUser);
+      } catch (e) {
+        showSignInButton();
+      }
+    }
+
+    function showSignInButton() {
+      document.getElementById('signInBtn')?.classList.remove('hidden');
+      document.getElementById('profileSection')?.classList.remove('active');
+    }
+
+    function showUserProfile(user) {
+      document.getElementById('signInBtn')?.classList.add('hidden');
+      document.getElementById('profileSection')?.classList.add('active');
+
+      const name = user.name || 'Assistant';
+      const initials = getInitials(name);
+
+      const navUserName = document.getElementById('navUserName');
+      if (navUserName) navUserName.textContent = name.split(' ')[0];
+      
+      const navAvatarInitials = document.getElementById('navAvatarInitials');
+      if (navAvatarInitials) navAvatarInitials.textContent = initials;
+      
+      const dropdownUserName = document.getElementById('dropdownUserName');
+      if (dropdownUserName) dropdownUserName.textContent = name;
+      
+      const dropdownUserPhone = document.getElementById('dropdownUserPhone');
+      if (dropdownUserPhone) dropdownUserPhone.textContent = user.role === 'assistant' ? 'Assistant Account' : (user.phone || 'Phone not set');
+      
+      const dropdownAvatarInitials = document.getElementById('dropdownAvatarInitials');
+      if (dropdownAvatarInitials) dropdownAvatarInitials.textContent = initials;
+      
+      const settingsAvatarInitials = document.getElementById('settingsAvatarInitials');
+      if (settingsAvatarInitials) settingsAvatarInitials.textContent = initials;
+      
+      const settingsName = document.getElementById('settingsName');
+      if (settingsName) settingsName.value = name;
+      
+      const settingsPhone = document.getElementById('settingsPhone');
+      if (settingsPhone) settingsPhone.value = user.phone || '';
+
+      if (userAvatar) {
+        updateAvatarImages(userAvatar);
+      }
+    }
+
+    function getInitials(name) {
+      return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    }
+
+    function updateAvatarImages(src) {
+      const avatarImgs = ['navAvatarImg', 'dropdownAvatarImg', 'settingsAvatarImg'];
+      const avatarInitials = ['navAvatarInitials', 'dropdownAvatarInitials', 'settingsAvatarInitials'];
+      
+      avatarImgs.forEach((id, i) => {
+        const img = document.getElementById(id);
+        const initials = document.getElementById(avatarInitials[i]);
+        if (img && initials) {
+          if (src) {
+            img.src = src;
+            img.style.display = 'block';
+            initials.style.display = 'none';
+          } else {
+            img.style.display = 'none';
+            initials.style.display = 'block';
+          }
+        }
+      });
+    }
+
+    function toggleProfileDropdown() {
+      const dropdown = document.getElementById('profileDropdown');
+      const trigger = document.querySelector('.profile-trigger');
+      dropdown?.classList.toggle('show');
+      trigger?.classList.toggle('open');
+    }
+
+    document.addEventListener('click', (e) => {
+      const profileSection = document.getElementById('profileSection');
+      if (profileSection && !profileSection.contains(e.target)) {
+        document.getElementById('profileDropdown')?.classList.remove('show');
+        document.querySelector('.profile-trigger')?.classList.remove('open');
+      }
+    });
+
+    function openSettings() {
+      document.getElementById('settingsModal')?.classList.add('show');
+      document.getElementById('profileDropdown')?.classList.remove('show');
+      document.querySelector('.profile-trigger')?.classList.remove('open');
+    }
+
+    function closeSettings() {
+      document.getElementById('settingsModal')?.classList.remove('show');
+    }
+
+    function handleAvatarUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      if (file.size > 2 * 1024 * 1024) {
+        showToast('Image too large. Max 2MB allowed.');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        userAvatar = e.target.result;
+        localStorage.setItem('railcare_avatar', userAvatar);
+        updateAvatarImages(userAvatar);
+        showToast('Profile photo updated!');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeAvatar() {
+      userAvatar = null;
+      localStorage.removeItem('railcare_avatar');
+      updateAvatarImages(null);
+      showToast('Profile photo removed');
+    }
+
+    function saveSettings() {
+      const name = document.getElementById('settingsName')?.value.trim();
+      if (!name) {
+        showToast('Name is required');
+        return;
+      }
+      if (navCurrentUser) navCurrentUser.name = name;
+      showUserProfile(navCurrentUser || { name });
+      closeSettings();
+      showToast('Settings saved!');
+    }
+
+    function logoutUser() {
+      localStorage.removeItem('railcare_token');
+      localStorage.removeItem('railcare_avatar');
+      navCurrentUser = null;
+      userAvatar = null;
+      showSignInButton();
+      document.getElementById('profileDropdown')?.classList.remove('show');
+      showToast('Signed out successfully');
+      setTimeout(() => { window.location.href = 'login-premium.html'; }, 1000);
+    }
+
+    // Check auth on load - ensure DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', checkAuthNav);
+    } else {
+      checkAuthNav();
+    }
+
+    // ==================== MODALS ====================
+    function showEditModal() {
+      if (!assistant) return;
+      document.getElementById('editName').value = assistant.name || '';
+      document.getElementById('editStation').value = assistant.station || '';
+      document.getElementById('editLangs').value = (assistant.languages || []).join(', ');
+      document.getElementById('editModal').classList.add('active');
+    }
+
+    function showFeedbackModal() {
+      document.getElementById('feedbackModal').classList.add('active');
+      loadFeedback();
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+    }
+
+    // Close modal on outside click
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) overlay.classList.remove('active');
+      });
+    });
+
+    // ==================== ASSISTANT STATE ====================
+    let assistant = null;
+    const LS_KEY = 'railmitra_assistantId';
+    const storedId = localStorage.getItem(LS_KEY);
+    let currentUser = null;
+
+    async function loadCurrentUser() {
+      try {
+        const fetcher = window.RailCareAuth?.authFetch || fetch;
+        const res = await fetcher('/api/auth/me');
+        if (!res.ok) return null;
+        const j = await res.json();
+        return j.success ? j.user : null;
+      } catch (e) { return null; }
+    }
+
+    async function checkDashboardAccess() {
+      try {
+        const fetcher = window.RailCareAuth?.authFetch || fetch;
+        const res = await fetcher('/api/assistants/dashboard-access');
+        const data = await res.json();
+        
+        if (!data.success || !data.canAccess) {
+          // Show access denied message instead of redirecting
+          showAccessDenied(data.message || 'You need to be an approved assistant to access this dashboard.');
+          return false;
+        }
+        
+        if (data.assistant) {
+          assistant = data.assistant;
+          try { localStorage.setItem(LS_KEY, assistant._id); } catch (e) {}
+        }
+        
+        return true;
+      } catch (err) {
+        // Show access denied message instead of redirecting
+        showAccessDenied('Please sign in as an assistant or apply to become one.');
+        return false;
+      }
+    }
+    
+    function showAccessDenied(message) {
+      const container = document.querySelector('.main-container');
+      if (container) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 80px 20px;">
+            <div style="font-size: 64px; margin-bottom: 24px;">🔒</div>
+            <h2 style="font-size: 28px; margin-bottom: 16px; color: var(--text-primary);">Access Required</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 32px; max-width: 400px; margin-left: auto; margin-right: auto;">${message}</p>
+            <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+              <a href="login-premium.html" class="btn-primary" style="padding: 12px 24px;">Sign In</a>
+              <a href="assistant-apply.html" class="btn-primary" style="padding: 12px 24px; background: transparent; border: 1px solid var(--border-color); color: var(--text-primary);">Apply as Assistant</a>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    // ==================== INITIALIZATION ====================
+    (async () => {
+      await window.RailCareAuth?.enforceRole?.('assistant');
+      
+      const hasAccess = await checkDashboardAccess();
+      if (!hasAccess) return;
+      
+      if (assistant) {
+        renderAssistant();
+        startAssistantPolling();
+        loadBookings();
+        loadBookingHistory();
+        updateStats();
+      }
+    })();
+
+    // Legacy fallback
+    (async () => {
+      await new Promise(r => setTimeout(r, 500));
+      
+      if (assistant) return;
+      
+      currentUser = await loadCurrentUser();
+      if (currentUser && currentUser.role === 'assistant') {
+        try {
+          const fetcher = window.RailCareAuth?.authFetch || fetch;
+          const r = await fetcher('/api/assistants');
+          const list = await r.json();
+          const found = list.find(a => (a.userId && (a.userId.toString() === (currentUser.id || '').toString())) || a.name === currentUser.name);
+          if (found) {
+            if (found.applicationStatus !== 'Approved') {
+              showAccessDenied('Your assistant application is pending approval. Please check back later.');
+              return;
+            }
+            assistant = found;
+            try { localStorage.setItem(LS_KEY, assistant._id); } catch (e) {}
+            renderAssistant();
+            startAssistantPolling();
+            loadBookings();
+            loadBookingHistory();
+            updateStats();
+            return;
+          }
+        } catch (e) {}
+      }
+
+      if (storedId) {
+        try {
+          const fetcher = window.RailCareAuth?.authFetch || fetch;
+          const res = await fetcher(`/api/assistants/${storedId}`);
+          const data = await res.json();
+          if (data.success && data.assistant) {
+            if (data.assistant.applicationStatus !== 'Approved') {
+              showAccessDenied('Your assistant application is pending approval. Please check back later.');
+              return;
+            }
+            assistant = data.assistant;
+            renderAssistant();
+            startAssistantPolling();
+            loadBookings();
+            loadBookingHistory();
+            updateStats();
+          } else {
+            localStorage.removeItem(LS_KEY);
+          }
+        } catch (err) { localStorage.removeItem(LS_KEY); }
+      }
+    })();
+
+    // ==================== REGISTRATION ====================
+    document.getElementById('registerBtn')?.addEventListener('click', async () => {
+      const name = document.getElementById('aName').value.trim();
+      const station = document.getElementById('aStation').value.trim();
+      const langs = document.getElementById('aLangs').value.split(',').map(s=>s.trim()).filter(Boolean);
+      
+      if (!name || !station) return alert('Please fill name and station');
+      
+      try {
+        const fetcher = window.RailCareAuth?.authFetch || fetch;
+        
+        // Check for duplicates
+        try {
+          const listRes = await fetcher('/api/assistants');
+          const list = await listRes.json();
+          const dup = list.find(a => a.name === name && a.station === station);
+          if (dup) {
+            assistant = dup;
+            try { localStorage.setItem(LS_KEY, assistant._id); } catch(e){}
+            renderAssistant();
+            loadBookings();
+            startAssistantPolling();
+            updateStats();
+            return alert('Already registered — loading your profile.');
+          }
+        } catch (e) {}
+
+        const res = await fetcher('/api/assistants/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, station, languages: langs })
+        });
+        
+        const data = await res.json();
+        if (data.success) {
+          assistant = data.assistant;
+          try { localStorage.setItem(LS_KEY, assistant._id); } catch (e) {}
+          renderAssistant();
+          loadBookings();
+          startAssistantPolling();
+          updateStats();
+        } else {
+          alert('Registration failed: ' + (data.message || JSON.stringify(data)));
+        }
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+
+    // ==================== RENDER ASSISTANT ====================
+    function renderAssistant() {
+      if (!assistant) return;
+      
+      document.getElementById('registerCard').style.display = 'none';
+      document.getElementById('profileCard').style.display = 'block';
+      
+      document.getElementById('profileName').textContent = assistant.name;
+      document.getElementById('profileStation').textContent = assistant.station;
+      
+      const badge = document.getElementById('profileBadge');
+      const badgeText = document.getElementById('profileBadgeText');
+      if (assistant.verified) {
+        badge.className = 'profile-badge verified';
+        badgeText.textContent = 'Verified';
+      } else {
+        badge.className = 'profile-badge pending';
+        badgeText.textContent = 'Pending Approval';
+      }
+      
+      const rating = assistant.rating;
+      document.getElementById('profileRating').textContent = rating ? rating.toFixed(1) : '—';
+      document.getElementById('profileJobs').textContent = assistant.ratingCount || 0;
+      
+      // Profile photo
+      const avatarEl = document.getElementById('profileAvatar');
+      const photoUrl = assistant.photoFilePath || null;
+      if (photoUrl) {
+        avatarEl.innerHTML = `<img src="${photoUrl}" alt="Photo">`;
+      } else {
+        avatarEl.innerHTML = '👷';
+      }
+      
+      // Document links
+      const docsWrap = document.getElementById('docLinks');
+      const aadharUrl = assistant.aadharFilePath || assistant.documents?.aadhar || null;
+      const panUrl = assistant.panFilePath || assistant.documents?.pan || null;
+      
+      let docsHtml = '';
+      if (aadharUrl) docsHtml += `<a href="${aadharUrl}" target="_blank" class="doc-link">📄 Aadhar</a>`;
+      if (panUrl) docsHtml += `<a href="${panUrl}" target="_blank" class="doc-link">📄 PAN</a>`;
+      docsWrap.innerHTML = docsHtml;
+    }
+
+    // ==================== STATS ====================
+    function updateStats() {
+      if (!assistant) return;
+      
+      document.getElementById('statRating').textContent = assistant.rating ? assistant.rating.toFixed(1) : '—';
+      
+      // These would come from actual API data
+      const completed = assistant.ratingCount || 0;
+      document.getElementById('statCompleted').textContent = completed;
+      document.getElementById('statEarnings').textContent = '₹' + (completed * 50);
+    }
+
+    // ==================== BOOKINGS ====================
+    // DISTRIBUTED WORKFLOW: Assistants see ONLY tasks assigned to them
+    // For round-trip: Pickup assistant DOES NOT see drop tasks (and vice versa)
+    
+    // Helper function to render service direction for a booking
+    function renderServiceDirection(b) {
+      const myTasks = b._assignedTasks || [];
+      
+      // For round-trip with assigned tasks, show ONLY the task assigned to this assistant
+      if (b.serviceType === 'round_trip' && myTasks.length > 0) {
+        return myTasks.map(task => {
+          const isPickup = task.taskType === 'pickup';
+          const taskColor = isPickup ? 'var(--emerald)' : 'var(--sapphire)';
+          const taskBg = isPickup ? 'rgba(16, 185, 129, 0.15)' : 'rgba(59, 130, 246, 0.15)';
+          const taskBorder = isPickup ? 'rgba(16, 185, 129, 0.4)' : 'rgba(59, 130, 246, 0.4)';
+          const taskIcon = isPickup ? '🚉' : '🚶‍♂️';
+          const taskLabel = isPickup ? 'BOARDING ASSISTANCE' : 'ARRIVAL ASSISTANCE';
+          const direction = isPickup ? 'Platform → Train' : 'Train → Platform';
+          const action = isPickup 
+            ? 'Meet passenger at platform. Help with luggage. Guide to coach. Assist boarding.'
+            : 'Arrive before train. Identify coach. Help passenger deboard. Assist with luggage. Guide to exit.';
+          
+          const scheduledTime = task.scheduledTime 
+            ? new Date(task.scheduledTime).toLocaleString('en-IN', { 
+                day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' 
+              })
+            : '';
+          
+          let html = '<div style="padding: 12px; background: linear-gradient(135deg, ' + taskBg + '); border: 2px solid ' + taskBorder + '; border-radius: 10px; margin-bottom: 12px;">';
+          html += '<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">';
+          html += '<div style="display: flex; align-items: center; gap: 10px;">';
+          html += '<span style="font-size: 22px;">' + taskIcon + '</span>';
+          html += '<div>';
+          html += '<div style="font-weight: 700; font-size: 15px; color: ' + taskColor + ';">' + taskLabel + '</div>';
+          html += '<div style="font-size: 13px; font-weight: 600; color: var(--text-primary);">' + direction + '</div>';
+          html += '</div></div>';
+          html += '<div style="text-align: right;">';
+          html += '<div style="font-size: 11px; color: var(--text-tertiary);">Station</div>';
+          html += '<div style="font-weight: 700; color: ' + taskColor + ';">' + task.stationCode + '</div>';
+          html += '</div></div>';
+          if (scheduledTime) {
+            html += '<div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">⏰ Report Time: <strong>' + scheduledTime + '</strong></div>';
+          }
+          html += '<div style="font-size: 12px; color: var(--text-secondary); padding: 8px; background: rgba(0,0,0,0.05); border-radius: 6px;">';
+          html += '<strong>Your Action:</strong> ' + action + '</div>';
+          html += '<div style="margin-top: 8px; padding: 6px 10px; background: rgba(139, 92, 246, 0.1); border-radius: 6px; font-size: 11px; color: var(--purple);">';
+          html += 'ℹ️ This is YOUR assigned task from a Round Trip booking. Another assistant handles the other leg.</div></div>';
+          return html;
+        }).join('');
+      }
+      
+      // Regular service type display
+      if (b.serviceType) {
+        const st = b.serviceType;
+        const bgColor = st === 'pickup' ? 'rgba(16, 185, 129, 0.15)' : st === 'drop' ? 'rgba(59, 130, 246, 0.15)' : 'rgba(139, 92, 246, 0.15)';
+        const borderColor = st === 'pickup' ? 'rgba(16, 185, 129, 0.4)' : st === 'drop' ? 'rgba(59, 130, 246, 0.4)' : 'rgba(139, 92, 246, 0.4)';
+        const textColor = st === 'pickup' ? 'var(--emerald)' : st === 'drop' ? 'var(--sapphire)' : 'var(--purple)';
+        const icon = st === 'pickup' ? '🚉' : st === 'drop' ? '🚶‍♂️' : '🔄';
+        const label = st === 'pickup' ? 'BOARDING ASSISTANCE' : st === 'drop' ? 'ARRIVAL ASSISTANCE' : 'ROUND TRIP';
+        const dir = st === 'pickup' ? 'Platform → Train' : st === 'drop' ? 'Train → Platform' : 'Boarding + Arrival';
+        const action = st === 'pickup' 
+          ? 'Meet passenger at platform. Help with luggage. Guide to coach. Assist boarding.' 
+          : st === 'drop' 
+            ? 'Arrive before train. Identify coach. Help passenger deboard. Assist with luggage. Guide to exit.' 
+            : 'Two tasks: First assist boarding, then assist arrival at different station.';
+        
+        let html = '<div style="padding: 12px; background: linear-gradient(135deg, ' + bgColor + '); border: 2px solid ' + borderColor + '; border-radius: 10px; margin-bottom: 12px;">';
+        html += '<div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">';
+        html += '<span style="font-size: 22px;">' + icon + '</span>';
+        html += '<div>';
+        html += '<div style="font-weight: 700; font-size: 15px; color: ' + textColor + ';">' + label + '</div>';
+        html += '<div style="font-size: 13px; font-weight: 600; color: var(--text-primary);">' + dir + '</div>';
+        html += '</div></div>';
+        html += '<div style="font-size: 12px; color: var(--text-secondary); padding: 8px; background: rgba(0,0,0,0.05); border-radius: 6px;">';
+        html += '<strong>Your Action:</strong> ' + action + '</div></div>';
+        return html;
+      }
+      
+      return '';
+    }
+    
+    async function loadBookings() {
+      if (!assistant) return;
+      
+      const container = document.getElementById('bookingsList');
+      container.innerHTML = '<p style="color: var(--text-secondary);">Loading...</p>';
+      
+      try {
+        const fetcher = window.RailCareAuth?.authFetch || fetch;
+        
+        // First, get tasks specifically assigned to this assistant
+        let assignedTasks = [];
+        try {
+          const tasksRes = await fetcher(`/api/scheduling/assistant/${assistant._id}/tasks?hoursAhead=48`);
+          const tasksData = await tasksRes.json();
+          assignedTasks = tasksData.success ? tasksData.tasks : [];
+        } catch (e) {
+          console.log('[loadBookings] Could not load assigned tasks:', e.message);
+        }
+        
+        console.log('[loadBookings] Assigned tasks for assistant:', assignedTasks.map(t => ({
+          taskId: t.taskId, 
+          taskType: t.taskType, 
+          bookingId: t.booking?.bookingId
+        })));
+        
+        // Also get general bookings at this station (for accepting new ones)
+        const res = await fetcher('/api/bookings');
+        const allBookings = await res.json();
+        
+        console.log('[loadBookings] All bookings:', allBookings.map(b => ({id: b._id, status: b.status, station: b.station})));
+        console.log('[loadBookings] Assistant station:', assistant.station);
+
+        const normalizeStationName = (value) => (value || '')
+          .toString()
+          .trim()
+          .toLowerCase()
+          .replace(/\s+/g, ' ');
+
+        const normalizeStationLoose = (value) => normalizeStationName(value)
+          .replace(/[^a-z0-9 ]/g, '');
+
+        const stationMatchesBooking = (booking) => {
+          const assistantStation = assistant?.station;
+          const bookingStation = booking?.station;
+          const bookingStationCode = booking?.stationCode;
+
+          const a = normalizeStationName(assistantStation);
+          const b = normalizeStationName(bookingStation);
+          if (a && b && a === b) return true;
+
+          const aLoose = normalizeStationLoose(assistantStation);
+          const bLoose = normalizeStationLoose(bookingStation);
+          if (aLoose && bLoose && aLoose === bLoose) return true;
+
+          // Some datasets store assistant.station as stationCode (e.g. NDLS)
+          const aUpper = (assistantStation || '').toString().trim().toUpperCase();
+          const codeUpper = (bookingStationCode || '').toString().trim().toUpperCase();
+          if (aUpper && codeUpper && aUpper === codeUpper) return true;
+
+          return false;
+        };
+        
+        // Filter bookings:
+        // 1. Bookings at assistant's station that are Pending/Searching (for accepting) - NOT round_trip
+        // 2. Bookings where assistant is assigned via booking.assistantId (legacy)
+        // 3. Bookings with tasks assigned to this assistant (distributed workflow)
+        
+        const assignedBookingIds = new Set(assignedTasks.map(t => t.booking?.bookingId).filter(Boolean));
+        
+        const relevant = allBookings.filter(b => {
+          // If this booking has a task assigned to this assistant, show it
+          if (assignedBookingIds.has(b._id)) return true;
+          
+          // If assistant is directly assigned to booking (legacy), show it
+          const bAssistantId = b.assistantId?._id || b.assistantId;
+          if (bAssistantId && bAssistantId.toString() === assistant._id.toString()) return true;
+          
+          // For new bookings at this station (Pending/Searching only)
+          // For round_trip: handled via task-level assignment by admin
+          if (stationMatchesBooking(b) && ['Pending', 'Searching'].includes(b.status)) {
+            if (b.serviceType === 'round_trip') {
+              // Round-trip uses distributed task assignment - admin assigns per task
+              return false;
+            }
+            return true;
+          }
+          
+          // Show in-progress bookings assigned to this assistant
+          if (['Accepted', 'Start Pending', 'In Progress', 'Completion Pending'].includes(b.status)) {
+            const bAssistantId2 = b.assistantId?._id || b.assistantId;
+            if (bAssistantId2 && bAssistantId2.toString() === assistant._id.toString()) {
+              return true;
+            }
+          }
+          
+          return false;
+        });
+        
+        // Attach task info to bookings for display
+        relevant.forEach(b => {
+          b._assignedTasks = assignedTasks.filter(t => t.booking?.bookingId === b._id);
+        });
+        
+        console.log('[loadBookings] Filtered relevant:', relevant.map(b => ({id: b._id, status: b.status, taskCount: b._assignedTasks?.length || 0})));
+        
+        if (relevant.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              <h3>No pending bookings</h3>
+              <p>New booking requests will appear here</p>
+            </div>
+          `;
+          document.getElementById('statToday').textContent = '0';
+          return;
+        }
+        
+        document.getElementById('statToday').textContent = relevant.length;
+        
+        container.innerHTML = relevant.map(b => {
+          const statusClass = {
+            'Pending': 'status-pending',
+            'Searching': 'status-pending',
+            'Accepted': 'status-accepted',
+            'Start Pending': 'status-accepted',
+            'In Progress': 'status-progress',
+            'Completion Pending': 'status-progress'
+          }[b.status] || 'status-pending';
+          
+          const services = Array.isArray(b.services) 
+            ? b.services.map(s => `<span class="service-tag">${s}</span>`).join('')
+            : `<span class="service-tag">${b.service || '—'}</span>`;
+          
+          let actions = '';
+          if (b.status === 'Pending' || b.status === 'Searching') {
+            actions = `
+              <button class="btn btn-success" onclick="acceptBooking('${b._id}')">Accept</button>
+              <button class="btn btn-danger" onclick="rejectBooking('${b._id}')">Decline</button>
+            `;
+          } else if (b.status === 'Accepted') {
+            actions = `<button class="btn btn-warning" onclick="startProgress('${b._id}')">Start Service</button>`;
+          } else if (b.status === 'Start Pending') {
+            actions = `
+              <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <input type="text" id="startOtp-${b._id}" placeholder="Enter Start OTP" 
+                  style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 8px; width: 140px; font-size: 14px;">
+                <button class="btn btn-success" onclick="verifyStartOtp('${b._id}')">Verify OTP</button>
+              </div>
+              <span style="color: var(--amber); font-size: var(--text-xs); margin-top: 4px; display: block;">📱 Ask passenger for Start OTP</span>
+            `;
+          } else if (b.status === 'In Progress') {
+            actions = `<button class="btn btn-success" onclick="requestComplete('${b._id}')">Mark Complete</button>`;
+          } else if (b.status === 'Completion Pending') {
+            actions = `
+              <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <input type="text" id="completeOtp-${b._id}" placeholder="Enter Completion OTP" 
+                  style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 8px; width: 160px; font-size: 14px;">
+                <button class="btn btn-success" onclick="verifyCompleteOtp('${b._id}')">Complete</button>
+              </div>
+              <span style="color: var(--amber); font-size: var(--text-xs); margin-top: 4px; display: block;">📱 Ask passenger for Completion OTP</span>
+            `;
+          }
+          
+          return `
+            <div class="booking-card">
+              <div class="booking-card-header">
+                <span class="booking-passenger">${b.passengerName || 'Passenger'}</span>
+                <span class="booking-status ${statusClass}">${b.status}</span>
+              </div>
+              <div class="booking-details">
+                <div class="booking-detail">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                  ${b.date || '—'}
+                </div>
+                <div class="booking-detail">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                  </svg>
+                  ${b.time || '—'}
+                </div>
+                <div class="booking-detail">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                  </svg>
+                  ${b.station}
+                </div>
+                <div class="booking-detail">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                  </svg>
+                  ${b.passengerPhone || b.phone || '—'}
+                </div>
+              </div>
+              
+              <!-- Train & Seat Details -->
+              <div class="booking-train-details" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 12px; background: var(--bg-secondary); border-radius: 8px; margin: 12px 0; font-size: 13px;">
+                <div>
+                  <span style="color: var(--text-tertiary); font-size: 11px; display: block;">Train</span>
+                  <span style="font-weight: 600;">${b.trainName || b.trainNumber || '—'}</span>
+                </div>
+                <div>
+                  <span style="color: var(--text-tertiary); font-size: 11px; display: block;">Coach</span>
+                  <span style="font-weight: 600;">${b.coach || '—'}</span>
+                </div>
+                <div>
+                  <span style="color: var(--text-tertiary); font-size: 11px; display: block;">Seat</span>
+                  <span style="font-weight: 600;">${b.seat || '—'}</span>
+                </div>
+              </div>
+              
+              <!-- SERVICE DIRECTION (CRITICAL FOR ASSISTANT) -->
+              ${renderServiceDirection(b)}
+              
+              ${b.passengerNotes ? `
+              <div style="padding: 8px 12px; background: rgba(59, 130, 246, 0.1); border-radius: 6px; margin-bottom: 12px; font-size: 12px; color: var(--sapphire);">
+                <strong>Notes:</strong> ${b.passengerNotes}
+              </div>
+              ` : ''}
+              
+              ${(() => {
+                // Multi-luggage display with weight info
+                const luggageWeightInfo = {
+                  small: '≤5kg',
+                  medium: '≤10kg', 
+                  large: '>10kg'
+                };
+                const luggageIcons = { small: '🎒', medium: '🧳', large: '📦' };
+                
+                // Check for new luggageItems array first
+                if (b.luggageItems && b.luggageItems.length > 0) {
+                  const totalItems = b.luggageItems.reduce((sum, item) => sum + item.quantity, 0);
+                  const hasLarge = b.luggageItems.some(item => item.type === 'large');
+                  return `
+                    <div style="padding: 10px 12px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; margin-bottom: 12px;">
+                      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                        <span style="font-size: 20px;">📦</span>
+                        <span style="font-size: 11px; color: var(--text-tertiary);">Luggage to Handle (${totalItems} items)</span>
+                      </div>
+                      <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                        ${b.luggageItems.map(item => `
+                          <div style="display: flex; align-items: center; gap: 4px; padding: 4px 8px; background: var(--card-bg); border-radius: 4px; font-size: 12px;">
+                            <span>${luggageIcons[item.type] || '📦'}</span>
+                            <span style="font-weight: 600;">${item.type.charAt(0).toUpperCase() + item.type.slice(1)} ×${item.quantity}</span>
+                            <span style="font-size: 10px; color: var(--text-tertiary);">(${luggageWeightInfo[item.type] || ''})</span>
+                          </div>
+                        `).join('')}
+                      </div>
+                      <div style="margin-top: 8px; font-size: 11px; color: var(--text-secondary);">
+                        ${totalItems > 3 ? '⚠️ Heavy load — consider trolley' : hasLarge ? '💪 Large items — prepare accordingly' : '✓ Manageable load'}
+                      </div>
+                    </div>
+                  `;
+                }
+                // Fallback to legacy single luggage
+                else if (b.luggageSize && b.luggageSize !== 'none' && b.luggageQuantity > 0) {
+                  return `
+                    <div style="padding: 10px 12px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; margin-bottom: 12px;">
+                      <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 20px;">${luggageIcons[b.luggageSize] || '📦'}</span>
+                        <div>
+                          <span style="font-size: 11px; color: var(--text-tertiary); display: block;">Luggage to Handle</span>
+                          <span style="font-weight: 700; font-size: 15px; color: var(--amber);">
+                            ${b.luggageSize.charAt(0).toUpperCase() + b.luggageSize.slice(1)} ×${b.luggageQuantity}
+                            <span style="font-size: 11px; font-weight: 400; color: var(--text-tertiary);">(${luggageWeightInfo[b.luggageSize] || ''})</span>
+                          </span>
+                        </div>
+                      </div>
+                      <div style="margin-top: 6px; font-size: 11px; color: var(--text-secondary);">
+                        ${b.luggageQuantity > 3 ? '⚠️ Heavy load — consider trolley' : b.luggageSize === 'large' ? '💪 Large items — prepare accordingly' : ''}
+                      </div>
+                    </div>
+                  `;
+                }
+                return '';
+              })()}
+              
+              <div class="booking-services">${services}</div>
+              <div class="booking-actions">${actions}</div>
+            </div>
+          `;
+        }).join('');
+        
+      } catch (err) {
+        container.innerHTML = `<p style="color: var(--ruby);">Error loading bookings: ${err.message}</p>`;
+      }
+    }
+
+    // ==================== BOOKING ACTIONS ====================
+    async function acceptBooking(id) {
+      if (!assistant) return;
+      try {
+        const fetcher = window.RailCareAuth?.authFetch || fetch;
+        const res = await fetcher(`/api/bookings/${id}/accept`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ assistantId: assistant._id })
+        });
+        const data = await res.json();
+        if (data.success) {
+          loadBookings();
+        } else {
+          alert('Failed: ' + (data.message || JSON.stringify(data)));
+        }
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function rejectBooking(id) {
+      if (!confirm('Decline this booking?')) return;
+      try {
+        const fetcher = window.RailCareAuth?.authFetch || fetch;
+        const res = await fetcher(`/api/bookings/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'Rejected' })
+        });
+        const data = await res.json();
+        if (data.success) {
+          loadBookings();
+        } else {
+          alert('Failed: ' + (data.message || JSON.stringify(data)));
+        }
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function startProgress(id) {
+      try {
+        const fetcher = window.RailCareAuth?.authFetch || fetch;
+        const res = await fetcher(`/api/bookings/${id}/start`, { 
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ assistantId: assistant?._id })
+        });
+        const data = await res.json();
+        console.log('[startProgress] Response:', data);
+        if (data.success) {
+          // OTP is sent to passenger portal - assistant asks passenger for it
+          showToast('Start OTP sent to passenger. Please ask them to share it with you.');
+          // Small delay to ensure DB update is complete before reloading
+          setTimeout(() => loadBookings(), 300);
+        } else {
+          alert('Failed: ' + (data.message || JSON.stringify(data)));
+        }
+      } catch (err) {
+        console.error('[startProgress] Error:', err);
+        alert(err.message);
+      }
+    }
+
+    async function verifyStartOtp(id) {
+      const otpInput = document.getElementById(`startOtp-${id}`);
+      const otp = otpInput?.value?.trim();
+      
+      if (!otp) {
+        alert('Please enter the Start OTP from the passenger');
+        return;
+      }
+      
+      try {
+        const fetcher = window.RailCareAuth?.authFetch || fetch;
+        const res = await fetcher(`/api/bookings/${id}/verify-start-otp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ otp, assistantId: assistant?._id })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert('✅ Service started successfully!');
+          loadBookings();
+        } else {
+          alert('Failed: ' + (data.message || 'Invalid OTP'));
+        }
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function requestComplete(id) {
+      try {
+        const fetcher = window.RailCareAuth?.authFetch || fetch;
+        const res = await fetcher(`/api/bookings/${id}/complete-request`, { 
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ assistantId: assistant?._id })
+        });
+        const data = await res.json();
+        if (data.success) {
+          // OTP is sent to passenger portal - assistant asks passenger for it
+          showToast('Completion OTP sent to passenger. Please ask them to share it with you.');
+          setTimeout(() => loadBookings(), 300);
+        } else {
+          alert('Failed: ' + (data.message || JSON.stringify(data)));
+        }
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function verifyCompleteOtp(id) {
+      const otpInput = document.getElementById(`completeOtp-${id}`);
+      const otp = otpInput?.value?.trim();
+      
+      if (!otp) {
+        alert('Please enter the Completion OTP from the passenger');
+        return;
+      }
+      
+      try {
+        const fetcher = window.RailCareAuth?.authFetch || fetch;
+        const res = await fetcher(`/api/bookings/${id}/confirm-completion`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ otp, assistantId: assistant?._id })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert('✅ Service completed successfully!');
+          loadBookings();
+        } else {
+          alert('Failed: ' + (data.message || 'Invalid OTP'));
+        }
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    // ==================== PROFILE EDIT ====================
+    async function saveProfile() {
+      if (!assistant) return;
+      
+      const name = document.getElementById('editName').value.trim();
+      const station = document.getElementById('editStation').value;
+      const langs = document.getElementById('editLangs').value.split(',').map(s=>s.trim()).filter(Boolean);
+      
+      try {
+        const fetcher = window.RailCareAuth?.authFetch || fetch;
+        const res = await fetcher(`/api/assistants/${assistant._id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, station, languages: langs })
+        });
+        
+        const data = await res.json();
+        if (data.success) {
+          assistant = data.assistant;
+          renderAssistant();
+          closeModal('editModal');
+        } else {
+          alert('Failed: ' + (data.message || JSON.stringify(data)));
+        }
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    // ==================== FEEDBACK ====================
+    async function loadFeedback() {
+      if (!assistant) return;
+      
+      const container = document.getElementById('feedbackList');
+      
+      try {
+        const fetcher = window.RailCareAuth?.authFetch || fetch;
+        const res = await fetcher(`/api/feedback/assistant/${assistant._id}`);
+        const feedbacks = await res.json();
+        
+        if (!feedbacks.length) {
+          container.innerHTML = '<p style="color: var(--text-secondary);">No feedback yet.</p>';
+          return;
+        }
+        
+        container.innerHTML = feedbacks.map(f => {
+          const stars = f.assistantRating || f.rating || 0;
+          const date = new Date(f.createdAt).toLocaleDateString('en-IN', {
+            day: 'numeric', month: 'short', year: 'numeric'
+          });
+          return `
+            <div style="padding: 16px; background: var(--bg-secondary); border-radius: 12px; margin-bottom: 12px; border: 1px solid var(--border-color);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-weight: 600; color: var(--text-primary);">${f.passengerName || 'Passenger'}</span>
+                <span style="font-size: 12px; color: var(--text-tertiary);">${date}</span>
+              </div>
+              <div style="font-size: 20px; color: #f59e0b; margin-bottom: 8px;">${'★'.repeat(stars)}${'☆'.repeat(5 - stars)}</div>
+              ${f.assistantFeedback || f.comments ? `<p style="color: var(--text-secondary); font-size: 14px; margin: 0;">"${f.assistantFeedback || f.comments}"</p>` : ''}
+              ${f.wouldRecommend !== undefined ? `
+                <div style="margin-top: 8px;">
+                  <span style="
+                    padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600;
+                    background: ${f.wouldRecommend ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)'};
+                    color: ${f.wouldRecommend ? '#10b981' : '#ef4444'};
+                  ">${f.wouldRecommend ? '👍 Would Recommend' : '👎 Not Recommended'}</span>
+                </div>
+              ` : ''}
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        container.innerHTML = `<p style="color: var(--ruby);">Error: ${err.message}</p>`;
+      }
+    }
+
+    // ==================== BOOKING HISTORY ====================
+    async function loadBookingHistory() {
+      if (!assistant) return;
+      
+      const container = document.getElementById('bookingHistoryList');
+      const statsContainer = document.getElementById('historyStats');
+      const filter = document.getElementById('historyFilter')?.value || 'all';
+      
+      container.innerHTML = '<div class="loading" style="text-align: center; padding: 40px;"><p style="color: var(--text-secondary);">Loading history...</p></div>';
+      
+      try {
+        const fetcher = window.RailCareAuth?.authFetch || fetch;
+        const res = await fetcher('/api/bookings');
+        const bookings = await res.json();
+
+        const bookingById = {};
+        (Array.isArray(bookings) ? bookings : []).forEach(b => {
+          if (b && b._id) bookingById[b._id] = b;
+        });
+
+        // Also include bookings where this assistant handled a distributed task
+        // (round_trip tasks may not set booking.assistantId).
+        let taskBookingIds = [];
+        try {
+          const tRes = await fetcher(`/api/scheduling/assistant/${assistant._id}/tasks?status=completed,cancelled&hoursAhead=0`);
+          const tData = await tRes.json();
+          const tasks = tData?.tasks || [];
+          taskBookingIds = tasks
+            .map(t => t?.booking?.bookingId)
+            .filter(Boolean);
+        } catch (e) {
+          // ignore task history errors; fall back to booking.assistantId only
+        }
+        
+        // Filter bookings for this assistant (direct assignment OR task assignment)
+        const myBookingIdSet = new Set();
+        (Array.isArray(bookings) ? bookings : []).forEach(b => {
+          if (!b || !b._id) return;
+          if (b.assistantId && (b.assistantId._id === assistant._id || b.assistantId === assistant._id)) {
+            myBookingIdSet.add(b._id);
+          }
+        });
+        taskBookingIds.forEach(id => myBookingIdSet.add(id));
+        const myBookings = Array.from(myBookingIdSet)
+          .map(id => bookingById[id])
+          .filter(Boolean);
+        
+        // Separate by status
+        const completedBookings = myBookings.filter(b => b.status === 'Completed');
+        const rejectedBookings = myBookings.filter(b => ['Rejected', 'Cancelled'].includes(b.status));
+        
+        // Apply filter
+        let filteredBookings;
+        if (filter === 'completed') {
+          filteredBookings = completedBookings;
+        } else if (filter === 'rejected') {
+          filteredBookings = rejectedBookings;
+        } else {
+          filteredBookings = [...completedBookings, ...rejectedBookings];
+        }
+        
+        // Sort by date (newest first)
+        filteredBookings.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        
+        // Show stats
+        statsContainer.style.display = 'flex';
+        statsContainer.innerHTML = `
+          <div style="display: flex; gap: 24px; flex-wrap: wrap; width: 100%;">
+            <div style="text-align: center;">
+              <div style="font-size: 24px; font-weight: 700; color: var(--text-primary);">${completedBookings.length + rejectedBookings.length}</div>
+              <div style="font-size: 12px; color: var(--text-tertiary);">Total History</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 24px; font-weight: 700; color: #10b981;">${completedBookings.length}</div>
+              <div style="font-size: 12px; color: var(--text-tertiary);">Completed</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 24px; font-weight: 700; color: #ef4444;">${rejectedBookings.length}</div>
+              <div style="font-size: 12px; color: var(--text-tertiary);">Rejected/Cancelled</div>
+            </div>
+            <div style="flex: 1;"></div>
+            <div style="text-align: center;">
+              <div style="font-size: 12px; color: var(--text-tertiary);">Showing</div>
+              <div style="font-size: 16px; font-weight: 600; color: var(--primary);">${filteredBookings.length} bookings</div>
+            </div>
+          </div>
+        `;
+        
+        if (filteredBookings.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              <h3>No bookings found</h3>
+              <p>${filter === 'all' ? 'Your service history will appear here' : `No ${filter} bookings yet`}</p>
+            </div>
+          `;
+          return;
+        }
+        
+        // Fetch feedback for completed bookings
+        const feedbackPromises = filteredBookings
+          .filter(b => b.status === 'Completed')
+          .map(async b => {
+          try {
+            const fbRes = await fetcher(`/api/feedback/booking/${b._id}`);
+            const fbData = await fbRes.json();
+            return { bookingId: b._id, feedback: fbData.found ? fbData.feedback : null };
+          } catch (e) {
+            return { bookingId: b._id, feedback: null };
+          }
+        });
+        
+        const feedbackResults = await Promise.all(feedbackPromises);
+        const feedbackMap = {};
+        feedbackResults.forEach(fr => { feedbackMap[fr.bookingId] = fr.feedback; });
+        
+        container.innerHTML = filteredBookings.map((b, index) => {
+          const date = new Date(b.createdAt).toLocaleDateString('en-IN', {
+            day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+          });
+          const services = Array.isArray(b.services) ? b.services.join(', ') : (b.service || '—');
+          const feedback = feedbackMap[b._id];
+          const stars = feedback ? (feedback.assistantRating || feedback.rating || 0) : 0;
+          
+          const isCompleted = b.status === 'Completed';
+          const statusColor = isCompleted ? '#10b981' : '#ef4444';
+          const statusBg = isCompleted ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)';
+          const statusIcon = isCompleted ? '✓' : '✗';
+          
+          return `
+            <div style="
+              background: var(--bg-secondary); border-radius: 16px; padding: 20px;
+              margin-bottom: 16px; border: 1px solid var(--border-color);
+              border-left: 4px solid ${statusColor};
+              position: relative;
+            ">
+              <div style="position: absolute; top: -8px; left: 16px; background: var(--bg-primary); padding: 2px 10px; border-radius: 10px; font-size: 11px; color: var(--text-tertiary); border: 1px solid var(--border-color);">
+                #${filteredBookings.length - index}
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; margin-top: 8px; flex-wrap: wrap; gap: 12px;">
+                <div>
+                  <div style="font-weight: 600; font-size: 16px; color: var(--text-primary);">${b.passengerName || 'Passenger'}</div>
+                  <div style="font-size: 12px; color: var(--text-tertiary); margin-top: 4px;">
+                    📅 ${date}
+                  </div>
+                </div>
+                <span style="
+                  padding: 4px 12px; background: ${statusBg};
+                  color: ${statusColor}; border-radius: 20px; font-size: 12px; font-weight: 600;
+                ">${statusIcon} ${b.status}</span>
+              </div>
+              
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; font-size: 13px; margin-bottom: 16px;">
+                <div>
+                  <span style="color: var(--text-tertiary); font-size: 11px; display: block;">Station</span>
+                  <span style="color: var(--text-primary); font-weight: 500;">${b.station || '—'}</span>
+                </div>
+                <div>
+                  <span style="color: var(--text-tertiary); font-size: 11px; display: block;">Services</span>
+                  <span style="color: var(--text-primary); font-weight: 500;">${services}</span>
+                </div>
+                <div>
+                  <span style="color: var(--text-tertiary); font-size: 11px; display: block;">Train</span>
+                  <span style="color: var(--text-primary); font-weight: 500;">${b.trainNumber || b.trainName || '—'}</span>
+                </div>
+                ${b.price ? `
+                <div>
+                  <span style="color: var(--text-tertiary); font-size: 11px; display: block;">Amount</span>
+                  <span style="color: var(--emerald); font-weight: 600;">₹${b.price}</span>
+                </div>
+                ` : ''}
+              </div>
+              
+              ${isCompleted ? (feedback ? `
+              <div style="
+                background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05));
+                border: 1px solid rgba(245, 158, 11, 0.2);
+                border-radius: 12px; padding: 16px; margin-top: 12px;
+              ">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                  <span style="font-size: 12px; color: var(--text-tertiary);">Passenger Feedback:</span>
+                  <span style="font-size: 18px; color: #f59e0b;">${'★'.repeat(stars)}${'☆'.repeat(5 - stars)}</span>
+                </div>
+                ${feedback.assistantFeedback || feedback.comments ? `
+                  <p style="color: var(--text-secondary); font-size: 14px; margin: 0; font-style: italic;">"${feedback.assistantFeedback || feedback.comments}"</p>
+                ` : '<p style="color: var(--text-tertiary); font-size: 13px; margin: 0;">No written feedback</p>'}
+                ${feedback.wouldRecommend !== undefined ? `
+                  <div style="margin-top: 10px;">
+                    <span style="
+                      padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600;
+                      background: ${feedback.wouldRecommend ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)'};
+                      color: ${feedback.wouldRecommend ? '#10b981' : '#ef4444'};
+                    ">${feedback.wouldRecommend ? '👍 Would Recommend' : '👎 Not Recommended'}</span>
+                  </div>
+                ` : ''}
+              </div>
+              ` : `
+              <div style="
+                background: var(--bg-primary); border-radius: 12px; padding: 12px;
+                text-align: center; color: var(--text-tertiary); font-size: 13px;
+              ">
+                ${b.hasFeedback ? 'Feedback submitted (loading...)' : 'No feedback received for this booking'}
+              </div>
+              `) : `
+              <div style="
+                background: rgba(239, 68, 68, 0.08); border-radius: 12px; padding: 12px;
+                text-align: center; color: #ef4444; font-size: 13px;
+              ">
+                ${b.status === 'Rejected' ? 'This booking was rejected' : 'This booking was cancelled'}
+              </div>
+              `}
+            </div>
+          `;
+        }).join('');
+        
+      } catch (err) {
+        container.innerHTML = `<div class="empty-state"><p style="color: var(--ruby);">Error: ${err.message}</p></div>`;
+      }
+    }
+
+    // ==================== POLLING ====================
+    let pollInterval = null;
+    let lastHistoryRefreshAt = 0;
+    let lastFeedbackRefreshAt = 0;
+    function startAssistantPolling() {
+      if (pollInterval) return;
+      pollInterval = setInterval(() => {
+        loadBookings();
+        refreshAssistantData();
+
+        // Auto-sync history and feedback without overloading the server
+        const now = Date.now();
+        if (now - lastHistoryRefreshAt > 30000) {
+          lastHistoryRefreshAt = now;
+          loadBookingHistory();
+        }
+
+        const feedbackModalOpen = document.getElementById('feedbackModal')?.classList?.contains('active');
+        if (feedbackModalOpen && now - lastFeedbackRefreshAt > 30000) {
+          lastFeedbackRefreshAt = now;
+          loadFeedback();
+        }
+      }, 15000);
+    }
+
+    async function refreshAssistantData() {
+      if (!assistant) return;
+      try {
+        const fetcher = window.RailCareAuth?.authFetch || fetch;
+        const res = await fetcher(`/api/assistants/${assistant._id}`);
+        const data = await res.json();
+        if (data.success && data.assistant) {
+          assistant = data.assistant;
+          renderAssistant();
+          updateStats();
+        }
+      } catch (e) {}
+    }
+  </script>
+
+</body>
+</html>

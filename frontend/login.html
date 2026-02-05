@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>RailMitra Login</title>
+  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta http-equiv="refresh" content="0;url=login-premium.html">
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">RailCare <small>Station Assistance</small></div>
+    <nav>
+      <a href="index.html" class="ghost">Home</a>
+      <span style="margin:0 8px;color:#ccc">•</span>
+      <a href="passenger.html" class="ghost">Passenger</a>
+      <span style="margin:0 8px;color:#ccc">•</span>
+      <a href="assistant.html" class="ghost">Assistant</a>
+    </nav>
+  </header>
+
+  <main class="main">
+    <div class="card">
+      <h1>Login / Register</h1>
+
+      <div style="display:flex;gap:24px;flex-wrap:wrap">
+        <div id="registerArea" style="flex:1;min-width:240px;display:none">
+          <h3>Register</h3>
+          <label>Name</label>
+          <input id="regName" />
+          <label>Phone</label>
+          <input id="regPhone" />
+          <label>Password</label>
+          <input id="regPassword" type="password" />
+          <label>Role</label>
+          <select id="regRole">
+            <option value="passenger">Passenger</option>
+            <option value="assistant">Assistant</option>
+            <option value="admin">Admin</option>
+          </select>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button id="registerBtn">Register</button>
+            <a href="#" id="backToLogin" style="align-self:center">Back to login</a>
+          </div>
+          <div id="regMsg" class="muted"></div>
+        </div>
+
+        <div id="loginArea" style="flex:1;min-width:240px">
+          <h3>Login</h3>
+          <label>Phone</label>
+          <input id="loginPhone" />
+          <label>Password</label>
+          <input id="loginPassword" type="password" />
+          <div style="display:flex;gap:12px;align-items:center;margin-top:8px">
+            <button id="loginBtn">Login</button>
+            <a href="#" id="forgotLink">Forgot password?</a>
+          </div>
+          <div id="forgotArea" style="display:none;margin-top:8px">
+            <label>Enter phone to request reset</label>
+            <input id="resetPhone" />
+            <button id="requestResetBtn">Request Reset</button>
+            <div id="resetMsg" class="muted"></div>
+            <div style="margin-top:8px">Have token? <input id="resetToken" placeholder="token" style="width:80px" /> New password: <input id="resetNewPassword" type="password" style="width:140px" /> <button id="doResetBtn">Reset</button></div>
+          </div>
+          <div style="margin-top:10px">New user? <a href="#" id="showRegister">Sign up</a></div>
+          <div id="loginMsg" class="muted"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="auth.js"></script>
+</body>
+</html>
