@@ -5,7 +5,45 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { SECRET } = require('../middleware/auth');
 
+
 const { authenticate } = require('../middleware/auth');
+const multer = require('multer');
+const upload = multer({
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
+  storage: multer.memoryStorage()
+});
+// Upload avatar (base64 or file)
+router.post('/avatar', authenticate, upload.single('avatar'), async (req, res) => {
+  try {
+    const u = await User.findById(req.user.id);
+    if (!u) return res.status(404).json({ success: false, message: 'User not found' });
+    let avatarData = null;
+    if (req.file) {
+      // Accept file upload (image/*)
+      avatarData = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+    } else if (req.body.avatar) {
+      // Accept base64 string
+      avatarData = req.body.avatar;
+    }
+    if (!avatarData) return res.status(400).json({ success: false, message: 'No avatar provided' });
+    u.avatar = avatarData;
+    await u.save();
+    res.json({ success: true, message: 'Avatar updated', avatar: u.avatar });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Get avatar for current user
+router.get('/avatar', authenticate, async (req, res) => {
+  try {
+    const u = await User.findById(req.user.id);
+    if (!u) return res.status(404).json({ success: false, message: 'User not found' });
+    res.json({ success: true, avatar: u.avatar || null });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
 
 // Register (any role) - for demo purposes
 router.post('/register', async (req, res) => {
@@ -17,7 +55,7 @@ router.post('/register', async (req, res) => {
     const hash = await bcrypt.hash(password, 10);
     const u = new User({ name, phone, password: hash, role });
     await u.save();
-    const token = jwt.sign({ id: u._id, role: u.role, name: u.name }, SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ id: u._id, role: u.role, name: u.name, phone: u.phone }, SECRET, { expiresIn: '7d' });
     res.json({ success: true, token, user: { id: u._id, name: u.name, role: u.role, phone: u.phone } });
   } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
@@ -31,7 +69,7 @@ router.post('/login', async (req, res) => {
     if (!u) return res.status(400).json({ success: false, message: 'User not found' });
     const ok = await bcrypt.compare(password, u.password || '');
     if (!ok) return res.status(401).json({ success: false, message: 'Invalid credentials' });
-    const token = jwt.sign({ id: u._id, role: u.role, name: u.name }, SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ id: u._id, role: u.role, name: u.name, phone: u.phone }, SECRET, { expiresIn: '7d' });
     res.json({ success: true, token, user: { id: u._id, name: u.name, role: u.role, phone: u.phone } });
   } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
@@ -70,7 +108,7 @@ router.post('/reset-password', async (req, res) => {
     u.resetExpires = undefined;
     await u.save();
     // auto-login: issue token
-    const jwtToken = jwt.sign({ id: u._id, role: u.role, name: u.name }, SECRET, { expiresIn: '7d' });
+    const jwtToken = jwt.sign({ id: u._id, role: u.role, name: u.name, phone: u.phone }, SECRET, { expiresIn: '7d' });
     res.json({ success: true, message: 'Password reset', token: jwtToken, user: { id: u._id, name: u.name, role: u.role, phone: u.phone } });
   } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
@@ -97,7 +135,7 @@ router.put('/update', authenticate, async (req, res) => {
     }
     if (name) u.name = name;
     await u.save();
-    const token = jwt.sign({ id: u._id, role: u.role, name: u.name }, SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ id: u._id, role: u.role, name: u.name, phone: u.phone }, SECRET, { expiresIn: '7d' });
     res.json({ success: true, message: 'Profile updated', token, user: { id: u._id, name: u.name, role: u.role, phone: u.phone } });
   } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });

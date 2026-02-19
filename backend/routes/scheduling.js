@@ -89,28 +89,24 @@ router.get('/stats', async (req, res) => {
  */
 router.get('/tasks/upcoming', async (req, res) => {
   try {
-    const { stationCode, hours = 4, limit = 20 } = req.query;
-    
-    if (!stationCode) {
+    const { station, hours = 4, limit = 20 } = req.query;
+    if (!station) {
       return res.status(400).json({ 
         success: false, 
-        message: 'stationCode is required' 
+        message: 'station is required' 
       });
     }
-    
     const tasks = await schedulingService.getUpcomingTasks(
-      stationCode, 
+      station, 
       parseInt(hours), 
       parseInt(limit)
     );
-    
     res.json({
       success: true,
-      stationCode,
+      station,
       hoursAhead: parseInt(hours),
       tasks
     });
-    
   } catch (err) {
     console.error('[Upcoming Tasks Error]', err.message);
     res.status(500).json({ success: false, message: err.message });
@@ -432,19 +428,19 @@ router.delete('/booking/:bookingId/tasks', async (req, res) => {
  * GET /api/scheduling/station/:stationCode/workload
  * Get workload analysis for a station
  */
-router.get('/station/:stationCode/workload', async (req, res) => {
+router.get('/station/:station/workload', async (req, res) => {
   try {
-    const { stationCode } = req.params;
+    const { station } = req.params;
     const { hours = 24 } = req.query;
-    
     const now = new Date();
     const futureLimit = new Date(now.getTime() + parseInt(hours) * 60 * 60 * 1000);
-    
+    // Case-insensitive station name match
+    const matchStation = { $regex: new RegExp('^' + station.trim() + '$', 'i') };
     // Get task distribution by hour
     const tasksByHour = await ServiceTask.aggregate([
       {
         $match: {
-          stationCode,
+          station: matchStation,
           scheduledTime: { $gte: now, $lte: futureLimit },
           status: { $in: ['pending', 'assigned'] }
         }
@@ -457,24 +453,21 @@ router.get('/station/:stationCode/workload', async (req, res) => {
       },
       { $sort: { '_id': 1 } }
     ]);
-    
     // Get total pending tasks
     const pendingCount = await ServiceTask.countDocuments({
-      stationCode,
+      station: matchStation,
       status: 'pending',
       scheduledTime: { $gte: now, $lte: futureLimit }
     });
-    
     // Get assigned tasks
     const assignedCount = await ServiceTask.countDocuments({
-      stationCode,
+      station: matchStation,
       status: 'assigned',
       scheduledTime: { $gte: now, $lte: futureLimit }
     });
-    
     res.json({
       success: true,
-      stationCode,
+      station,
       hoursAhead: parseInt(hours),
       workload: {
         pending: pendingCount,
@@ -483,7 +476,6 @@ router.get('/station/:stationCode/workload', async (req, res) => {
         byHour: tasksByHour
       }
     });
-    
   } catch (err) {
     console.error('[Station Workload Error]', err.message);
     res.status(500).json({ success: false, message: err.message });

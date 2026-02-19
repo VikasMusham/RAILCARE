@@ -1,31 +1,51 @@
 const jwt = require('jsonwebtoken');
 const Assistant = require('../models/Assistant');
 
-const SECRET = process.env.JWT_SECRET || 'railcare_secret_key';
+const SECRET = process.env.JWT_SECRET && process.env.JWT_SECRET.trim() !== '' ? process.env.JWT_SECRET : 'railcare_secret_key';
 
 function authenticate(req, res, next) {
   const h = req.headers['authorization'];
-  if (!h) return res.status(401).json({ success: false, message: 'Missing auth token' });
+  console.log('[authenticate] Authorization header:', h);
+  if (!h) {
+    console.warn('[authenticate] Missing auth token');
+    return res.status(401).json({ success: false, message: 'Missing auth token' });
+  }
   const parts = h.split(' ');
-  if (parts.length !== 2 || parts[0] !== 'Bearer') return res.status(401).json({ success: false, message: 'Invalid auth header' });
+  if (parts.length !== 2 || parts[0] !== 'Bearer') {
+    console.warn('[authenticate] Invalid auth header:', h);
+    return res.status(401).json({ success: false, message: 'Invalid auth header' });
+  }
   const token = parts[1];
   try {
     const payload = jwt.verify(token, SECRET);
+    console.log('[authenticate] Token payload:', payload);
     req.user = payload;
     next();
   } catch (err) {
+    console.warn('[authenticate] Invalid token:', err.message);
     return res.status(401).json({ success: false, message: 'Invalid token' });
   }
 }
 
 function authorize(role) {
   return (req, res, next) => {
-    if (!req.user) return res.status(401).json({ success: false, message: 'Not authenticated' });
+    console.log('[authorize] req.user:', req.user);
+    console.log('[authorize] required role:', role);
+    if (!req.user) {
+      console.warn('[authorize] Not authenticated - req.user missing');
+      return res.status(401).json({ success: false, message: 'Not authenticated' });
+    }
     if (Array.isArray(role)) {
-      if (!role.includes(req.user.role)) return res.status(403).json({ success: false, message: 'Forbidden' });
+      if (!role.includes(req.user.role)) {
+        console.warn('[authorize] Forbidden - user role:', req.user.role, 'required:', role);
+        return res.status(403).json({ success: false, message: 'Forbidden' });
+      }
       return next();
     }
-    if (req.user.role !== role) return res.status(403).json({ success: false, message: 'Forbidden' });
+    if (req.user.role !== role) {
+      console.warn('[authorize] Forbidden - user role:', req.user.role, 'required:', role);
+      return res.status(403).json({ success: false, message: 'Forbidden' });
+    }
     next();
   };
 }

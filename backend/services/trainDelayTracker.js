@@ -150,7 +150,8 @@ class TrainDelayTracker extends EventEmitter {
       lastStation: data.last_station_code,
       nextStation: data.next_station_code,
       expectedArrival: data.stations.map(s => ({
-        stationCode: s.code,
+        // station: s.name, // Use full station name if available
+        station: s.name,
         expectedTime: s.expected_arrival
       })),
       source: 'railyatri',

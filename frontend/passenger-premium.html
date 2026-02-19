@@ -1,11 +1,303 @@
+<!-- Train Live Status Modal -->
+<div id="trainStatusModal" style="display:none; position:fixed; z-index:100000; left:0; top:0; width:100vw; height:100vh; background:rgba(24,24,27,0.82); align-items:center; justify-content:center;">
+  <div style="background:#23232b; color:#f3f4f6; border-radius:18px; max-width:540px; width:92vw; padding:32px 24px; box-shadow:0 8px 40px rgba(0,0,0,0.18); position:relative; display:flex; flex-direction:column;">
+    <button onclick="closeTrainStatusModal()" style="position:absolute; top:12px; right:16px; background:none; border:none; color:#fff; font-size:22px; cursor:pointer;">&times;</button>
+    <h2 style="margin-bottom:18px;">🚄 Live Train Status</h2>
+    <div id="trainStatusInfo" style="margin-bottom:18px;"></div>
+    <div id="trainStatusMap" style="height:260px; border-radius:12px; overflow:hidden;"></div>
+  </div>
+</div>
+<!-- Leaflet.js for map rendering -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="socketio-loader.js"></script>
+// ...existing code...
+<!-- Emergency Modal -->
+<div id="emergencyModal" style="display:none; position:fixed; z-index:99999; left:0; top:0; width:100vw; height:100vh; background:rgba(24,24,27,0.82); align-items:center; justify-content:center;">
+  <div style="background:#23232b; color:#f3f4f6; border-radius:18px; max-width:400px; width:92vw; padding:32px 24px; box-shadow:0 8px 40px rgba(0,0,0,0.18); position:relative; display:flex; flex-direction:column;">
+    <button onclick="closeEmergencyModal()" style="position:absolute; top:12px; right:16px; background:none; border:none; color:#fff; font-size:22px; cursor:pointer;">&times;</button>
+    <h2 style="margin-bottom:18px;">🚨 Emergency Help</h2>
+    <div style="margin-bottom:18px;">
+      <b>Call Admin:</b><br>
+      <a href="tel:+911234567890" style="color:#10b981; font-size:18px; font-weight:600;">+91 12345 67890</a>
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column;">
+      <b>Message Admin <span id="passengerChatBookingId" style="font-size:12px;color:#10b981;margin-left:8px;"></span>:</b>
+        <div id="chatBox" style="background:#18181b; border-radius:8px; border:1px solid #444; height:180px; overflow-y:auto; margin-top:8px; padding:8px 6px 8px 8px; font-size:14px; color:#fff; margin-bottom:8px;"></div>
+      <div id="typingIndicator" style="font-size:12px; color:#aaa; min-height:18px; margin-bottom:4px;"></div>
+      <div style="display:flex; gap:6px;">
+        <input id="chatInput" type="text" placeholder="Type your message..." style="flex:1; border-radius:6px; border:1px solid #444; background:#23232b; color:#fff; padding:7px 10px; font-size:14px; outline:none;" onkeydown="if(event.key==='Enter'){sendChatMessage();}" />
+        <button onclick="sendChatMessage()" style="background:#ef4444; color:#fff; border:none; border-radius:6px; padding:7px 18px; font-size:15px; font-weight:600; cursor:pointer;">Send</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+let chatSocket, chatBookingId, chatUserName = 'Passenger';
+function triggerEmergencyHelp(bookingId) {
+  document.getElementById('emergencyModal').style.display = 'flex';
+  window.currentEmergencyBookingId = bookingId;
+  chatBookingId = bookingId;
+  document.getElementById('passengerChatBookingId').textContent = bookingId;
+  setupChatSocket();
+}
+function closeEmergencyModal() {
+  document.getElementById('emergencyModal').style.display = 'none';
+  if (chatSocket) chatSocket.disconnect();
+}
+function setupChatSocket() {
+  if (!window.io) {
+    document.addEventListener('socketio-ready', setupChatSocket, { once: true });
+    return;
+  }
+  if (chatSocket) chatSocket.disconnect();
+  chatSocket = io('http://localhost:3000');
+  chatSocket.emit('join', { role: 'passenger', bookingId: chatBookingId });
+  const chatBox = document.getElementById('chatBox');
+  chatBox.innerHTML = '';
+  document.getElementById('chatInput').value = '';
+  chatSocket.on('chat_history', msgs => {
+    chatBox.innerHTML = '';
+    msgs.forEach(m => appendChatMessage(m));
+    chatBox.scrollTop = chatBox.scrollHeight;
+  });
+  chatSocket.on('chat_message', msg => {
+    appendChatMessage(msg);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  });
+  chatSocket.on('typing', user => {
+    document.getElementById('typingIndicator').textContent = user + ' is typing...';
+  });
+  chatSocket.on('stop_typing', () => {
+    document.getElementById('typingIndicator').textContent = '';
+  });
+}
+function sendChatMessage() {
+  console.log('[Passenger] sendChatMessage called');
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if (!msg) {
+    alert('Please enter a message before sending.');
+    return;
+  }
+  if (!chatSocket) {
+    alert('Chat connection not established. Please close and reopen the emergency chat.');
+    console.error('chatSocket not initialized');
+    return;
+  }
+  if (!chatBookingId) {
+    alert('Booking ID missing. Please close and reopen the emergency chat.');
+    console.error('chatBookingId missing');
+    return;
+  }
+  const messageObj = { bookingId: chatBookingId, user: chatUserName, text: msg, time: new Date().toISOString() };
+  console.log('Sending message:', messageObj);
+  try {
+    console.log('[Passenger] Emitting chat_message:', messageObj);
+    chatSocket.emit('chat_message', messageObj, (ack) => {
+      if (ack && ack.error) {
+        alert('Message failed to send: ' + ack.error);
+        console.error('Emit error:', ack.error);
+      } else {
+        console.log('Message sent successfully');
+      }
+    });
+  } catch (err) {
+    alert('Error sending message: ' + err.message);
+    console.error('Emit exception:', err);
+  }
+  input.value = '';
+  document.getElementById('typingIndicator').textContent = '';
+}
+function appendChatMessage(msg) {
+  // --- Train Live Status ---
+  function openTrainStatusModal(trainNumber) {
+    const modal = document.getElementById('trainStatusModal');
+    const infoDiv = document.getElementById('trainStatusInfo');
+    const mapDiv = document.getElementById('trainStatusMap');
+    modal.style.display = 'flex';
+    infoDiv.innerHTML = 'Loading live status...';
+    mapDiv.innerHTML = '';
+    fetch(`https://api.railradar.org/api/v1/trains/live-map?train_number=${encodeURIComponent(trainNumber)}`)
+      .then(r => r.json())
+      .then(data => {
+        if (!data || !data.train || !data.train.current_position) {
+          infoDiv.innerHTML = '<span style="color:#ef4444">Live status not available for this train.</span>';
+          return;
+        }
+        const pos = data.train.current_position;
+        const delay = pos.delay_minutes ? `${pos.delay_minutes} min delay` : 'On time';
+        infoDiv.innerHTML = `<b>Train:</b> ${data.train.train_number} - ${data.train.train_name || ''}<br><b>Current Location:</b> ${pos.station_name || 'Unknown'}<br><b>Status:</b> ${delay}`;
+        // Map
+        mapDiv.innerHTML = '<div id="trainMap" style="width:100%;height:100%;"></div>';
+        const map = L.map('trainMap').setView([pos.lat, pos.lng], 8);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 18,
+          attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+        L.marker([pos.lat, pos.lng]).addTo(map)
+          .bindPopup(`<b>${data.train.train_number}</b><br>${pos.station_name || ''}<br>${delay}`)
+          .openPopup();
+      })
+      .catch(() => {
+        infoDiv.innerHTML = '<span style="color:#ef4444">Could not fetch live status.</span>';
+      });
+  }
+  function closeTrainStatusModal() {
+    document.getElementById('trainStatusModal').style.display = 'none';
+    document.getElementById('trainStatusMap').innerHTML = '';
+  }
+  // Add Track Train button to each booking card (after rendering bookings)
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(() => {
+      document.querySelectorAll('[data-train-number]').forEach(btn => {
+        btn.onclick = function() {
+          openTrainStatusModal(this.getAttribute('data-train-number'));
+        };
+      });
+    }, 1000);
+  });
+  const chatBox = document.getElementById('chatBox');
+  const isSelf = msg.user === chatUserName;
+  const div = document.createElement('div');
+  div.style = `margin-bottom:6px; text-align:${isSelf ? 'right':'left'};`;
+  div.innerHTML = `<span style="display:inline-block; background:${isSelf ? '#ef4444':'#444'}; color:#fff; border-radius:8px; padding:6px 12px; max-width:70%; word-break:break-word;">${msg.text}</span><span style="font-size:10px; color:#aaa; margin-left:6px;">${new Date(msg.time).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</span>`;
+  chatBox.appendChild(div);
+}
+document.addEventListener('DOMContentLoaded', function() {
+  const input = document.getElementById('chatInput');
+  if (input) {
+    input.addEventListener('input', function() {
+      if (chatSocket) chatSocket.emit('typing', { bookingId: chatBookingId, user: chatUserName });
+      clearTimeout(window._typingTimeout);
+      window._typingTimeout = setTimeout(() => {
+        if (chatSocket) chatSocket.emit('stop_typing', { bookingId: chatBookingId });
+      }, 1200);
+    });
+  }
+});
+</script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+      <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/png" href="favicon.png">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RailMitra • Premium Station Assistance</title>
+  <script src="auth.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
+            .language-type-card.selected {
+              border: 2px solid #7c3aed;
+              background: #f3f0ff;
+              box-shadow: 0 2px 8px rgba(124,58,237,0.08);
+            }
+      /* Premium Footer & Modal Styles */
+      .footer-premium {
+        border-top: 1px solid #e5e7eb;
+        background: #18181b;
+        color: #f3f4f6;
+        padding: 40px 0 18px 0;
+        font-family: 'Inter',sans-serif;
+        font-size: 15px;
+        letter-spacing: 0.01em;
+      }
+      .footer-premium-inner {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 24px;
+      }
+      .footer-premium .footer-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 28px;
+      }
+      .footer-premium .footer-link {
+        color: #a1a1aa;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.18s;
+        position: relative;
+        padding-bottom: 2px;
+      }
+      .footer-premium .footer-link:hover {
+        color: #fff;
+      }
+      .footer-premium .footer-link:after {
+        content: '';
+        display: block;
+        width: 0;
+        height: 2px;
+        background: linear-gradient(90deg,#6366f1,#10b981);
+        transition: width 0.2s;
+        position: absolute;
+        left: 0; bottom: -2px;
+      }
+      .footer-premium .footer-link:hover:after {
+        width: 100%;
+      }
+      .footer-premium-disclaimer {
+        text-align: center;
+        margin-top: 22px;
+        font-size: 13px;
+        color: #a1a1aa;
+        letter-spacing: 0.04em;
+      }
+      /* Modal */
+      #legalModal {
+        display: none;
+        position: fixed;
+        z-index: 99999;
+        left: 0; top: 0; width: 100vw; height: 100vh;
+        background: rgba(24,24,27,0.82);
+        align-items: center;
+        justify-content: center;
+        transition: opacity 0.2s;
+      }
+      #legalModal.active {
+        display: flex;
+      }
+      #legalModal .modal-content {
+        background: #23232b;
+        color: #f3f4f6;
+        border-radius: 18px;
+        max-width: 540px;
+        width: 92vw;
+        padding: 38px 32px 28px 32px;
+        box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+        position: relative;
+        font-size: 15px;
+        line-height: 1.7;
+        max-height: 80vh;
+        overflow-y: auto;
+        animation: modalIn 0.22s cubic-bezier(.4,1.6,.6,1) 1;
+      }
+      #legalModal .close-btn {
+        position: absolute;
+        top: 16px; right: 18px;
+        background: none;
+        border: none;
+        color: #a1a1aa;
+        font-size: 28px;
+        cursor: pointer;
+        transition: color 0.18s;
+      }
+      #legalModal .close-btn:hover {
+        color: #fff;
+      }
+      @keyframes modalIn {
+        from { opacity: 0; transform: translateY(40px) scale(0.98); }
+        to { opacity: 1; transform: none; }
+      }
     :root {
       /* Swiss Design - Monochrome Palette */
       --pure-black: #000000;
@@ -1616,18 +1908,31 @@
       grid-template-columns: 1fr auto 1fr;
       gap: 16px;
       align-items: start;
+      max-width: 700px;
+      margin: 0 auto;
     }
 
-    @media (max-width: 640px) {
+    @media (max-width: 900px) {
       .round-trip-grid {
         grid-template-columns: 1fr;
         gap: 12px;
       }
-
       .round-trip-arrow {
         transform: rotate(90deg);
         justify-self: center;
       }
+    }
+    .round-trip-station-box {
+      min-width: 0;
+      max-width: 320px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .round-trip-station-box select.form-select {
+      width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
     }
 
     .round-trip-station-box {
@@ -2901,7 +3206,7 @@
             
             <!-- Luggage Type Cards (click to add to cart) -->
             <div class="luggage-type-cards" id="luggageTypeCards">
-              <div class="luggage-type-card" data-type="small" onclick="event.stopPropagation(); addLuggageToCart('small')">
+              <div class="luggage-type-card" data-type="small">
                 <div class="luggage-type-icon">🎒</div>
                 <div class="luggage-type-info">
                   <span class="luggage-type-name">Small</span>
@@ -2911,7 +3216,7 @@
                 <div class="luggage-type-price">₹30</div>
                 <div class="luggage-type-add">+</div>
               </div>
-              <div class="luggage-type-card" data-type="medium" onclick="event.stopPropagation(); addLuggageToCart('medium')">
+              <div class="luggage-type-card" data-type="medium">
                 <div class="luggage-type-icon">🧳</div>
                 <div class="luggage-type-info">
                   <span class="luggage-type-name">Medium</span>
@@ -2921,7 +3226,7 @@
                 <div class="luggage-type-price">₹60</div>
                 <div class="luggage-type-add">+</div>
               </div>
-              <div class="luggage-type-card" data-type="large" onclick="event.stopPropagation(); addLuggageToCart('large')">
+              <div class="luggage-type-card" data-type="large">
                 <div class="luggage-type-icon">📦</div>
                 <div class="luggage-type-info">
                   <span class="luggage-type-name">Large</span>
@@ -2971,6 +3276,67 @@
             Multilingual assistant for communication. Hindi, English, Telugu, and more.
           </p>
           <div class="service-price">₹30 <span>/ booking</span></div>
+          <div class="language-type-section" id="languageTypeSection" style="display:none;margin-top:16px;">
+            <div style="margin-top:16px;">
+              <label for="preferredLanguageHelp" style="font-weight:500;margin-bottom:4px;display:block;">Preferred Language</label>
+              <select id="preferredLanguageHelp" name="preferredLanguageHelp" style="width:100%;padding:8px;border-radius:6px;border:1px solid #ccc;">
+                <option value="Telugu">Telugu</option>
+                <option value="English">English</option>
+                <option value="Hindi">Hindi</option>
+                <option value="Bengali">Bengali</option>
+                <option value="Tamil">Tamil</option>
+                <option value="Kannada">Kannada</option>
+              </select>
+            </div>
+          </div>
+          <script>
+          // Clean, single implementation for Language Help logic
+          document.addEventListener('DOMContentLoaded', function() {
+            const langCheckbox = document.getElementById('svc-language');
+            const langTypeSection = document.getElementById('languageTypeSection');
+            let selectedLanguage = null;
+
+            // Show/hide language options when checkbox toggled
+            function updateLangSection() {
+              langTypeSection.style.display = langCheckbox.checked ? 'block' : 'none';
+              if (!langCheckbox.checked) {
+                // Clear selection if unchecked
+                document.querySelectorAll('.language-type-card.selected').forEach(c => c.classList.remove('selected'));
+                selectedLanguage = null;
+                window.selectedLanguage = null;
+              }
+              // Optionally, show/hide other service cards if needed
+              // document.querySelectorAll('.service-card:not([data-service="Language"])').forEach(card => {
+              //   card.style.display = langCheckbox.checked ? 'none' : '';
+              // });
+              updateSelectedServicesDisplay();
+            }
+            langCheckbox.addEventListener('change', updateLangSection);
+            updateLangSection();
+
+            // Only dropdown selection for language
+            const langDropdown = document.getElementById('preferredLanguageHelp');
+            langDropdown.addEventListener('change', function() {
+              if (!langCheckbox.checked) return;
+              selectedLanguage = langDropdown.value;
+              window.selectedLanguage = selectedLanguage;
+              updateSelectedServicesDisplay();
+            });
+
+            // Update selected services display
+            function updateSelectedServicesDisplay() {
+              const display = document.getElementById('selectedServicesDisplay');
+              let html = '';
+              if (langCheckbox.checked && selectedLanguage) {
+                html += `<span class="service-tag">🗣️ Language Help <span style='background:#eee;color:#333;padding:2px 8px;border-radius:8px;font-size:11px;margin-left:6px;'>${selectedLanguage}</span> <span class="remove" onclick="removeService('Language')">✕</span></span>`;
+              }
+              if (!html) html = '<span class="no-service">Select services from above ↑</span>';
+              display.innerHTML = html;
+            }
+            // Expose for global use if needed
+            window.updateSelectedServicesDisplay = updateSelectedServicesDisplay;
+          });
+          </script>
         </div>
       </div>
     </div>
@@ -3023,12 +3389,11 @@
                   </span>
                 </label>
                 <label class="service-type-option">
-                  <input type="radio" name="serviceType" value="round_trip">
-                  <span class="service-type-card">
+                  <span class="service-type-card" style="opacity:0.6;cursor:not-allowed;">
                     <span class="service-type-icon">🔄</span>
                     <span class="service-type-name">Round Trip</span>
-                    <span class="service-type-desc">Both services</span>
-                    <span class="service-type-helper">Boarding + Arrival at different stations</span>
+                    <span class="service-type-desc">Coming Soon</span>
+                    <span class="service-type-helper">This feature will be available soon</span>
                   </span>
                 </label>
               </div>
@@ -3125,12 +3490,26 @@
             </div>
             
             <div class="form-group">
-              <label class="form-label">Preferred Language</label>
-              <select class="form-select" id="language">
-                <option value="Hindi">Hindi</option>
-                <option value="Telugu">Telugu</option>
-                <option value="English">English</option>
-              </select>
+              <!-- Preferred Language field removed from booking assistance form -->
+              <div class="form-group" id="languageHelpWrapper" style="margin-bottom:16px;">
+                <label class="form-label" id="preferredLanguageLabel" style="display:block;cursor:pointer;font-weight:600;margin-bottom:8px;">Preferred Language</label>
+                <select class="form-select" id="language" style="display:block;width:100%;max-width:220px;">
+                  <option value="">Select a language</option>
+                  <option value="Hindi">Hindi</option>
+                  <option value="Telugu">Telugu</option>
+                  <option value="English">English</option>
+                  <option value="Bengali">Bengali</option>
+                  <option value="Tamil">Tamil</option>
+                  <option value="Kannada">Kannada</option>
+                </select>
+              <!-- Add hidden class so it is hidden by default -->
+              <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                  var langHelp = document.getElementById('languageHelpWrapper');
+                  if (langHelp) langHelp.classList.add('hidden');
+                });
+              </script>
+              </div>
             </div>
             
             <!-- Selected Services Display -->
@@ -3199,6 +3578,7 @@
           <div>
             <h2 class="progress-title">Booking Confirmed</h2>
             <p class="progress-booking-id" id="bookingIdDisplay">#RM-2024-0000</p>
+            <span style="font-size: 18px; font-weight: 600; color: var(--emerald);">Total Bill: <span id="confirmedBookingPrice">—</span></span>
           </div>
           <div class="progress-status-badge" id="statusBadge">
             <div class="status-dot"></div>
@@ -3261,21 +3641,137 @@
   </section>
 
   <!-- Footer -->
-  <footer class="footer">
-    <div class="footer-inner">
-      <p class="footer-copy">© 2024 RailMitra. All rights reserved.</p>
-      <div class="footer-links">
-        <a href="#" class="footer-link">Terms of Service</a>
-        <a href="#" class="footer-link">Privacy Policy</a>
-        <a href="#" class="footer-link">Contact</a>
-      </div>
+
+
+  <footer class="footer-premium">
+    <div class="footer-premium-inner" style="display: flex; flex-direction: column; align-items: center;">
+      <div style="font-size:15px;opacity:0.85;text-align:center;">© 2026 RailMitra. All rights reserved.</div>
+      <nav class="footer-links" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 18px; margin-top: 8px;">
+        <a href="#" class="footer-link" onclick="showLegal('terms')">Terms & Conditions</a>
+        <a href="#" class="footer-link" onclick="showLegal('privacy')">Privacy Policy</a>
+        <a href="#" class="footer-link" onclick="showLegal('refund')">Refund & Cancellation</a>
+        <a href="#" class="footer-link" onclick="showLegal('insurance')">Insurance Policy</a>
+        <a href="#" class="footer-link" onclick="showLegal('no-show')">No-Show Policy</a>
+        <a href="#" class="footer-link" onclick="showLegal('assistant')">Assistant Terms</a>
+        <a href="#" class="footer-link" onclick="showLegal('safety')">Safety Policy</a>
+        <a href="#" class="footer-link" onclick="showLegal('liability')">Limitation of Liability</a>
+        <a href="#" class="footer-link" onclick="showLegal('user')">User Agreement</a>
+        <a href="#" class="footer-link" onclick="showLegal('disclaimer')">Legal Disclaimer</a>
+      </nav>
+    </div>
+    <style>
+      @media (max-width: 700px) {
+        .footer-premium .footer-links {
+          flex-direction: column !important;
+          gap: 8px !important;
+        }
+      }
+    </style>
+    <div class="footer-premium-disclaimer">
+      RailMitra is an independent technology platform currently operating in a pilot phase and is not affiliated with Indian Railways or IRCTC.
     </div>
   </footer>
 
+  <!-- Modal for legal content -->
+  <div id="legalModal">
+    <div class="modal-content">
+      <button class="close-btn" onclick="closeLegal()">&times;</button>
+      <div id="legalContent"></div>
+    </div>
+  </div>
+
+  <!-- Remove any stray CSS text below this line (if present) -->
+
+  <script>
+  // --- Anchor Scroll Offset Fix for Fixed Navbar ---
+  document.addEventListener('DOMContentLoaded', function() {
+    function showSectionAndScroll(hash, e) {
+      if (hash === '#services' || hash === '#book') {
+        // Always show booking/services, hide tracking
+        const book = document.getElementById('book');
+        const services = document.getElementById('services');
+        const track = document.getElementById('track');
+        if (book) book.style.display = '';
+        if (services) services.style.display = '';
+        if (track) track.classList.remove('active');
+        // Now scroll
+        const target = document.querySelector(hash);
+        if (target) {
+          e.preventDefault();
+          const navbar = document.querySelector('.navbar');
+          const navHeight = navbar ? navbar.offsetHeight : 0;
+          const rect = target.getBoundingClientRect();
+          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+          const top = rect.top + scrollTop - navHeight - 8;
+          window.scrollTo({ top, behavior: 'smooth' });
+        }
+      }
+    }
+    document.querySelectorAll('.nav-link.nav-passenger[href^="#"]').forEach(link => {
+      link.addEventListener('click', function(e) {
+        showSectionAndScroll(this.hash, e);
+      });
+    });
+    document.querySelectorAll('.hero-cta a[href^="#"]').forEach(link => {
+      link.addEventListener('click', function(e) {
+        showSectionAndScroll(this.hash, e);
+      });
+    });
+  });
+  const legalTexts = {
+    terms: `<b>Terms & Conditions – RailMitra</b><br>RailMitra is a digital platform designed to connect railway passengers with verified assistants to provide support services within station premises.<br><br>By accessing RailMitra, you agree to comply with these Terms.<br><br><b>Service Scope</b><br>RailMitra facilitates assistance services including luggage handling, language guidance, and seat escorting. RailMitra does not control train operations and is not affiliated with railway authorities.<br><b>Pilot Phase Notice</b><br>RailMitra is currently operating in a pilot stage. Features and policies may evolve to improve service quality.<br><b>User Responsibilities</b><br>Passengers must provide accurate booking details, arrive on time, and avoid transporting prohibited items.<br><b>Assistant Verification</b><br>Assistants undergo identity checks; however, RailMitra acts solely as a technology facilitator.<br><b>Payments</b><br>Displayed charges may include service fees, platform fees, and optional insurance.<br><b>Policy Updates</b><br>Continued use indicates acceptance of updated terms.`,
+    privacy: `<b>Privacy Policy – RailMitra</b><br>RailMitra respects your privacy and protects user data through reasonable safeguards.<br><b>Information Collected</b><ul><li>Name</li><li>Phone</li><li>Email</li><li>Booking details</li><li>Location/station</li><li>Uploaded luggage photos</li><li>Assistant identity documents</li></ul><b>Usage</b><br>Data is used only for platform operations, verification, fraud prevention, and support.<br>RailMitra does NOT sell personal data.<br><b>Data Sharing</b><br>Limited data may be shared with assistants, payment providers, or authorities when required.<br>Users may request correction or deletion of their data.`,
+    refund: `<b>Refund & Cancellation – RailMitra</b><br>Passengers may cancel bookings only before operational preparation begins.<br><b>🚨 Station Rule</b><br>Cancellation is permitted only until the train approaches one or two stations prior to the passenger’s boarding station.<br>After this:<ul><li>Cancel button disappears</li><li>Booking becomes non-refundable</li></ul><b>No Refund Cases</b><ul><li>Assistant dispatched</li><li>Passenger late</li><li>Incorrect details</li><li>Service started</li></ul>Refunds process within 5–7 business days.<br>Insurance fees are non-refundable once activated.`,
+    insurance: `<b>Insurance Policy (₹30,000)</b><br>RailMitra offers optional insurance coverage up to ₹30,000 per booking.<br><b>Covered:</b><ul><li>Theft</li><li>Accidental damage</li><li>Loss during assistant handling</li></ul><b>Not Covered:</b><ul><li>Cash / jewelry</li><li>High-value electronics</li><li>Undeclared items</li><li>Passenger negligence</li></ul>Incidents must be reported within 2 hours.<br>RailMitra liability is limited to the approved claim value.`,
+    'no-show': `<b>No-Show Policy</b><br>Passengers are marked No-Show if they fail to arrive within 20 minutes of the meeting time.<br>No refunds apply.<br>Repeated no-shows may result in account restrictions.`,
+    assistant: `<b>Assistant Terms & Conditions</b><br>Assistants must:<ul><li>Provide respectful service</li><li>Handle luggage responsibly</li><li>Follow station rules</li></ul>False documents → permanent removal.<br>Misconduct → suspension.`,
+    safety: `<b>Safety Policy</b><br>RailMitra prioritizes passenger safety through:<ul><li>Identity verification</li><li>OTP confirmation</li><li>Emergency support</li><li>Optional insurance</li></ul>Suspicious activity should be reported immediately.`,
+    liability: `<b>Limitation of Liability</b><br>RailMitra is a technology platform and shall not be responsible for:<ul><li>Train delays</li><li>Platform changes</li><li>Missed trains</li><li>Passenger negligence</li><li>Force majeure events</li></ul>Financial liability is limited to service fees or approved insurance claims.`,
+    user: `<b>User Agreement</b><br>Users agree to:<ul><li>Provide accurate information</li><li>Respect assistants</li><li>Avoid illegal goods</li></ul>RailMitra may suspend violating accounts.`,
+    disclaimer: `<b>RailMitra is an independent technology platform currently operating in a pilot phase and is not affiliated with Indian Railways or IRCTC.</b>`
+  };
+  function showLegal(key) {
+    document.getElementById('legalContent').innerHTML = legalTexts[key] || 'Content not found.';
+    document.getElementById('legalModal').classList.add('active');
+  }
+  function closeLegal() {
+    document.getElementById('legalModal').classList.remove('active');
+  }
+  </script>
+ 
   <!-- Toast -->
   <div class="toast" id="toast"></div>
 
   <script>
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const langCheckbox = document.getElementById('svc-language');
+      const langSelect = document.getElementById('language');
+      if (langSelect) {
+        langSelect.addEventListener('change', updatePriceDisplay);
+      }
+      // Add click handler to Language service card to focus dropdown if checked
+      const langServiceCard = document.querySelector('.service-card[data-service="Language"]');
+      if (langServiceCard) {
+        langServiceCard.addEventListener('click', function(e) {
+          // Prevent toggling the checkbox if not clicking directly on it
+          if (e.target.closest('.service-checkbox')) return;
+          if (langCheckbox && langCheckbox.checked) {
+            // Show and focus the Preferred Language dropdown
+            var langHelpWrapper = document.getElementById('languageHelpWrapper');
+            var langLabel = document.getElementById('preferredLanguageLabel');
+            var langSelect = document.getElementById('language');
+            if (langHelpWrapper) langHelpWrapper.classList.remove('hidden');
+            if (langLabel) langLabel.style.display = '';
+            if (langSelect) {
+              langSelect.style.display = 'block';
+              langSelect.disabled = false;
+              langSelect.focus();
+            }
+          }
+        });
+      }
+    });
     // Theme Toggle
     function toggleTheme() {
       document.body.classList.toggle('dark');
@@ -3297,45 +3793,59 @@
 
     // Get token
     function getToken() {
-      return localStorage.getItem('railcare_token');
+      // Use shared auth.js helper if available
+      if (window.RailCareAuth && typeof window.RailCareAuth.getToken === 'function') {
+        return window.RailCareAuth.getToken();
+      }
+      return localStorage.getItem('railcare_token') || sessionStorage.getItem('railcare_token');
     }
+
+    function checkAuthNav() {
+      const token = getToken();
+      console.log('[DEBUG][checkAuthNav] token:', token);
+      console.log('[DEBUG][checkAuthNav] typeof window.RailCareAuth:', typeof window.RailCareAuth);
+      if (window.RailCareAuth) {
+        console.log('[DEBUG][checkAuthNav] window.RailCareAuth.getToken:', typeof window.RailCareAuth.getToken, 'window.RailCareAuth.setToken:', typeof window.RailCareAuth.setToken);
+      }
+      console.log('[DEBUG][checkAuthNav] localStorage.railcare_token:', localStorage.getItem('railcare_token'));
+      console.log('[DEBUG][checkAuthNav] sessionStorage.railcare_token:', sessionStorage.getItem('railcare_token'));
+      if (!token) {
+        console.log('[DEBUG][checkAuthNav] No token found, showing sign in button');
+        showSignInButton();
+        return;
+      }
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const expiry = payload.exp * 1000;
+        console.log('[DEBUG][checkAuthNav] Token payload:', payload, 'Expiry:', expiry, 'Now:', Date.now());
+        console.log('[DEBUG][checkAuthNav] Token role:', payload.role, 'name:', payload.name, 'phone:', payload.phone);
+        if (expiry < Date.now()) {
+          console.log('[DEBUG][checkAuthNav] Token expired, removing and showing sign in');
+          localStorage.removeItem('railcare_token');
+          sessionStorage.removeItem('railcare_token');
+          showSignInButton();
+          return;
+        }
+        currentUser = { name: payload.name, phone: payload.phone || '', role: payload.role };
+        console.log('[DEBUG][checkAuthNav] Valid token, showing user profile:', currentUser);
+        showUserProfile(currentUser);
+      } catch (e) {
+        console.log('[DEBUG][checkAuthNav] Error parsing token:', e);
+        showSignInButton();
+      }
+    }
+
 
     // Current user state
     let currentUser = null;
     let userAvatar = null;
 
-    // Check authentication and show profile
-    function checkAuth() {
-      const token = getToken();
-      if (!token) {
-        showSignInButton();
-        return;
-      }
-
-      try {
-        // Decode token to get user info
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        const expiry = payload.exp * 1000;
-        
-        if (expiry < Date.now()) {
-          localStorage.removeItem('railcare_token');
-          showSignInButton();
-          return;
-        }
-
-        currentUser = { name: payload.name, phone: '', role: payload.role };
-        userAvatar = localStorage.getItem('railcare_avatar');
-        showUserProfile(currentUser);
-      } catch (e) {
-        console.error('Auth check error:', e);
-        showSignInButton();
-      }
-    }
-
     function showSignInButton() {
-      document.getElementById('signInBtn')?.classList.remove('hidden');
-      document.getElementById('profileSection')?.classList.remove('active');
-      
+      const signInBtn = document.getElementById('signInBtn');
+      const profileSection = document.getElementById('profileSection');
+      console.log('[showSignInButton] signInBtn:', signInBtn, 'profileSection:', profileSection);
+      if (signInBtn) signInBtn.classList.remove('hidden');
+      if (profileSection) profileSection.classList.remove('active');
       // Show passenger links for guests (Services, Book Now)
       document.querySelectorAll('.nav-passenger').forEach(el => {
         el.style.display = '';
@@ -3344,15 +3854,13 @@
       document.querySelectorAll('.nav-assistant, .nav-admin, .nav-staff').forEach(el => {
         el.style.display = 'none';
       });
+      console.log('[showSignInButton] Updated nav for guest');
     }
 
-    function showUserProfile(user) {
+    async function showUserProfile(user) {
       console.log('[showUserProfile] Starting with user:', user);
       const signInBtn = document.getElementById('signInBtn');
       const profileSection = document.getElementById('profileSection');
-      console.log('[showUserProfile] signInBtn element:', signInBtn);
-      console.log('[showUserProfile] profileSection element:', profileSection);
-      
       if (signInBtn) signInBtn.classList.add('hidden');
       if (profileSection) profileSection.classList.add('active');
 
@@ -3360,42 +3868,42 @@
       const phone = user.phone || '';
       const role = user.role || 'passenger';
       const initials = getInitials(name);
-      console.log('[showUserProfile] Name:', name, 'Initials:', initials);
 
       // Update all name/initial displays
       const navUserName = document.getElementById('navUserName');
       if (navUserName) navUserName.textContent = name.split(' ')[0];
-      
       const navAvatarInitials = document.getElementById('navAvatarInitials');
       if (navAvatarInitials) navAvatarInitials.textContent = initials;
-      
       const dropdownUserName = document.getElementById('dropdownUserName');
       if (dropdownUserName) dropdownUserName.textContent = name;
-      
       const dropdownUserPhone = document.getElementById('dropdownUserPhone');
       if (dropdownUserPhone) dropdownUserPhone.textContent = phone || 'Phone not set';
-      
       const dropdownAvatarInitials = document.getElementById('dropdownAvatarInitials');
       if (dropdownAvatarInitials) dropdownAvatarInitials.textContent = initials;
-      
       const settingsAvatarInitials = document.getElementById('settingsAvatarInitials');
       if (settingsAvatarInitials) settingsAvatarInitials.textContent = initials;
-      
       const settingsName = document.getElementById('settingsName');
       if (settingsName) settingsName.value = name;
-      
       const settingsPhone = document.getElementById('settingsPhone');
       if (settingsPhone) settingsPhone.value = phone;
 
-      // Update avatar images if available
-      if (userAvatar) {
-        updateAvatarImages(userAvatar);
+      // Fetch avatar from backend (robust persistence)
+      let avatar = null;
+      if (window.RailCareAuth && typeof window.RailCareAuth.fetchAvatar === 'function') {
+        try {
+          avatar = await window.RailCareAuth.fetchAvatar();
+        } catch (e) { avatar = null; }
       }
+      if (!avatar) {
+        avatar = localStorage.getItem('railcare_avatar') || null;
+      }
+      userAvatar = avatar;
+      updateAvatarImages(avatar);
 
       // Update navigation based on role
       updateNavForRole(role);
     }
-
+    
     function updateNavForRole(role) {
       // Hide all role-specific nav items first
       document.querySelectorAll('.nav-passenger, .nav-assistant, .nav-admin, .nav-staff').forEach(el => {
@@ -3471,29 +3979,43 @@
     }
 
     // Avatar upload
-    function handleAvatarUpload(event) {
+    async function handleAvatarUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
-
       if (file.size > 2 * 1024 * 1024) {
         showToast('Image too large. Max 2MB allowed.');
         return;
       }
-
       const reader = new FileReader();
-      reader.onload = (e) => {
+      reader.onload = async (e) => {
         userAvatar = e.target.result;
         localStorage.setItem('railcare_avatar', userAvatar);
         updateAvatarImages(userAvatar);
-        showToast('Profile photo updated!');
+        // Upload to backend for persistence
+        if (window.RailCareAuth && typeof window.RailCareAuth.uploadAvatar === 'function') {
+          try {
+            await window.RailCareAuth.uploadAvatar(userAvatar);
+            showToast('Profile photo updated!');
+          } catch (err) {
+            showToast('Photo updated locally, but failed to sync to server');
+          }
+        } else {
+          showToast('Profile photo updated!');
+        }
       };
       reader.readAsDataURL(file);
     }
 
-    function removeAvatar() {
+    async function removeAvatar() {
       userAvatar = null;
       localStorage.removeItem('railcare_avatar');
       updateAvatarImages(null);
+      // Remove from backend
+      if (window.RailCareAuth && typeof window.RailCareAuth.uploadAvatar === 'function') {
+        try {
+          await window.RailCareAuth.uploadAvatar('');
+        } catch (e) {}
+      }
       showToast('Profile photo removed');
     }
 
@@ -3580,7 +4102,7 @@
         
         // Use dedicated my-bookings endpoint
         console.log('[viewMyBookings] Fetching from /api/bookings/my-bookings');
-        const res = await fetch('/api/bookings/my-bookings', { headers });
+        const res = await authFetch('/api/bookings/my-bookings');
         const data = await res.json();
         console.log('[viewMyBookings] Response:', data);
         
@@ -3599,6 +4121,7 @@
         }
         
         const bookings = data.bookings;
+        window.bookingsList = bookings;
         console.log('[viewMyBookings] Rendering', bookings.length, 'bookings');
         
         // Render bookings
@@ -3644,19 +4167,48 @@
             'Cancelled': '#ef4444',
             'Rejected': '#ef4444'
           };
-          
           const statusColor = statusColors[b.status] || '#666';
           const date = b.createdAt ? new Date(b.createdAt).toLocaleDateString('en-IN', { 
             day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
           }) : '—';
-          
           const services = Array.isArray(b.services) ? b.services.join(', ') : (b.service || '—');
           const assistantName = b.assistantId?.name || 'Not assigned';
+          // Show Emergency button for these statuses
+          const showEmergency = ['Assigned', 'Accepted', 'Start Pending', 'In Progress', 'Completion Pending'].includes(b.status);
           const isActive = !['Completed', 'Cancelled', 'Rejected'].includes(b.status);
-          
-          // For round-trip, show detailed task status
           const isRoundTrip = b.serviceType === 'round_trip';
-          
+          // Feedback button logic
+          const canGiveFeedback = b.status === 'Completed' && !b.hasFeedback;
+
+          // Dynamic action text logic
+          function getActionText(booking) {
+            // If round trip, show both legs
+            if (booking.serviceType === 'round_trip') {
+              return 'This is a round trip booking. You will receive assistance at both departure and arrival stations.';
+            }
+            // If services is array, check for each
+            let actions = [];
+            let svcArr = Array.isArray(booking.services) ? booking.services : (booking.service ? [booking.service] : []);
+            svcArr.forEach(svc => {
+              switch (svc) {
+                case 'Luggage':
+                  actions.push('Your assistant will help you with your luggage from entry to your seat or exit.');
+                  break;
+                case 'SeatEscort':
+                  actions.push('Your assistant will escort you to your seat and help you board or deboard.');
+                  break;
+                case 'Language':
+                  actions.push('Your assistant will provide language help as per your selected language.');
+                  break;
+                default:
+                  actions.push('Your assistant will help you with your selected service.');
+              }
+            });
+            return actions.length ? actions.join(' ') : 'Your assistant will help you with your selected service.';
+          }
+
+          const actionText = getActionText(b);
+
           return `
             <div class="my-booking-card" style="
               background: var(--bg-secondary);
@@ -3684,6 +4236,7 @@
                   font-weight: 600;
                 ">${b.status}</span>
               </div>
+              ${canGiveFeedback ? `<div style="margin-bottom: 12px;"><button onclick="showFeedbackModal(window.bookingsList[${index}])" style="background: #10b981; color: white; border: none; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer;">Give Feedback</button></div>` : ''}
               
               ${isRoundTrip ? `
               <!-- ROUND TRIP: Show both service legs -->
@@ -3754,6 +4307,9 @@
               
               ${isActive ? `
               <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border-color);">
+                <div style="margin-bottom: 10px; font-size: 13px; color: var(--text-secondary);">
+                  <strong>Your Action:</strong> ${actionText}
+                </div>
                 <button onclick="trackBooking('${b._id}')" style="
                   padding: 8px 20px;
                   background: var(--text-primary);
@@ -3764,6 +4320,7 @@
                   font-weight: 600;
                   cursor: pointer;
                 ">Track Booking</button>
+                ${showEmergency ? `<button onclick="triggerEmergencyHelp('${b._id}')" style="margin-left: 12px; padding: 8px 20px; background: #ef4444; color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;">🚨 Emergency Help</button>` : ''}
               </div>
               ` : ''}
             </div>
@@ -3987,10 +4544,13 @@
       
       // Round trip line
       const roundTripLine = document.getElementById('roundTripLine');
+      const roundTripMultiplierEl = document.getElementById('roundTripMultiplier');
       if (isRoundTrip) {
         if (roundTripLine) roundTripLine.style.display = 'flex';
+        if (roundTripMultiplierEl) roundTripMultiplierEl.textContent = '×2';
       } else {
         if (roundTripLine) roundTripLine.style.display = 'none';
+        if (roundTripMultiplierEl) roundTripMultiplierEl.textContent = '—';
       }
       
       // Total
@@ -4006,20 +4566,22 @@
       // Update selected services display
       const display = document.getElementById('selectedServicesDisplay');
       const totalLuggageCount = getTotalLuggageCount();
-      
       if (selectedServices.length === 0 && totalLuggageCount === 0) {
         if (display) display.innerHTML = '<span class="no-service">Select services from above ↑</span>';
       } else {
-        // Filter out 'Luggage' from service tags - luggage is shown separately
         let tags = selectedServices
           .filter(svc => svc !== 'Luggage')
-          .map(svc => `
-          <span class="service-tag">
-            ${serviceNames[svc]} — ₹${servicePrices[svc]}
-            <span class="remove" onclick="removeService('${svc}')">✕</span>
-          </span>
-        `);
-        
+          .map(svc => {
+            if (svc === 'Language') {
+              const lang = document.getElementById('language').value;
+              if (lang) {
+                return `<span class="service-tag">🗣️ Language Help <span style='background:#eee;color:#333;padding:2px 8px;border-radius:8px;font-size:11px;margin-left:6px;'>${lang}</span> <span class="remove" onclick="removeService('Language')">✕</span></span>`;
+              } else {
+                return `<span class="service-tag">🗣️ Language Help <span class="remove" onclick="removeService('Language')">✕</span></span>`;
+              }
+            }
+            return `<span class="service-tag">${serviceNames[svc]} — ₹${servicePrices[svc]}<span class="remove" onclick="removeService('${svc}')">✕</span></span>`;
+          });
         // Add luggage cart items
         luggageItems.forEach(item => {
           const info = luggageInfo[item.type];
@@ -4030,7 +4592,6 @@
             </span>
           `);
         });
-        
         display.innerHTML = tags.join('');
       }
       
@@ -4041,28 +4602,52 @@
     // Toggle service selection
     function toggleService(service, checkbox) {
       const card = checkbox.closest('.service-card');
-      
       if (checkbox.checked) {
         if (!selectedServices.includes(service)) {
           selectedServices.push(service);
         }
         card.classList.add('selected');
-        
         // Special handling for Luggage service
         if (service === 'Luggage') {
           showLuggageDetails();
         }
+        // Special handling for Language Help
+        if (service === 'Language') {
+          document.getElementById('languageHelpWrapper').classList.remove('hidden');
+          document.getElementById('preferredLanguageLabel').style.display = '';
+          document.getElementById('language').style.display = 'block';
+          document.getElementById('language').disabled = false;
+        }
       } else {
         selectedServices = selectedServices.filter(s => s !== service);
         card.classList.remove('selected');
-        
         // Special handling for Luggage service
         if (service === 'Luggage') {
           hideLuggageDetails();
           resetLuggageSelection();
         }
+        // Special handling for Language Help
+        if (service === 'Language') {
+          document.getElementById('languageHelpWrapper').classList.add('hidden');
+          document.getElementById('preferredLanguageLabel').style.display = 'none';
+          document.getElementById('language').style.display = 'none';
+          document.getElementById('language').disabled = true;
+          document.getElementById('language').value = '';
+              // Preferred Language label click shows dropdown
+              const preferredLanguageLabel = document.getElementById('preferredLanguageLabel');
+              const languageSelect = document.getElementById('language');
+              if (preferredLanguageLabel && languageSelect) {
+                preferredLanguageLabel.addEventListener('click', function() {
+                  languageSelect.style.display = '';
+                  languageSelect.focus();
+                });
+                languageSelect.addEventListener('blur', function() {
+                  // Optionally hide dropdown again on blur
+                  // languageSelect.style.display = 'none';
+                });
+              }
+        }
       }
-      
       updatePriceDisplay();
     }
 
@@ -4307,6 +4892,8 @@
       if (insuranceChk) {
         insuranceChk.addEventListener('change', updatePriceDisplay);
       }
+      // Defensive: always update price display on load
+      updatePriceDisplay();
     });
     // ==================== END LUGGAGE STEPPER LOGIC ====================
 
@@ -4365,7 +4952,6 @@
         seat: document.getElementById('seat').value || undefined,
         services: selectedServices,
         serviceType: selectedServiceType, // pickup, drop, or round_trip
-        language: document.getElementById('language').value,
         insurance: insuranceChecked,
         // NEW: Multi-luggage cart items (server calculates price)
         luggageItems: getLuggageItemsArray(),
@@ -4374,6 +4960,10 @@
         luggageQuantity: currentLuggageQuantity
         // Note: totalAmount NOT sent - server calculates final price
       };
+      // Only add language if Language Help is selected
+      if (selectedServices.includes('Language')) {
+        data.language = document.getElementById('language').value;
+      }
       
       // Add train number if selected
       const trainNumberInput = document.getElementById('selectedTrainNumber');
@@ -4385,24 +4975,24 @@
       if (selectedServiceType === 'pickup') {
         // Pickup: only pickup station needed
         data.station = selectedPickupStation.stationName;
-        data.stationCode = selectedPickupStation.stationCode;
-        data.pickupStationCode = selectedPickupStation.stationCode;
+        data.stationName = selectedPickupStation.stationName;
         data.pickupStationName = selectedPickupStation.stationName;
+        data.pickupStationCode = selectedPickupStation.stationCode;
       } else if (selectedServiceType === 'drop') {
         // Drop: only drop station needed
         data.station = selectedDropStation.stationName;
-        data.stationCode = selectedDropStation.stationCode;
-        data.dropStationCode = selectedDropStation.stationCode;
+        data.stationName = selectedDropStation.stationName;
         data.dropStationName = selectedDropStation.stationName;
+        data.dropStationCode = selectedDropStation.stationCode;
       } else if (selectedServiceType === 'round_trip') {
         // Round trip: both pickup and drop stations
-        data.pickupStationCode = selectedPickupStation.stationCode;
         data.pickupStationName = selectedPickupStation.stationName;
-        data.dropStationCode = selectedDropStation.stationCode;
+        data.pickupStationCode = selectedPickupStation.stationCode;
         data.dropStationName = selectedDropStation.stationName;
+        data.dropStationCode = selectedDropStation.stationCode;
         // Set main station to pickup station for display purposes
         data.station = selectedPickupStation.stationName;
-        data.stationCode = selectedPickupStation.stationCode;
+        data.stationName = selectedPickupStation.stationName;
       }
 
       try {
@@ -4452,6 +5042,11 @@
 
     // Update progress UI
     function updateProgressUI(booking) {
+            // Show confirmed price from backend (always correct for round trip)
+            const confirmedPriceEl = document.getElementById('confirmedBookingPrice');
+            if (confirmedPriceEl && booking.price != null) {
+              confirmedPriceEl.textContent = `₹${booking.price.toFixed(2)}`;
+            }
       const status = booking.status;
       const statusText = document.getElementById('statusText');
       
@@ -4650,6 +5245,7 @@
     let assistantStars = 0;
     let appStars = 0;
     let wouldRecommend = null;
+    let assistantBehavior = '';
 
     function showFeedbackModal(booking) {
       console.log('[showFeedbackModal] Booking received:', booking);
@@ -4659,6 +5255,7 @@
       assistantStars = 0;
       appStars = 0;
       wouldRecommend = null;
+      assistantBehavior = '';
 
       const assistantName = booking.assistantId?.name || booking.assistantName || 'Your Assistant';
       
@@ -4672,6 +5269,7 @@
       `;
       
       modal.innerHTML = `
+
         <div style="
           background: var(--card-bg); border-radius: 24px; padding: 40px;
           max-width: 480px; width: 100%; box-shadow: 0 25px 50px rgba(0,0,0,0.3);
@@ -4708,14 +5306,24 @@
 
           <!-- Assistant Feedback -->
           <div style="margin-bottom: 28px;">
-            <textarea id="assistantFeedback" placeholder="Tell us about your experience with the assistant (optional)"
-              style="
-                width: 100%; padding: 14px 16px; border: 1px solid var(--border-color);
-                border-radius: 12px; font-size: 14px; resize: none; height: 80px;
-                background: var(--bg-secondary); color: var(--text-primary);
-                font-family: inherit;
-              "></textarea>
-          </div>
+            <label style="display: block; font-weight: 600; margin-bottom: 12px; color: var(--text-primary);">
+              How did the assistant behave?
+            </label>
+            <div id="assistantBehavior" style="display: flex; gap: 12px; justify-content: center; margin-bottom: 12px;">
+              <button type="button" class="behavior-btn" data-behavior="Rude">😠 Rude</button>
+              <button type="button" class="behavior-btn" data-behavior="Okay">😐 Okay</button>
+              <button type="button" class="behavior-btn" data-behavior="Perfect">😊 Perfect</button>
+              <button type="button" class="behavior-btn" data-behavior="Helpful">🤝 Helpful</button>
+              <button type="button" class="behavior-btn" data-behavior="Other">📝 Other</button>
+              </div>
+              <textarea id="assistantFeedback" placeholder="Tell us about your experience with the assistant (optional)"
+                style="
+                  width: 100%; padding: 14px 16px; border: 1px solid var(--border-color);
+                  border-radius: 12px; font-size: 14px; resize: none; height: 80px;
+                  background: var(--bg-secondary); color: var(--text-primary);
+                  font-family: inherit;
+                "></textarea>
+            </div>
 
           <!-- App Rating -->
           <div style="margin-bottom: 28px;">
@@ -4781,6 +5389,29 @@
       `;
       
       document.body.appendChild(modal);
+      // Attach event listeners for behavior buttons
+      modal.querySelectorAll('.behavior-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          setAssistantBehavior(this.getAttribute('data-behavior'), this, modal);
+        });
+      });
+
+      // Highlight selected behavior
+      function setAssistantBehavior(behavior, btn, modal) {
+        assistantBehavior = behavior;
+        // Remove highlight from all
+        modal.querySelectorAll('.behavior-btn').forEach(b => {
+          b.style.background = '';
+          b.style.color = '';
+          b.style.border = '';
+        });
+        // Highlight selected
+        if (btn) {
+          btn.style.background = '#3b82f6';
+          btn.style.color = 'white';
+          btn.style.border = '1.5px solid #3b82f6';
+        }
+      }
     }
 
     function setAssistantRating(rating) {
@@ -4825,11 +5456,19 @@
     }
 
     async function submitFeedback() {
-      if (assistantStars === 0) {
+      if (!feedbackBooking || !feedbackBooking._id) {
+        showToast('Booking info missing. Please try again.');
+        return;
+      }
+      if (feedbackBooking.status !== 'Completed') {
+        showToast('You can only submit feedback for completed bookings.');
+        return;
+      }
+      if (!assistantStars || assistantStars === 0) {
         showToast('Please rate the assistant');
         return;
       }
-      if (appStars === 0) {
+      if (!appStars || appStars === 0) {
         showToast('Please rate the app');
         return;
       }
@@ -4841,7 +5480,6 @@
 
       try {
         console.log('[submitFeedback] Submitting for booking:', feedbackBooking?._id);
-        
         const token = getToken();
         if (!token) {
           showToast('Please sign in to submit feedback');
@@ -4850,42 +5488,61 @@
           btn.style.opacity = '1';
           return;
         }
-        
         const payload = {
           bookingId: feedbackBooking?._id,
           assistantRating: assistantStars,
+          assistantBehavior,
           appRating: appStars,
           assistantFeedback: document.getElementById('assistantFeedback')?.value?.trim() || '',
           appFeedback: document.getElementById('appFeedback')?.value?.trim() || '',
           wouldRecommend
         };
-        
         console.log('[submitFeedback] Payload:', payload);
-        
-        const res = await fetch('/api/feedback', {
+        const res = await authFetch('/api/feedback', {
           method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-
         console.log('[submitFeedback] Response status:', res.status);
         const data = await res.json();
         console.log('[submitFeedback] Response data:', data);
-        
         if (data.success) {
           showFeedbackSuccess();
+          // Update booking feedback state so button disappears
+          if (window.bookingsList && feedbackBooking && feedbackBooking._id) {
+            const idx = window.bookingsList.findIndex(b => b._id === feedbackBooking._id);
+            if (idx !== -1) window.bookingsList[idx].hasFeedback = true;
+          }
+          setTimeout(() => {
+            const modal = document.getElementById('feedbackModal');
+            if (modal) modal.remove();
+            // Optionally refresh bookings UI
+            viewMyBookings();
+          }, 1500);
         } else {
-          showToast(data.message || 'Failed to submit feedback');
-          btn.disabled = false;
-          btn.textContent = 'Submit Feedback';
-          btn.style.opacity = '1';
+          // Handle specific backend errors
+          if (data.message) {
+            if (data.message.includes('bookingId')) {
+              showToast('Booking info missing. Please try again.');
+            } else if (data.message.includes('assistantRating')) {
+              showToast('Please rate the assistant.');
+            } else if (data.message.includes('appRating')) {
+              showToast('Please rate the app.');
+            } else if (data.message.includes('completed bookings')) {
+              showToast('You can only submit feedback for completed bookings.');
+            } else if (data.message.includes('already submitted')) {
+              showToast('Feedback already submitted for this booking.');
+            } else {
+              showToast(data.message);
+            }
+          } else {
+            showToast('Failed to submit feedback. Please try again.');
+          }
         }
       } catch (err) {
         console.error('Feedback error:', err);
-        showToast('Error submitting feedback');
+        showToast('Error submitting feedback. Please check your connection and try again.');
+      } finally {
         btn.disabled = false;
         btn.textContent = 'Submit Feedback';
         btn.style.opacity = '1';
@@ -5777,87 +6434,81 @@
     }
     // ==================== END TRAIN AUTOCOMPLETE ====================
 
-    // Init - ensure checkAuth runs whether DOM is ready or not
+    // Init - ensure checkAuthNav runs whether DOM is ready or not
     function initApp() {
-      // Check authentication status
-      const token = localStorage.getItem('railcare_token');
-      console.log('[Init] Page loaded, token:', token ? 'EXISTS' : 'NULL');
-      checkAuth();
-      
-      // Initialize train autocomplete
-      initTrainAutocomplete();
-      
-      // Setup service card click handlers
-      document.querySelectorAll('.service-card').forEach(card => {
-        card.addEventListener('click', (e) => {
-          console.log('[ServiceCard Click] Target:', e.target);
-          console.log('[ServiceCard Click] Target classes:', e.target.className);
-          console.log('[ServiceCard Click] closest .luggage-type-card:', e.target.closest('.luggage-type-card'));
-          
-          // Don't toggle if clicking on checkbox directly
-          if (e.target.type === 'checkbox') return;
-          
-          // Don't toggle if clicking inside luggage section (luggage cards, cart, buttons, etc.)
-          if (e.target.closest('.luggage-section') || 
-              e.target.closest('.luggage-type-card') || 
-              e.target.closest('.luggage-cart') ||
-              e.target.closest('.luggage-cart-item') ||
-              e.target.closest('.cart-stepper-btn') ||
-              e.target.closest('.cart-item-remove') ||
-              e.target.closest('.clear-cart-btn')) {
-            console.log('[ServiceCard Click] Skipping toggle - inside luggage section');
-            return;
-          }
-          
-          const checkbox = card.querySelector('.service-check');
-          if (checkbox) {
-            checkbox.checked = !checkbox.checked;
-            toggleService(checkbox.dataset.service, checkbox);
-          }
-        });
-      });
+	  // Setup luggage-type-card click handlers (ensure event.stopPropagation and addLuggageToCart always fire)
+	  document.querySelectorAll('.luggage-type-card').forEach(card => {
+		card.addEventListener('click', (e) => {
+		  e.stopPropagation();
+		  const type = card.getAttribute('data-type');
+		  if (type) addLuggageToCart(type);
+		});
+	  });
+	  // Check authentication status immediately
+	  console.log('[initApp] Calling checkAuthNav immediately after DOM ready');
+	  checkAuthNav();
+	  // Initialize train autocomplete
+	  initTrainAutocomplete();
+	  // Setup service card click handlers
+	  document.querySelectorAll('.service-card').forEach(card => {
+		card.addEventListener('click', (e) => {
+		  // ...existing code...
+		  // (Train dropdown rendering logic should be in its own function, not inline here)
+		  // ...existing code...
+		  if (e.target.type === 'checkbox') return;
+		  if (e.target.closest('.luggage-section') || 
+			  e.target.closest('.luggage-cart') ||
+			  e.target.closest('.luggage-cart-item') ||
+			  e.target.closest('.cart-stepper-btn') ||
+			  e.target.closest('.cart-item-remove') ||
+			  e.target.closest('.clear-cart-btn')) {
+			return;
+		  }
+		  const checkbox = card.querySelector('.service-check');
+		  if (checkbox) {
+			checkbox.checked = !checkbox.checked;
+			toggleService(checkbox.dataset.service, checkbox);
+		  }
+		});
+	  });
+	  // Setup checkbox change handlers
+	  document.querySelectorAll('.service-check').forEach(checkbox => {
+		checkbox.addEventListener('change', () => {
+		  toggleService(checkbox.dataset.service, checkbox);
+		});
+	  });
+	  // Setup insurance checkbox
+	  document.getElementById('insuranceChk').addEventListener('change', updatePriceDisplay);
+	  // Initial price display
+	  updatePriceDisplay();
+	  // Check for existing booking in URL
+	  const urlParams = new URLSearchParams(window.location.search);
+	  const bookingId = urlParams.get('booking');
+	  if (bookingId) {
+		currentBookingId = bookingId;
+		document.getElementById('book').style.display = 'none';
+		document.getElementById('services').style.display = 'none';
+		document.getElementById('track').classList.add('active');
+		startPolling();
+		fetch(`/api/bookings/${bookingId}`)
+		  .then(res => res.json())
+		  .then(data => {
+			if (data.success || data.booking) {
+			  updateProgressUI(data.booking || data);
+			}
+		  })
+		  .catch(console.error);
+	  }
+	}
 
-      // Setup checkbox change handlers
-      document.querySelectorAll('.service-check').forEach(checkbox => {
-        checkbox.addEventListener('change', () => {
-          toggleService(checkbox.dataset.service, checkbox);
-        });
-      });
+	// Run initApp when DOM is ready or immediately if already loaded
+	if (document.readyState === 'loading') {
+	  document.addEventListener('DOMContentLoaded', initApp);
+	} else {
+	  initApp();
+	}
+	// Remove duplicate checkAuthNav DOMContentLoaded listener (already called in initApp)
 
-      // Setup insurance checkbox
-      document.getElementById('insuranceChk').addEventListener('change', updatePriceDisplay);
+	// Ensure all blocks are closed
+	</script>
 
-      // Initial price display
-      updatePriceDisplay();
-
-      // Check for existing booking in URL
-      const urlParams = new URLSearchParams(window.location.search);
-      const bookingId = urlParams.get('booking');
-      
-      if (bookingId) {
-        currentBookingId = bookingId;
-        document.getElementById('book').style.display = 'none';
-        document.getElementById('services').style.display = 'none';
-        document.getElementById('track').classList.add('active');
-        startPolling();
-        
-        fetch(`/api/bookings/${bookingId}`)
-          .then(res => res.json())
-          .then(data => {
-            if (data.success || data.booking) {
-              updateProgressUI(data.booking || data);
-            }
-          })
-          .catch(console.error);
-      }
-    }
-
-    // Run initApp when DOM is ready or immediately if already loaded
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initApp);
-    } else {
-      initApp();
-    }
-  </script>
-</body>
-</html>

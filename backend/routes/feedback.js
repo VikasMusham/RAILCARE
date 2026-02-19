@@ -14,8 +14,8 @@ router.post('/', authenticate, async (req, res) => {
     console.log('[feedback:post] Body:', JSON.stringify(req.body));
     
     const user = req.user;
-    const { bookingId, assistantRating, appRating, assistantFeedback, appFeedback, wouldRecommend } = req.body;
-    
+    const { bookingId, assistantRating, assistantBehavior, appRating, assistantFeedback, appFeedback, wouldRecommend } = req.body;
+
     if (!bookingId || !assistantRating || !appRating) {
       console.log('[feedback:post] Missing required fields');
       return res.json({ success: false, message: 'bookingId, assistantRating and appRating required' });
@@ -61,6 +61,7 @@ router.post('/', authenticate, async (req, res) => {
       assistantName: booking.assistantId?.name || (booking.assistantId ? (await Assistant.findById(booking.assistantId).select('name').lean())?.name : null) || 'Unknown',
       station: booking.station,
       assistantRating, 
+      assistantBehavior, // Store new behavior feedback
       appRating, 
       assistantFeedback, 
       appFeedback,
@@ -115,7 +116,7 @@ router.get('/booking/:id', async (req, res) => {
 });
 
 // Admin: list all feedbacks
-router.get('/', authorize('admin'), async (req, res) => {
+router.get('/', authenticate, authorize('admin'), async (req, res) => {
   try {
     const list = await Feedback.find()
       .populate('bookingId', 'station date time services')

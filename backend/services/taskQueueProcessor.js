@@ -27,6 +27,7 @@ class TaskQueueProcessor extends EventEmitter {
     this.PROCESS_INTERVAL_MS = 30 * 1000; // 30 seconds
   }
 
+
   /**
    * Start the task queue processor
    */
@@ -110,23 +111,36 @@ class TaskQueueProcessor extends EventEmitter {
         return;
       }
 
-      // Check if assistant is already assigned to the booking
+      // If assistant is already assigned to the booking, assign this task to them
       if (booking.assistantId) {
-        // Assign this task to the same assistant
         task.status = 'assigned';
         task.notes = `${task.notes}\nAssigned to booking's assistant`.trim();
         await task.save();
-        
         this.emit('taskAssigned', { task, assistantId: booking.assistantId });
         return;
       }
 
-      // Check if within auto-assign window
+      // Always attempt auto-assignment for pickup (boarding) tasks before cancelling
       const minutesUntilTask = (task.scheduledTime - new Date()) / (1000 * 60);
-      if (minutesUntilTask <= schedulingConfig.assignment.autoAssignWithinMinutes) {
+      let attemptedAutoAssign = false;
+      if (task.taskType === 'pickup' || (booking.serviceType === 'round_trip' && task.taskType === 'pickup')) {
+        // Try auto-assign regardless of window for pickup
         await this.attemptAutoAssign(task, booking);
+        attemptedAutoAssign = true;
+      } else if (minutesUntilTask <= schedulingConfig.assignment.autoAssignWithinMinutes) {
+        await this.attemptAutoAssign(task, booking);
+        attemptedAutoAssign = true;
       }
 
+      // After auto-assign attempt, reload task to check if assigned
+      const updatedTask = await ServiceTask.findById(task._id);
+      if (updatedTask.status === 'pending' && attemptedAutoAssign) {
+        // No assistant available, escalate/capacity warning already handled in attemptAutoAssign
+        // Only cancel if business logic requires, otherwise leave as pending for manual intervention
+        // task.status = 'cancelled';
+        // task.notes = `${task.notes}\nAuto-cancelled: No assistant available at boarding station`.trim();
+        // await task.save();
+      }
     } catch (err) {
       console.error(`[TaskQueue] Error processing task ${task._id}:`, err.message);
     }
@@ -139,14 +153,19 @@ class TaskQueueProcessor extends EventEmitter {
    */
   async attemptAutoAssign(task, booking) {
     try {
-      // Find available assistants at this station
+      // Find available assistants at this station, fallback to booking.station if needed
+      // Normalize station name for matching
+      let stationToMatch = (task.station || booking.station || '').toUpperCase().trim();
       const availableAssistants = await Assistant.find({
-        station: booking.station,
+        station: stationToMatch,
         applicationStatus: 'Approved',
         isEligibleForBookings: true,
-        isOnline: true,
-        currentBookingId: null
+        verified: true
       }).lean();
+      console.log(`[AutoAssign] Found ${availableAssistants.length} available assistants at station ${task.station}`);
+      if (availableAssistants.length > 0) {
+        availableAssistants.forEach(a => console.log(`[AutoAssign] Assistant: ${a.name} (${a._id}) - Eligible: ${a.isEligibleForBookings}, Approved: ${a.applicationStatus}`));
+      }
 
       if (availableAssistants.length === 0) {
         // No assistants available - escalate if urgent
@@ -162,45 +181,71 @@ class TaskQueueProcessor extends EventEmitter {
         return;
       }
 
-      // Check assistant workload
-      const eligibleAssistants = [];
-      for (const assistant of availableAssistants) {
-        const assignedTasks = await ServiceTask.countDocuments({
-          status: { $in: ['assigned', 'in_progress'] },
-          // Tasks assigned to this assistant's booking
-          bookingId: { $in: await this.getAssistantBookingIds(assistant._id) }
-        });
 
-        if (assignedTasks < schedulingConfig.assignment.maxTasksPerAssistant) {
-          eligibleAssistants.push({
-            ...assistant,
-            currentLoad: assignedTasks
+      // For pickup (boarding) tasks, assign the best available assistant even if at capacity
+      let selectedAssistant = null;
+      if (task.taskType === 'pickup' || (booking.serviceType === 'round_trip' && task.taskType === 'pickup')) {
+        // Sort by fewest assigned tasks, then by rating
+        const assistantsWithLoad = await Promise.all(
+          availableAssistants.map(async (assistant) => {
+            const assignedTasks = await ServiceTask.countDocuments({
+              assignedAssistant: assistant._id,
+              status: { $in: ['assigned', 'in_progress'] }
+            });
+            return {
+              ...assistant,
+              currentLoad: assignedTasks
+            };
+          })
+        );
+        assistantsWithLoad.sort((a, b) => a.currentLoad - b.currentLoad || (b.rating || 0) - (a.rating || 0));
+        selectedAssistant = assistantsWithLoad[0];
+      } else {
+        // For other tasks, respect maxTasksPerAssistant
+        const eligibleAssistants = [];
+        for (const assistant of availableAssistants) {
+          const assignedTasks = await ServiceTask.countDocuments({
+            assignedAssistant: assistant._id,
+            status: { $in: ['assigned', 'in_progress'] }
           });
+          if (assignedTasks < schedulingConfig.assignment.maxTasksPerAssistant) {
+            eligibleAssistants.push({
+              ...assistant,
+              currentLoad: assignedTasks
+            });
+          }
+        }
+        eligibleAssistants.sort((a, b) => a.currentLoad - b.currentLoad);
+        selectedAssistant = eligibleAssistants[0];
+        if (!selectedAssistant) {
+          this.emit('capacityWarning', {
+            task,
+            station: booking.station,
+            message: 'All assistants at capacity'
+          });
+          return;
         }
       }
 
-      if (eligibleAssistants.length === 0) {
-        this.emit('capacityWarning', {
+      // Assign the selected assistant to the task
+      if (selectedAssistant) {
+        const assignService = require('./taskAssignmentService');
+        console.log(`[AutoAssign] Attempting to assign task ${task._id} at station ${task.station} to assistant ${selectedAssistant.name} (${selectedAssistant._id || selectedAssistant.id})`);
+        const result = await assignService.assignAssistantToTask(task._id, selectedAssistant._id || selectedAssistant.id, { skipValidation: false });
+        if (result.success) {
+          console.log(`[AutoAssign] Assigned task ${task._id} at station ${task.station} to assistant ${selectedAssistant.name} (${selectedAssistant._id || selectedAssistant.id})`);
+        } else {
+          console.warn(`[AutoAssign] Failed to assign task ${task._id} at station ${task.station}:`, result.errors);
+        }
+        this.emit('assignmentSuggestion', {
           task,
-          station: booking.station,
-          message: 'All assistants at capacity'
+          booking,
+          suggestedAssistant: selectedAssistant,
+          alternativeAssistants: []
         });
-        return;
+      } else {
+        console.warn(`[AutoAssign] No eligible assistant selected for task ${task._id} at station ${task.station}`);
       }
-
-      // Sort by load (least loaded first)
-      eligibleAssistants.sort((a, b) => a.currentLoad - b.currentLoad);
-
-      // Select best assistant
-      const selectedAssistant = eligibleAssistants[0];
-
-      // Emit for manual confirmation (don't auto-assign in production without confirmation)
-      this.emit('assignmentSuggestion', {
-        task,
-        booking,
-        suggestedAssistant: selectedAssistant,
-        alternativeAssistants: eligibleAssistants.slice(1, 4)
-      });
 
     } catch (err) {
       console.error(`[TaskQueue] Auto-assign failed for task ${task._id}:`, err.message);

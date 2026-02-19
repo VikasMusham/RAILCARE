@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+        <link rel="icon" type="image/png" href="favicon.png">
+      <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/png" href="favicon.png">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RailMitra • Assistant Dashboard</title>
@@ -1155,7 +1158,6 @@
       
       <div class="nav-links">
         <a href="assistant-premium.html" class="nav-link active">My Dashboard</a>
-        <a href="passenger-premium.html" class="nav-link">Passenger Portal</a>
       </div>
       
       <div class="nav-actions">
@@ -1308,102 +1310,113 @@
 
     <!-- Content Grid -->
     <div class="content-grid">
-      
-      <!-- Bookings Section -->
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <h2 class="card-title">Pending Bookings</h2>
-            <p class="card-subtitle">Accept or manage incoming requests</p>
-          </div>
-          <button class="btn btn-secondary" onclick="loadBookings()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="23 4 23 10 17 10"></polyline>
-              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
-            </svg>
-            Refresh
-          </button>
-        </div>
-        
-        <div id="bookingsList">
-          <div class="empty-state">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="16" y1="2" x2="16" y2="6"></line>
-              <line x1="8" y1="2" x2="8" y2="6"></line>
-              <line x1="3" y1="10" x2="21" y2="10"></line>
-            </svg>
-            <h3>No pending bookings</h3>
-            <p>New booking requests will appear here</p>
-          </div>
-        </div>
-      </div>
 
-      <!-- Profile Section -->
-      <div>
-        <!-- Registration Card (shown when not registered) -->
-        <div class="card" id="registerCard">
-          <h2 class="card-title" style="margin-bottom: var(--space-6);">Register as Assistant</h2>
-          
-          <div id="registerFormSection">
-            <div class="form-group">
-              <label class="form-label">Full Name</label>
-              <input type="text" id="aName" class="form-input" placeholder="Enter your name">
+      <div style="display: contents;">
+        <!-- Left column: Bookings -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Pending Bookings</h2>
+              <p class="card-subtitle">Accept or manage incoming requests</p>
             </div>
-            
-            <div class="form-group">
-              <label class="form-label">Station</label>
-              <select id="aStation" class="form-select">
-                <option value="">Select station</option>
-                <option>Secunderabad</option>
-                <option>Kacheguda</option>
-                <option>Hyderabad Deccan</option>
-                <option>Kazipet</option>
-                <option>Vijayawada</option>
-                <option>Warangal</option>
-              </select>
-            </div>
-            
-            <div class="form-group">
-              <label class="form-label">Languages (comma separated)</label>
-              <input type="text" id="aLangs" class="form-input" placeholder="Telugu, Hindi, English">
-            </div>
-            
-            <button class="btn btn-dark" style="width: 100%;" id="registerBtn">
-              Register & Load
+            <button class="btn btn-secondary" onclick="loadBookings()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="23 4 23 10 17 10"></polyline>
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+              </svg>
+              Refresh
             </button>
           </div>
+          <div id="bookingsList">
+            <div class="empty-state">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              <h3>No pending bookings</h3>
+              <p>New booking requests will appear here</p>
+            </div>
+          </div>
         </div>
 
-        <!-- Profile Card (shown when registered) -->
-        <div class="card profile-card" id="profileCard" style="display: none;">
-          <div class="profile-avatar" id="profileAvatar">👷</div>
-          <h3 class="profile-name" id="profileName">—</h3>
-          <p class="profile-station" id="profileStation">—</p>
-          <div class="profile-badge verified" id="profileBadge">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-              <polyline points="22 4 12 14.01 9 11.01"></polyline>
-            </svg>
-            <span id="profileBadgeText">Verified</span>
-          </div>
-          
-          <div class="profile-stats">
-            <div class="profile-stat">
-              <div class="profile-stat-value" id="profileRating">—</div>
-              <div class="profile-stat-label">Rating</div>
+        <!-- Right column: Profile and Feedback -->
+        <div style="display: flex; flex-direction: column; gap: var(--space-8);">
+          <!-- Profile Section -->
+          <div>
+            <!-- Registration Card (shown when not registered) -->
+            <div class="card" id="registerCard">
+              <h2 class="card-title" style="margin-bottom: var(--space-6);">Register as Assistant</h2>
+              <div id="registerFormSection">
+                <div class="form-group">
+                  <label class="form-label">Full Name</label>
+                  <input type="text" id="aName" class="form-input" placeholder="Enter your name">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Station</label>
+                  <select id="aStation" class="form-select">
+                    <option value="">Select station</option>
+                    <option>Secunderabad</option>
+                    <option>Kacheguda</option>
+                    <option>Hyderabad Deccan</option>
+                    <option>Kazipet</option>
+                    <option>Vijayawada</option>
+                    <option>Warangal</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Languages (comma separated)</label>
+                  <input type="text" id="aLangs" class="form-input" placeholder="Telugu, Hindi, English">
+                </div>
+                <button class="btn btn-dark" style="width: 100%;" id="registerBtn">
+                  Register & Load
+                </button>
+              </div>
             </div>
-            <div class="profile-stat">
-              <div class="profile-stat-value" id="profileJobs">0</div>
-              <div class="profile-stat-label">Jobs Done</div>
+            <!-- Profile Card (shown when registered) -->
+            <div class="card profile-card" id="profileCard" style="display: none;">
+              <div class="profile-avatar" id="profileAvatar" style="display: flex; justify-content: center; align-items: center;">👷</div>
+              <div style="width:100%;display:flex;flex-direction:column;align-items:center;">
+                <h3 class="profile-name" id="profileName" style="text-align: center; margin-top: 8px;">—</h3>
+              </div>
+              <p class="profile-station" id="profileStation" style="text-align:center;">—</p>
+              <div class="profile-badge verified" id="profileBadge" style="justify-content:center;display:flex;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+                <span id="profileBadgeText">Verified</span>
+              </div>
+              <div class="profile-stats">
+                <div class="profile-stat">
+                  <div class="profile-stat-value" id="profileRating">—</div>
+                  <div class="profile-stat-label">Rating</div>
+                </div>
+                <div class="profile-stat">
+                  <div class="profile-stat-value" id="profileJobs">0</div>
+                  <div class="profile-stat-label">Jobs Done</div>
+                </div>
+              </div>
+              <div class="doc-links" id="docLinks"></div>
+              <div class="profile-actions">
+                <button class="btn btn-secondary" onclick="showEditModal()">Edit Profile</button>
+                <button class="btn btn-secondary" onclick="showFeedbackModal()">Feedback</button>
+              </div>
             </div>
           </div>
-          
-          <div class="doc-links" id="docLinks"></div>
-          
-          <div class="profile-actions">
-            <button class="btn btn-secondary" onclick="showEditModal()">Edit Profile</button>
-            <button class="btn btn-secondary" onclick="showFeedbackModal()">Feedback</button>
+          <!-- Customer Feedback Section -->
+          <div class="card" id="dashboardFeedbackCard">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Customer Feedback</h2>
+                <p class="card-subtitle">Recent feedback from passengers</p>
+              </div>
+              <button class="btn btn-secondary" onclick="showFeedbackModal()">View All</button>
+            </div>
+            <div id="dashboardFeedbackList">
+              <div class="loading" style="text-align: center; padding: 24px;">Loading feedback...</div>
+            </div>
           </div>
         </div>
       </div>
@@ -1473,18 +1486,22 @@
       <div class="form-group">
         <label class="form-label">Station</label>
         <select id="editStation" class="form-select">
-          <option>Secunderabad</option>
-          <option>Kacheguda</option>
-          <option>Hyderabad Deccan</option>
-          <option>Kazipet</option>
-          <option>Vijayawada</option>
-          <option>Warangal</option>
+          <option value="Secunderabad">Secunderabad</option>
+          <option value="Kacheguda">Kacheguda</option>
+          <option value="Hyderabad Deccan">Hyderabad Deccan</option>
+          <option value="Kazipet">Kazipet</option>
+          <option value="Vijayawada">Vijayawada</option>
+          <option value="Warangal">Warangal</option>
         </select>
       </div>
       
       <div class="form-group">
         <label class="form-label">Languages</label>
-        <input type="text" id="editLangs" class="form-input" placeholder="Telugu, Hindi, English">
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+          <input type="text" id="editLangs" class="form-input" placeholder="Telugu, Hindi, English" style="flex:1;">
+          <button type="button" class="btn btn-secondary" id="addLangBtn" style="padding: 8px 12px; font-size: 13px;">+ Add</button>
+        </div>
+        <div id="editLangsList" style="margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap;"></div>
       </div>
       
       <button class="btn btn-dark" style="width: 100%;" onclick="saveProfile()">Save Changes</button>
@@ -1562,25 +1579,29 @@
 
     function checkAuthNav() {
       const token = getToken();
+      console.log('[DEBUG][checkAuthNav] token:', token);
+      console.log('[DEBUG][checkAuthNav] localStorage.railcare_token:', localStorage.getItem('railcare_token'));
+      console.log('[DEBUG][checkAuthNav] sessionStorage.railcare_token:', sessionStorage.getItem('railcare_token'));
       if (!token) {
+        console.log('[DEBUG][checkAuthNav] No token found, showing sign in button');
         showSignInButton();
         return;
       }
-
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
         const expiry = payload.exp * 1000;
-        
+        console.log('[DEBUG][checkAuthNav] Token payload:', payload, 'Expiry:', expiry, 'Now:', Date.now());
         if (expiry < Date.now()) {
+          console.log('[DEBUG][checkAuthNav] Token expired, removing and showing sign in');
           localStorage.removeItem('railcare_token');
           showSignInButton();
           return;
         }
-
-        navCurrentUser = { name: payload.name, phone: '', role: payload.role };
-        userAvatar = localStorage.getItem('railcare_avatar');
+        navCurrentUser = { name: payload.name, phone: payload.phone || '', role: payload.role };
+        console.log('[DEBUG][checkAuthNav] Valid token, showing user profile:', navCurrentUser);
         showUserProfile(navCurrentUser);
       } catch (e) {
+        console.log('[DEBUG][checkAuthNav] Error parsing token:', e);
         showSignInButton();
       }
     }
@@ -1607,7 +1628,8 @@
       if (dropdownUserName) dropdownUserName.textContent = name;
       
       const dropdownUserPhone = document.getElementById('dropdownUserPhone');
-      if (dropdownUserPhone) dropdownUserPhone.textContent = user.role === 'assistant' ? 'Assistant Account' : (user.phone || 'Phone not set');
+      const phone = user.phone && user.phone.trim() !== '' ? user.phone : 'Phone not set';
+      if (dropdownUserPhone) dropdownUserPhone.textContent = phone;
       
       const dropdownAvatarInitials = document.getElementById('dropdownAvatarInitials');
       if (dropdownAvatarInitials) dropdownAvatarInitials.textContent = initials;
@@ -1619,7 +1641,7 @@
       if (settingsName) settingsName.value = name;
       
       const settingsPhone = document.getElementById('settingsPhone');
-      if (settingsPhone) settingsPhone.value = user.phone || '';
+      if (settingsPhone) settingsPhone.value = phone;
 
       if (userAvatar) {
         updateAvatarImages(userAvatar);
@@ -1702,7 +1724,7 @@
     }
 
     function saveSettings() {
-      const name = document.getElementById('settingsName')?.value.trim();
+      const name = document.getElementById('settingsName').value.trim();
       if (!name) {
         showToast('Name is required');
         return;
@@ -1724,19 +1746,66 @@
       setTimeout(() => { window.location.href = 'login-premium.html'; }, 1000);
     }
 
-    // Check auth on load - ensure DOM is ready
+    // Robustly check auth and show profile after login
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', checkAuthNav);
     } else {
       checkAuthNav();
     }
+    // Also ensure profile is shown after login
+    document.addEventListener('DOMContentLoaded', checkAuthNav);
 
     // ==================== MODALS ====================
+    // --- Enhanced language editing logic ---
+    let editLangsArr = [];
+    function updateEditLangsUI() {
+      const langsList = document.getElementById('editLangsList');
+      langsList.innerHTML = editLangsArr.map((lang, idx) =>
+        `<span style="background: var(--bg-secondary); padding: 4px 10px; border-radius: 12px; font-size: 13px; display: flex; align-items: center; gap: 4px;">
+          ${lang}
+          <button type='button' style='background:none;border:none;color:#ef4444;font-size:15px;cursor:pointer;padding:0 4px;' onclick='removeEditLang(${idx})' title='Remove'>&times;</button>
+        </span>`
+      ).join('');
+      document.getElementById('editLangs').value = '';
+    }
+
+    function removeEditLang(idx) {
+      editLangsArr.splice(idx, 1);
+      updateEditLangsUI();
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const addLangBtn = document.getElementById('addLangBtn');
+      if (addLangBtn) {
+        addLangBtn.onclick = function() {
+          const input = document.getElementById('editLangs');
+          const val = input.value.trim();
+          if (val && !editLangsArr.includes(val)) {
+            editLangsArr.push(val);
+            updateEditLangsUI();
+          }
+          input.value = '';
+        };
+      }
+      // Allow Enter key to add language
+      const input = document.getElementById('editLangs');
+      if (input) {
+        input.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            addLangBtn.click();
+          }
+        });
+      }
+    });
+
     function showEditModal() {
       if (!assistant) return;
       document.getElementById('editName').value = assistant.name || '';
       document.getElementById('editStation').value = assistant.station || '';
-      document.getElementById('editLangs').value = (assistant.languages || []).join(', ');
+      // Initialize editLangsArr for UI
+      editLangsArr = Array.isArray(assistant.languages) ? [...assistant.languages] : [];
+      updateEditLangsUI();
       document.getElementById('editModal').classList.add('active');
     }
 
@@ -1815,18 +1884,77 @@
     }
 
     // ==================== INITIALIZATION ====================
+
+    // ==================== APPLICATION STATUS LOGIC ====================
+
+    async function showApplicationStatusOrForm() {
+      try {
+        const fetcher = window.RailCareAuth?.authFetch || fetch;
+        const res = await fetcher('/api/assistants/my-application');
+        const data = await res.json();
+        const regCard = document.getElementById('registerCard');
+        const profCard = document.getElementById('profileCard');
+        // Remove any previous status message
+        let statusEl = document.getElementById('applicationStatusMsg');
+        if (statusEl) statusEl.remove();
+
+        // Default: hide form, show status/profile
+        regCard.style.display = 'none';
+        profCard.style.display = 'none';
+
+        if (data && data.applicationStatus && data.applicationStatus !== 'Not Applied') {
+          // Show status/profile card for all states except Not Applied
+          profCard.style.display = 'block';
+          let statusMsg = '';
+          let badgeClass = '';
+          if (data.applicationStatus === 'Pending') {
+            statusMsg = 'Your application is under review.';
+            badgeClass = 'pending';
+            profCard.innerHTML = `<div id="applicationStatusMsg" style="margin: 16px 0; color: #f59e0b; font-weight: 600; text-align: center;">${statusMsg}</div>`;
+          } else if (data.applicationStatus === 'Rejected') {
+            statusMsg = 'Your application was rejected.';
+            badgeClass = 'rejected';
+            // Show rejection and allow re-apply
+            profCard.innerHTML = `<div id="applicationStatusMsg" style="margin: 16px 0; color: #ef4444; font-weight: 600; text-align: center;">${statusMsg}<br><button class='btn btn-dark' style='margin-top:12px;' onclick='showReapplyForm()'>Update & Re-Apply</button></div>`;
+            window.showReapplyForm = function() {
+              regCard.style.display = 'block';
+              profCard.style.display = 'none';
+            };
+          } else if (data.applicationStatus === 'Approved') {
+            // Show full dashboard
+            profCard.style.display = 'block';
+            statusMsg = 'Your application is approved!';
+            badgeClass = 'verified';
+            // Optionally show a welcome message or nothing
+          }
+          // Update badge if present
+          const badge = document.getElementById('profileBadge');
+          if (badge) badge.className = 'profile-badge ' + badgeClass;
+          const badgeText = document.getElementById('profileBadgeText');
+          if (badgeText) badgeText.textContent = data.applicationStatus;
+        } else {
+          // Only show registration form if never applied or re-apply triggered
+          regCard.style.display = 'block';
+          profCard.style.display = 'none';
+        }
+      } catch (e) {
+        document.getElementById('registerCard').style.display = 'block';
+        document.getElementById('profileCard').style.display = 'none';
+      }
+    }
+
     (async () => {
       await window.RailCareAuth?.enforceRole?.('assistant');
-      
+      await showApplicationStatusOrForm();
       const hasAccess = await checkDashboardAccess();
       if (!hasAccess) return;
-      
       if (assistant) {
         renderAssistant();
         startAssistantPolling();
         loadBookings();
         loadBookingHistory();
         updateStats();
+        loadFeedback();
       }
     })();
 
@@ -1888,12 +2016,36 @@
       const name = document.getElementById('aName').value.trim();
       const station = document.getElementById('aStation').value.trim();
       const langs = document.getElementById('aLangs').value.split(',').map(s=>s.trim()).filter(Boolean);
-      
+
       if (!name || !station) return alert('Please fill name and station');
-      
+
       try {
         const fetcher = window.RailCareAuth?.authFetch || fetch;
-        
+
+        // If re-applying (assistant exists and was rejected), update the application
+        if (window.assistant && window.assistant.applicationStatus === 'Rejected') {
+          // Use PUT to update the existing assistant
+          const res = await fetcher(`/api/assistants/${window.assistant._id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, station, languages: langs, reapply: true })
+          });
+          const data = await res.json();
+          if (data.success) {
+            assistant = data.assistant;
+            try { localStorage.setItem(LS_KEY, assistant._id); } catch (e) {}
+            renderAssistant();
+            loadBookings();
+            startAssistantPolling();
+            updateStats();
+            showToast('Application re-submitted for review.');
+          } else {
+            alert('Re-apply failed: ' + (data.message || JSON.stringify(data)));
+          }
+          return;
+        }
+
+        // Normal registration flow
         // Check for duplicates
         try {
           const listRes = await fetcher('/api/assistants');
@@ -1915,7 +2067,6 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, station, languages: langs })
         });
-        
         const data = await res.json();
         if (data.success) {
           assistant = data.assistant;
@@ -1938,24 +2089,35 @@
       
       document.getElementById('registerCard').style.display = 'none';
       document.getElementById('profileCard').style.display = 'block';
-      
+
       document.getElementById('profileName').textContent = assistant.name;
-      document.getElementById('profileStation').textContent = assistant.station;
-      
+      document.getElementById('profileStation').textContent = assistant.station || '';
       const badge = document.getElementById('profileBadge');
       const badgeText = document.getElementById('profileBadgeText');
-      if (assistant.verified) {
+      if (assistant.revoked) {
+        badge.className = 'profile-badge rejected';
+        badgeText.textContent = 'Revoked';
+        // Show revoked message and reverify button
+        const actions = document.querySelector('.profile-actions');
+        if (actions) {
+          actions.innerHTML = `<div style='color:#d00;margin-bottom:12px;'>Your account has been revoked by admin.<br>You cannot take bookings until re-verified.</div>
+            <button class="btn btn-success" onclick="requestReverify()">Request Re-Verification</button>`;
+        }
+      } else {
         badge.className = 'profile-badge verified';
         badgeText.textContent = 'Verified';
-      } else {
-        badge.className = 'profile-badge pending';
-        badgeText.textContent = 'Pending Approval';
+        // Restore normal actions
+        const actions = document.querySelector('.profile-actions');
+        if (actions) {
+          actions.innerHTML = `<button class="btn btn-secondary" onclick="showEditModal()">Edit Profile</button>
+            <button class="btn btn-secondary" onclick="showFeedbackModal()">Feedback</button>`;
+        }
       }
-      
+
       const rating = assistant.rating;
       document.getElementById('profileRating').textContent = rating ? rating.toFixed(1) : '—';
       document.getElementById('profileJobs').textContent = assistant.ratingCount || 0;
-      
+
       // Profile photo
       const avatarEl = document.getElementById('profileAvatar');
       const photoUrl = assistant.photoFilePath || null;
@@ -1964,16 +2126,28 @@
       } else {
         avatarEl.innerHTML = '👷';
       }
-      
+
       // Document links
       const docsWrap = document.getElementById('docLinks');
       const aadharUrl = assistant.aadharFilePath || assistant.documents?.aadhar || null;
       const panUrl = assistant.panFilePath || assistant.documents?.pan || null;
-      
+
       let docsHtml = '';
       if (aadharUrl) docsHtml += `<a href="${aadharUrl}" target="_blank" class="doc-link">📄 Aadhar</a>`;
       if (panUrl) docsHtml += `<a href="${panUrl}" target="_blank" class="doc-link">📄 PAN</a>`;
       docsWrap.innerHTML = docsHtml;
+        // Assistant: Request re-verification if revoked
+        window.requestReverify = async function() {
+          try {
+            const fetcher = window.RailCareAuth?.authFetch || fetch;
+            const res = await fetcher(`/api/assistants/${assistant._id}/request-reverify`, { method: 'POST' });
+            if (res.ok) {
+              showToast('Re-verification request sent to admin.');
+            } else {
+              showToast('Failed to send request.');
+            }
+          } catch (e) { showToast('Error: ' + e.message); }
+        }
     }
 
     // ==================== STATS ====================
@@ -1981,9 +2155,35 @@
       if (!assistant) return;
       
       document.getElementById('statRating').textContent = assistant.rating ? assistant.rating.toFixed(1) : '—';
+      // Update badge for rating
+      const badge = document.querySelector('.stat-card .stat-badge.warning');
+      if (badge) {
+        if (assistant.rating >= 4.5) {
+          badge.textContent = 'Excellent';
+          badge.classList.remove('warning');
+          badge.classList.add('success');
+        } else if (assistant.rating >= 3) {
+          badge.textContent = 'Average';
+          badge.classList.remove('success');
+          badge.classList.add('warning');
+        } else if (assistant.rating > 0) {
+          badge.textContent = 'Poor';
+          badge.classList.remove('success');
+          badge.classList.add('danger');
+        } else {
+          badge.textContent = 'Average';
+          badge.classList.remove('success', 'danger');
+          badge.classList.add('warning');
+        }
+      }
       
-      // These would come from actual API data
-      const completed = assistant.ratingCount || 0;
+      // Show total completed bookings in stats
+      let completed = 0;
+      if (window.allBookings && Array.isArray(window.allBookings)) {
+        completed = window.allBookings.filter(b => b.status === 'Completed' && b.assistantId && (b.assistantId._id === assistant._id || b.assistantId === assistant._id)).length;
+      } else if (assistant.ratingCount) {
+        completed = assistant.ratingCount;
+      }
       document.getElementById('statCompleted').textContent = completed;
       document.getElementById('statEarnings').textContent = '₹' + (completed * 50);
     }
@@ -1995,7 +2195,37 @@
     // Helper function to render service direction for a booking
     function renderServiceDirection(b) {
       const myTasks = b._assignedTasks || [];
-      
+
+      // Helper to generate dynamic action text for all services
+      function getActionText(booking, fallbackAction, taskType) {
+        let actions = [];
+        let svcArr = Array.isArray(booking.services) ? booking.services : (booking.service ? [booking.service] : []);
+        // If no services, fallback
+        if (!svcArr.length) return fallbackAction;
+        svcArr.forEach(svc => {
+          switch (svc) {
+            case 'Luggage':
+              if (taskType === 'pickup' || booking.serviceType === 'pickup') {
+                actions.push('Meet passenger at platform. Help with luggage. Guide to coach. Assist boarding.');
+              } else if (taskType === 'drop' || booking.serviceType === 'drop') {
+                actions.push('Arrive before train. Identify coach. Help passenger deboard. Assist with luggage. Guide to exit.');
+              } else {
+                actions.push('Assist the passenger with their luggage from entry to seat or exit.');
+              }
+              break;
+            case 'SeatEscort':
+              actions.push('Escort the passenger to their seat and help with boarding or deboarding.');
+              break;
+            case 'Language':
+              actions.push('Provide language help as per the selected language.');
+              break;
+            default:
+              actions.push('Assist the passenger with the selected service.');
+          }
+        });
+        return actions.join(' ');
+      }
+
       // For round-trip with assigned tasks, show ONLY the task assigned to this assistant
       if (b.serviceType === 'round_trip' && myTasks.length > 0) {
         return myTasks.map(task => {
@@ -2006,19 +2236,18 @@
           const taskIcon = isPickup ? '🚉' : '🚶‍♂️';
           const taskLabel = isPickup ? 'BOARDING ASSISTANCE' : 'ARRIVAL ASSISTANCE';
           const direction = isPickup ? 'Platform → Train' : 'Train → Platform';
-          const action = isPickup 
+          // Use dynamic action text for the service, fallback to default
+          const fallbackAction = isPickup
             ? 'Meet passenger at platform. Help with luggage. Guide to coach. Assist boarding.'
             : 'Arrive before train. Identify coach. Help passenger deboard. Assist with luggage. Guide to exit.';
-          
+          const action = getActionText(b, fallbackAction, task.taskType);
           const scheduledTime = task.scheduledTime 
             ? new Date(task.scheduledTime).toLocaleString('en-IN', { 
                 day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' 
               })
             : '';
-          
           let html = '<div style="padding: 12px; background: linear-gradient(135deg, ' + taskBg + '); border: 2px solid ' + taskBorder + '; border-radius: 10px; margin-bottom: 12px;">';
-          html += '<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">';
-          html += '<div style="display: flex; align-items: center; gap: 10px;">';
+          html += '<div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">';
           html += '<span style="font-size: 22px;">' + taskIcon + '</span>';
           html += '<div>';
           html += '<div style="font-weight: 700; font-size: 15px; color: ' + taskColor + ';">' + taskLabel + '</div>';
@@ -2026,7 +2255,7 @@
           html += '</div></div>';
           html += '<div style="text-align: right;">';
           html += '<div style="font-size: 11px; color: var(--text-tertiary);">Station</div>';
-          html += '<div style="font-weight: 700; color: ' + taskColor + ';">' + task.stationCode + '</div>';
+          html += '<div style="font-weight: 700; color: ' + taskColor + ';">' + (task.station || task.stationCode || '') + '</div>';
           html += '</div></div>';
           if (scheduledTime) {
             html += '<div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">⏰ Report Time: <strong>' + scheduledTime + '</strong></div>';
@@ -2038,7 +2267,7 @@
           return html;
         }).join('');
       }
-      
+
       // Regular service type display
       if (b.serviceType) {
         const st = b.serviceType;
@@ -2048,12 +2277,13 @@
         const icon = st === 'pickup' ? '🚉' : st === 'drop' ? '🚶‍♂️' : '🔄';
         const label = st === 'pickup' ? 'BOARDING ASSISTANCE' : st === 'drop' ? 'ARRIVAL ASSISTANCE' : 'ROUND TRIP';
         const dir = st === 'pickup' ? 'Platform → Train' : st === 'drop' ? 'Train → Platform' : 'Boarding + Arrival';
-        const action = st === 'pickup' 
-          ? 'Meet passenger at platform. Help with luggage. Guide to coach. Assist boarding.' 
-          : st === 'drop' 
-            ? 'Arrive before train. Identify coach. Help passenger deboard. Assist with luggage. Guide to exit.' 
+        // Use dynamic action text for the service, fallback to default
+        const fallbackAction = st === 'pickup'
+          ? 'Meet passenger at platform. Help with luggage. Guide to coach. Assist boarding.'
+          : st === 'drop'
+            ? 'Arrive before train. Identify coach. Help passenger deboard. Assist with luggage. Guide to exit.'
             : 'Two tasks: First assist boarding, then assist arrival at different station.';
-        
+        const action = getActionText(b, fallbackAction, st);
         let html = '<div style="padding: 12px; background: linear-gradient(135deg, ' + bgColor + '); border: 2px solid ' + borderColor + '; border-radius: 10px; margin-bottom: 12px;">';
         html += '<div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">';
         html += '<span style="font-size: 22px;">' + icon + '</span>';
@@ -2065,7 +2295,7 @@
         html += '<strong>Your Action:</strong> ' + action + '</div></div>';
         return html;
       }
-      
+
       return '';
     }
     
@@ -2097,6 +2327,7 @@
         // Also get general bookings at this station (for accepting new ones)
         const res = await fetcher('/api/bookings');
         const allBookings = await res.json();
+        window.allBookings = allBookings;
         
         console.log('[loadBookings] All bookings:', allBookings.map(b => ({id: b._id, status: b.status, station: b.station})));
         console.log('[loadBookings] Assistant station:', assistant.station);
@@ -2111,41 +2342,41 @@
           .replace(/[^a-z0-9 ]/g, '');
 
         const stationMatchesBooking = (booking) => {
-          const assistantStation = assistant?.station;
-          const bookingStation = booking?.station;
-          const bookingStationCode = booking?.stationCode;
-
-          const a = normalizeStationName(assistantStation);
-          const b = normalizeStationName(bookingStation);
-          if (a && b && a === b) return true;
-
-          const aLoose = normalizeStationLoose(assistantStation);
-          const bLoose = normalizeStationLoose(bookingStation);
-          if (aLoose && bLoose && aLoose === bLoose) return true;
-
-          // Some datasets store assistant.station as stationCode (e.g. NDLS)
-          const aUpper = (assistantStation || '').toString().trim().toUpperCase();
-          const codeUpper = (bookingStationCode || '').toString().trim().toUpperCase();
-          if (aUpper && codeUpper && aUpper === codeUpper) return true;
-
-          return false;
+          // Use normalized stationName for all comparisons (case-insensitive, trimmed)
+          const normalize = (value) => (value || '').toString().trim().toLowerCase().replace(/\s+/g, ' ');
+          // Try to match by stationName, fallback to station
+          const assistantStationName = normalize(assistant?.stationName || assistant?.station);
+          const bookingStationName = normalize(booking?.stationName || booking?.pickupStationName || booking?.dropStationName || booking?.station);
+          return assistantStationName && bookingStationName && assistantStationName === bookingStationName;
         };
         
-        // Filter bookings:
-        // 1. Bookings at assistant's station that are Pending/Searching (for accepting) - NOT round_trip
-        // 2. Bookings where assistant is assigned via booking.assistantId (legacy)
-        // 3. Bookings with tasks assigned to this assistant (distributed workflow)
-        
+        // Strict language filter: only show bookings where assistant knows ALL required languages
+        const assistantLangs = (assistant.languages || []).map(l => l.trim().toLowerCase()).filter(Boolean);
+
+        function knowsAllLanguages(requiredLangs) {
+          if (!requiredLangs || !requiredLangs.length) return true;
+          return requiredLangs.every(lang => assistantLangs.includes(lang.trim().toLowerCase()));
+        }
+
         const assignedBookingIds = new Set(assignedTasks.map(t => t.booking?.bookingId).filter(Boolean));
-        
+
         const relevant = allBookings.filter(b => {
+          // Determine required languages for this booking
+          let requiredLangs = [];
+          if (Array.isArray(b.languages) && b.languages.length) {
+            requiredLangs = b.languages;
+          } else if (b.language) {
+            requiredLangs = [b.language];
+          }
+          if (!knowsAllLanguages(requiredLangs)) return false;
+
           // If this booking has a task assigned to this assistant, show it
           if (assignedBookingIds.has(b._id)) return true;
-          
+
           // If assistant is directly assigned to booking (legacy), show it
           const bAssistantId = b.assistantId?._id || b.assistantId;
           if (bAssistantId && bAssistantId.toString() === assistant._id.toString()) return true;
-          
+
           // For new bookings at this station (Pending/Searching only)
           // For round_trip: handled via task-level assignment by admin
           if (stationMatchesBooking(b) && ['Pending', 'Searching'].includes(b.status)) {
@@ -2155,7 +2386,7 @@
             }
             return true;
           }
-          
+
           // Show in-progress bookings assigned to this assistant
           if (['Accepted', 'Start Pending', 'In Progress', 'Completion Pending'].includes(b.status)) {
             const bAssistantId2 = b.assistantId?._id || b.assistantId;
@@ -2163,7 +2394,7 @@
               return true;
             }
           }
-          
+
           return false;
         });
         
@@ -2171,9 +2402,19 @@
         relevant.forEach(b => {
           b._assignedTasks = assignedTasks.filter(t => t.booking?.bookingId === b._id);
         });
-        
+
         console.log('[loadBookings] Filtered relevant:', relevant.map(b => ({id: b._id, status: b.status, taskCount: b._assignedTasks?.length || 0})));
-        
+
+        // Filter bookings for today only, using createdAt field
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        const isToday = (dateStr) => {
+          if (!dateStr) return false;
+          const d = new Date(dateStr);
+          return d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth() && d.getDate() === today.getDate();
+        };
+        const todayBookings = relevant.filter(b => isToday(b.createdAt));
+
         if (relevant.length === 0) {
           container.innerHTML = `
             <div class="empty-state">
@@ -2190,8 +2431,8 @@
           document.getElementById('statToday').textContent = '0';
           return;
         }
-        
-        document.getElementById('statToday').textContent = relevant.length;
+
+        document.getElementById('statToday').textContent = todayBookings.length;
         
         container.innerHTML = relevant.map(b => {
           const statusClass = {
@@ -2208,19 +2449,59 @@
             : `<span class="service-tag">${b.service || '—'}</span>`;
           
           let actions = '';
+          // Find the best phone number for the passenger (for all non-pending/searching statuses)
+          const passengerPhone =
+            b.passengerPhone && b.passengerPhone.trim() !== '' ? b.passengerPhone :
+            b.phone && b.phone.trim() !== '' ? b.phone :
+            b.passenger && b.passenger.phone && b.passenger.phone.trim() !== '' ? b.passenger.phone :
+            b.passengerProfile && b.passengerProfile.phone && b.passengerProfile.phone.trim() !== '' ? b.passengerProfile.phone :
+            b.passengerId && b.passengerId.phone && b.passengerId.phone.trim() !== '' ? b.passengerId.phone :
+            '';
           if (b.status === 'Pending' || b.status === 'Searching') {
             actions = `
-              <button class="btn btn-success" onclick="acceptBooking('${b._id}')">Accept</button>
-              <button class="btn btn-danger" onclick="rejectBooking('${b._id}')">Decline</button>
+              <button class=\"btn btn-success\" onclick=\"acceptBooking('${b._id}')\">Accept</button>
+              <button class=\"btn btn-danger\" onclick=\"rejectBooking('${b._id}')\">Decline</button>
             `;
           } else if (b.status === 'Accepted') {
-            actions = `<button class="btn btn-warning" onclick="startProgress('${b._id}')">Start Service</button>`;
+            actions = `
+              <button class=\"btn btn-warning\" onclick=\"startProgress('${b._id}')\">Start Service</button>
+              ${passengerPhone ? `<a href=\"tel:${passengerPhone}\" class=\"btn btn-outline-primary\" style=\"margin-left:8px;\"><span style='font-size:16px;'>📞</span> Call Passenger</a>` : ''}
+            `;
+          } else if (b.status === 'Start Pending') {
+            actions = `
+              <div style=\"display: flex; gap: 8px; align-items: center; flex-wrap: wrap;\">
+                <input type=\"text\" id=\"startOtp-${b._id}\" placeholder=\"Enter Start OTP\" 
+                  style=\"padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 8px; width: 140px; font-size: 14px;\">
+                <button class=\"btn btn-success\" onclick=\"verifyStartOtp('${b._id}')\">Verify OTP</button>
+                <button class=\"btn btn-outline-primary\" onclick=\"resendStartOtp('${b._id}')\" style=\"min-width: 110px;\">Resend OTP</button>
+                ${passengerPhone ? `<a href=\"tel:${passengerPhone}\" class=\"btn btn-outline-primary\" style=\"margin-left:8px;\"><span style='font-size:16px;'>📞</span> Call Passenger</a>` : ''}
+              </div>
+              <span style=\"color: var(--amber); font-size: var(--text-xs); margin-top: 4px; display: block;\">📱 Ask passenger for Start OTP</span>
+            `;
+          } else if (b.status === 'In Progress') {
+            actions = `
+              <button class=\"btn btn-success\" onclick=\"requestComplete('${b._id}')\">Mark Complete</button>
+              ${passengerPhone ? `<a href=\"tel:${passengerPhone}\" class=\"btn btn-outline-primary\" style=\"margin-left:8px;\"><span style='font-size:16px;'>📞</span> Call Passenger</a>` : ''}
+            `;
+          } else if (b.status === 'Completion Pending') {
+            actions = `
+              <div style=\"display: flex; gap: 8px; align-items: center; flex-wrap: wrap;\">
+                <input type=\"text\" id=\"completeOtp-${b._id}\" placeholder=\"Enter Completion OTP\" 
+                  style=\"padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 8px; width: 160px; font-size: 14px;\">
+                <button class=\"btn btn-success\" onclick=\"verifyCompleteOtp('${b._id}')\">Complete</button>
+                <button class=\"btn btn-outline-primary\" onclick=\"resendCompleteOtp('${b._id}')\" style=\"min-width: 110px;\">Resend OTP</button>
+                ${passengerPhone ? `<a href=\"tel:${passengerPhone}\" class=\"btn btn-outline-primary\" style=\"margin-left:8px;\"><span style='font-size:16px;'>📞</span> Call Passenger</a>` : ''}
+              </div>
+              <span style=\"color: var(--amber); font-size: var(--text-xs); margin-top: 4px; display: block;\">📱 Ask passenger for Completion OTP</span>
+            `;
           } else if (b.status === 'Start Pending') {
             actions = `
               <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                 <input type="text" id="startOtp-${b._id}" placeholder="Enter Start OTP" 
                   style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 8px; width: 140px; font-size: 14px;">
                 <button class="btn btn-success" onclick="verifyStartOtp('${b._id}')">Verify OTP</button>
+                  <button class="btn btn-outline-primary" onclick="resendStartOtp('${b._id}')" style="min-width: 110px;">Resend OTP</button>
+                  ${passengerPhone ? `<a href="tel:${passengerPhone}" class="btn btn-outline-primary" style="margin-left:8px;"><span style='font-size:16px;'>📞</span> Call ${b.passengerName || 'Passenger'} (${passengerPhone})</a>` : ''}
               </div>
               <span style="color: var(--amber); font-size: var(--text-xs); margin-top: 4px; display: block;">📱 Ask passenger for Start OTP</span>
             `;
@@ -2232,11 +2513,18 @@
                 <input type="text" id="completeOtp-${b._id}" placeholder="Enter Completion OTP" 
                   style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 8px; width: 160px; font-size: 14px;">
                 <button class="btn btn-success" onclick="verifyCompleteOtp('${b._id}')">Complete</button>
+                  <button class="btn btn-outline-primary" onclick="resendCompleteOtp('${b._id}')" style="min-width: 110px;">Resend OTP</button>
               </div>
               <span style="color: var(--amber); font-size: var(--text-xs); margin-top: 4px; display: block;">📱 Ask passenger for Completion OTP</span>
             `;
           }
           
+          // Display passenger's selected language next to language service
+          let languageLabel = '';
+          if (b.service === 'Language' || (Array.isArray(b.services) && b.services.includes('Language'))) {
+            let lang = Array.isArray(b.languages) ? b.languages[0] : (b.language || '—');
+            languageLabel = `<div style="margin: 8px 0 12px 0;"><label style="font-size: 13px; color: var(--text-tertiary);">Language:</label> <span style="color: var(--sapphire); font-size: 13px; font-weight: 600;">${lang}</span></div>`;
+          }
           return `
             <div class="booking-card">
               <div class="booking-card-header">
@@ -2251,14 +2539,14 @@
                     <line x1="8" y1="2" x2="8" y2="6"></line>
                     <line x1="3" y1="10" x2="21" y2="10"></line>
                   </svg>
-                  ${b.date || '—'}
+                  ${b.date ? b.date : (b.createdAt ? new Date(b.createdAt).toLocaleDateString() : '—')}
                 </div>
                 <div class="booking-detail">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="10"></circle>
                     <polyline points="12 6 12 12 16 14"></polyline>
                   </svg>
-                  ${b.time || '—'}
+                  ${b.time ? b.time : (b.bookingTime ? b.bookingTime : (b.createdAt ? new Date(b.createdAt).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '—'))}
                 </div>
                 <div class="booking-detail">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -2271,10 +2559,17 @@
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
                   </svg>
-                  ${b.passengerPhone || b.phone || '—'}
+                    ${
+                      b.passengerPhone && b.passengerPhone.trim() !== '' ? b.passengerPhone :
+                      b.phone && b.phone.trim() !== '' ? b.phone :
+                      b.passenger && b.passenger.phone && b.passenger.phone.trim() !== '' ? b.passenger.phone :
+                      b.passengerProfile && b.passengerProfile.phone && b.passengerProfile.phone.trim() !== '' ? b.passengerProfile.phone :
+                      b.passengerId && b.passengerId.phone && b.passengerId.phone.trim() !== '' ? b.passengerId.phone :
+                      '—'
+                    }
                 </div>
               </div>
-              
+              ${languageLabel}
               <!-- Train & Seat Details -->
               <div class="booking-train-details" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 12px; background: var(--bg-secondary); border-radius: 8px; margin: 12px 0; font-size: 13px;">
                 <div>
@@ -2290,16 +2585,13 @@
                   <span style="font-weight: 600;">${b.seat || '—'}</span>
                 </div>
               </div>
-              
               <!-- SERVICE DIRECTION (CRITICAL FOR ASSISTANT) -->
               ${renderServiceDirection(b)}
-              
               ${b.passengerNotes ? `
-              <div style="padding: 8px 12px; background: rgba(59, 130, 246, 0.1); border-radius: 6px; margin-bottom: 12px; font-size: 12px; color: var(--sapphire);">
+              <div style="padding: 8px 12px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; margin-bottom: 12px; font-size: 12px; color: var(--sapphire);">
                 <strong>Notes:</strong> ${b.passengerNotes}
               </div>
               ` : ''}
-              
               ${(() => {
                 // Multi-luggage display with weight info
                 const luggageWeightInfo = {
@@ -2308,7 +2600,6 @@
                   large: '>10kg'
                 };
                 const luggageIcons = { small: '🎒', medium: '🧳', large: '📦' };
-                
                 // Check for new luggageItems array first
                 if (b.luggageItems && b.luggageItems.length > 0) {
                   const totalItems = b.luggageItems.reduce((sum, item) => sum + item.quantity, 0);
@@ -2356,7 +2647,6 @@
                 }
                 return '';
               })()}
-              
               <div class="booking-services">${services}</div>
               <div class="booking-actions">${actions}</div>
             </div>
@@ -2393,10 +2683,10 @@
       if (!confirm('Decline this booking?')) return;
       try {
         const fetcher = window.RailCareAuth?.authFetch || fetch;
-        const res = await fetcher(`/api/bookings/${id}`, {
-          method: 'PATCH',
+        const res = await fetcher(`/api/bookings/${id}/reject`, {
+          method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: 'Rejected' })
+          body: JSON.stringify({ assistantId: assistant?._id })
         });
         const data = await res.json();
         if (data.success) {
@@ -2512,16 +2802,56 @@
 
     // ==================== PROFILE EDIT ====================
     async function saveProfile() {
+
+      // ========== RESEND OTP FUNCTIONS ==========
+      async function resendStartOtp(id) {
+        try {
+          const fetcher = window.RailCareAuth?.authFetch || fetch;
+          const res = await fetcher(`/api/bookings/${id}/resend-start-otp`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ assistantId: assistant?._id })
+          });
+          const data = await res.json();
+          if (data.success) {
+            showToast('Start OTP resent to passenger. Please ask them to share it with you.');
+          } else {
+            alert('Failed to resend Start OTP: ' + (data.message || JSON.stringify(data)));
+          }
+        } catch (err) {
+          alert('Error resending Start OTP: ' + err.message);
+        }
+      }
+
+      async function resendCompleteOtp(id) {
+        try {
+          const fetcher = window.RailCareAuth?.authFetch || fetch;
+          const res = await fetcher(`/api/bookings/${id}/resend-complete-otp`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ assistantId: assistant?._id })
+          });
+          const data = await res.json();
+          if (data.success) {
+            showToast('Completion OTP resent to passenger. Please ask them to share it with you.');
+          } else {
+            alert('Failed to resend Completion OTP: ' + (data.message || JSON.stringify(data)));
+          }
+        } catch (err) {
+          alert('Error resending Completion OTP: ' + err.message);
+        }
+      }
       if (!assistant) return;
       
       const name = document.getElementById('editName').value.trim();
       const station = document.getElementById('editStation').value;
-      const langs = document.getElementById('editLangs').value.split(',').map(s=>s.trim()).filter(Boolean);
+      // Use editLangsArr if available, else fallback to input
+      let langs = editLangsArr.length ? [...editLangsArr] : document.getElementById('editLangs').value.split(',').map(s=>s.trim()).filter(Boolean);
       
       try {
         const fetcher = window.RailCareAuth?.authFetch || fetch;
         const res = await fetcher(`/api/assistants/${assistant._id}`, {
-          method: 'PATCH',
+          method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, station, languages: langs })
         });
@@ -2542,32 +2872,39 @@
     // ==================== FEEDBACK ====================
     async function loadFeedback() {
       if (!assistant) return;
-      
       const container = document.getElementById('feedbackList');
-      
+      const dashContainer = document.getElementById('dashboardFeedbackList');
       try {
         const fetcher = window.RailCareAuth?.authFetch || fetch;
         const res = await fetcher(`/api/feedback/assistant/${assistant._id}`);
         const feedbacks = await res.json();
-        
         if (!feedbacks.length) {
           container.innerHTML = '<p style="color: var(--text-secondary);">No feedback yet.</p>';
+          if (dashContainer) dashContainer.innerHTML = '<p style="color: var(--text-secondary);">No feedback yet.</p>';
           return;
         }
-        
         container.innerHTML = feedbacks.map(f => {
           const stars = f.assistantRating || f.rating || 0;
           const date = new Date(f.createdAt).toLocaleDateString('en-IN', {
             day: 'numeric', month: 'short', year: 'numeric'
           });
+          let behaviorBadge = '';
+          if (f.assistantBehavior) {
+            let color = '#3b82f6';
+            if (f.assistantBehavior === 'Rude') color = '#ef4444';
+            else if (f.assistantBehavior === 'Perfect') color = '#10b981';
+            else if (f.assistantBehavior === 'Helpful') color = '#f59e0b';
+            behaviorBadge = `<span style="padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; background: rgba(59,130,246,0.15); color: ${color}; margin-right: 8px;">${f.assistantBehavior}</span>`;
+          }
           return `
             <div style="padding: 16px; background: var(--bg-secondary); border-radius: 12px; margin-bottom: 12px; border: 1px solid var(--border-color);">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <span style="font-weight: 600; color: var(--text-primary);">${f.passengerName || 'Passenger'}</span>
+                <span style="font-weight: 600; font-size: 16px; color: var(--text-primary);">${f.passengerName || 'Passenger'}</span>
                 <span style="font-size: 12px; color: var(--text-tertiary);">${date}</span>
               </div>
               <div style="font-size: 20px; color: #f59e0b; margin-bottom: 8px;">${'★'.repeat(stars)}${'☆'.repeat(5 - stars)}</div>
-              ${f.assistantFeedback || f.comments ? `<p style="color: var(--text-secondary); font-size: 14px; margin: 0;">"${f.assistantFeedback || f.comments}"</p>` : ''}
+              ${behaviorBadge}
+              ${f.assistantFeedback || f.comments ? `<p style="color: var(--text-secondary); font-size: 14px; margin: 0; font-style: italic;">"${f.assistantFeedback || f.comments}"</p>` : ''}
               ${f.wouldRecommend !== undefined ? `
                 <div style="margin-top: 8px;">
                   <span style="
@@ -2580,8 +2917,35 @@
             </div>
           `;
         }).join('');
+        // Show only the latest 3 feedbacks in dashboard card
+        if (dashContainer) {
+          dashContainer.innerHTML = feedbacks.slice(0, 3).map(f => {
+            const stars = f.assistantRating || f.rating || 0;
+            const date = new Date(f.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+            let behaviorBadge = '';
+            if (f.assistantBehavior) {
+              let color = '#3b82f6';
+              if (f.assistantBehavior === 'Rude') color = '#ef4444';
+              else if (f.assistantBehavior === 'Perfect') color = '#10b981';
+              else if (f.assistantBehavior === 'Helpful') color = '#f59e0b';
+              behaviorBadge = `<span style="padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; background: rgba(59,130,246,0.15); color: ${color}; margin-right: 8px;">${f.assistantBehavior}</span>`;
+            }
+            return `
+              <div style="padding: 12px; background: var(--bg-secondary); border-radius: 10px; margin-bottom: 10px; border: 1px solid var(--border-color);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <span style="font-weight: 600; font-size: 16px; color: var(--text-primary);">${f.passengerName || 'Passenger'}</span>
+                  <span style="font-size: 11px; color: var(--text-tertiary);">${date}</span>
+                </div>
+                <div style="font-size: 16px; color: #f59e0b; margin-bottom: 6px;">${'★'.repeat(stars)}${'☆'.repeat(5 - stars)}</div>
+                ${behaviorBadge}
+                ${f.assistantFeedback || f.comments ? `<p style="color: var(--text-secondary); font-size: 13px; margin: 0; font-style: italic;">"${f.assistantFeedback || f.comments}"</p>` : ''}
+              </div>
+            `;
+          }).join('') + (feedbacks.length > 3 ? '<div style="text-align:right;"><button class="btn btn-link" onclick="showFeedbackModal()">View All</button></div>' : '');
+        }
       } catch (err) {
         container.innerHTML = `<p style="color: var(--ruby);">Error: ${err.message}</p>`;
+        if (dashContainer) dashContainer.innerHTML = `<p style="color: var(--ruby);">Error: ${err.message}</p>`;
       }
     }
 
@@ -2768,7 +3132,7 @@
                 border-radius: 12px; padding: 16px; margin-top: 12px;
               ">
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                  <span style="font-size: 12px; color: var(--text-tertiary);">Passenger Feedback:</span>
+                  <span style="font-size: 12px; color: var(--text-tertiary);">Feedback to Assistant (from passenger):</span>
                   <span style="font-size: 18px; color: #f59e0b;">${'★'.repeat(stars)}${'☆'.repeat(5 - stars)}</span>
                 </div>
                 ${feedback.assistantFeedback || feedback.comments ? `

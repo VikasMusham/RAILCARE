@@ -45,6 +45,9 @@ const AssistantSchema = new mongoose.Schema({
   verified: { type: Boolean, default: false },
   documentsVerified: { type: Boolean, default: false },
   documentsRemark: { type: String, default: '' },
+
+  // Revocation status
+  revoked: { type: Boolean, default: false },
   
   // Rating
   rating: { type: Number, default: 0 },

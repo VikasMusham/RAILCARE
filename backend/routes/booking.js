@@ -1,3 +1,24 @@
+// Update passenger phone for a booking
+router.post('/:id/update-phone', async (req, res) => {
+  try {
+    const { phone } = req.body;
+    if (!phone || phone.trim() === '') {
+      return res.status(400).json({ success: false, message: 'Phone number required.' });
+    }
+    const booking = await Booking.findById(req.params.id);
+    if (!booking) return res.status(404).json({ success: false, message: 'Booking not found.' });
+    booking.passengerPhone = phone;
+    await booking.save();
+    // Optionally update user profile if linked
+    if (booking.userId) {
+      const User = require('../models/User');
+      await User.findByIdAndUpdate(booking.userId, { phone });
+    }
+    return res.json({ success: true, booking });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
 const express = require('express');
 const router = express.Router();
 const Booking = require('../models/Booking');
@@ -6,7 +27,7 @@ const ServiceTask = require('../models/ServiceTask');
 const { authenticate, authorize, SECRET } = require('../middleware/auth');
 const jwt = require('jsonwebtoken');
 const { matchAssistant, releaseAssistant } = require('../services/matchingService');
-const { 
+const {
   createServiceTasks, 
   validateServiceType, 
   getServiceTypeAvailability,
@@ -20,6 +41,59 @@ const {
   getLuggageDisplayString,
   LUGGAGE_PRICES
 } = require('../services/pricingService');
+
+// ========== RESEND OTP ENDPOINTS ========== 
+// Resend Start OTP
+router.post('/:id/resend-start-otp', async (req, res) => {
+  try {
+    const { assistantId } = req.body || {};
+    const booking = await Booking.findById(req.params.id);
+    if (!booking) return res.status(404).json({ success: false, message: 'Booking not found' });
+    // Only allow if booking is in Start Pending or Accepted
+    if (!['Start Pending', 'Accepted'].includes(booking.status)) {
+      return res.status(400).json({ success: false, message: `Cannot resend Start OTP - booking status is: ${booking.status}` });
+    }
+    // Verify assistant is assigned
+    if (assistantId && booking.assistantId && booking.assistantId.toString() !== assistantId.toString()) {
+      return res.status(403).json({ success: false, message: 'You are not assigned to this booking' });
+    }
+    // Generate and save new Start OTP
+    const startOtp = genOtp();
+    booking.startOtp = startOtp;
+    booking.status = 'Start Pending';
+    await booking.save();
+    // In production, send OTP to passenger via SMS/notification
+    res.json({ success: true, message: 'Start OTP resent to passenger.' });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Resend Completion OTP
+router.post('/:id/resend-complete-otp', async (req, res) => {
+  try {
+    const { assistantId } = req.body || {};
+    const booking = await Booking.findById(req.params.id);
+    if (!booking) return res.status(404).json({ success: false, message: 'Booking not found' });
+    // Only allow if booking is in Completion Pending
+    if (booking.status !== 'Completion Pending') {
+      return res.status(400).json({ success: false, message: `Cannot resend Completion OTP - booking status is: ${booking.status}` });
+    }
+    // Verify assistant is assigned
+    if (assistantId && booking.assistantId && booking.assistantId.toString() !== assistantId.toString()) {
+      return res.status(403).json({ success: false, message: 'You are not assigned to this booking' });
+    }
+    // Generate and save new Completion OTP
+    const completionOtp = genOtp();
+    booking.completionOtp = completionOtp;
+    await booking.save();
+    // In production, send OTP to passenger via SMS/notification
+    res.json({ success: true, message: 'Completion OTP resent to passenger.' });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 
 function genOtp() {
   return Math.floor(1000 + Math.random() * 9000).toString();
@@ -45,7 +119,14 @@ router.post('/', async (req, res) => {
     }
     
     // Validate service type if train and station are provided
-    const serviceType = data.serviceType || 'pickup';
+    // Fallback mapper for backward compatibility
+    let serviceType = data.serviceType || 'pickup';
+    const legacyMap = {
+      'ESCORT': 'pickup',
+      'LUGGAGE': 'drop',
+      'FULL_ASSIST': 'round_trip'
+    };
+    if (legacyMap[serviceType]) serviceType = legacyMap[serviceType];
     
     // ==================== LUGGAGE VALIDATION (SERVER-SIDE) ====================
     // Supports BOTH legacy (single size/quantity) AND new multi-luggage cart
@@ -160,12 +241,21 @@ router.post('/', async (req, res) => {
     }
     
     // Create booking with enhanced fields
+    let passengerPhone = data.passengerPhone;
+    if (!passengerPhone && userId) {
+      const User = require('../models/User');
+      const user = await User.findById(userId);
+      if (user && user.phone) passengerPhone = user.phone;
+    }
+    if (!passengerPhone || passengerPhone.trim() === '') {
+      return res.status(400).json({ success: false, message: 'Passenger phone number is required.' });
+    }
     const booking = new Booking({ 
       ...data, 
       otp, 
       status: 'Pending',
       userId: userId,
-      passengerPhone: data.passengerPhone,
+      passengerPhone: passengerPhone,
       passengerEmail: data.passengerEmail,
       trainNumber: data.trainNumber,
       stationCode: data.stationCode,
@@ -209,18 +299,41 @@ router.post('/', async (req, res) => {
       serviceTasks = taskResult.tasks;
     }
     
-    // Auto-match with best assistant
-    const matchResult = await matchAssistant(booking._id);
-    
-    // Return the updated booking
+    let matchResult = { success: false };
+    if (serviceType === 'round_trip' && serviceTasks && serviceTasks.length > 0) {
+      // For each service task (pickup/drop), match assistant for the correct station
+      for (const task of serviceTasks) {
+        const best = await require('../services/matchingService').findBestAssistant(booking, task.stationCode);
+        if (best && best.assistant) {
+          console.log(`[Booking] Assigning assistant ${best.assistant.name} (${best.assistant._id}) to task ${task._id} at station ${task.stationCode}`);
+          // Assign assistant to the task and update status/timestamp
+          await require('../models/ServiceTask').findByIdAndUpdate(
+            task._id,
+            {
+              assignedAssistant: best.assistant._id,
+              status: 'assigned',
+              assignedAt: new Date()
+            }
+          );
+        } else {
+          console.log(`[Booking] No assistant assigned for task ${task._id} at station ${task.stationCode}`);
+        }
+      }
+      matchResult.success = true;
+    } else {
+      // Default: match for the main booking
+      matchResult = await matchAssistant(booking._id);
+    }
+
+    // Return the updated booking and tasks
     const saved = await Booking.findById(booking._id).populate('assistantId');
-    
+    const updatedTasks = await require('../models/ServiceTask').find({ bookingId: booking._id });
     res.json({ 
       success: true, 
       booking: saved, 
-      serviceTasks: serviceTasks,
+      serviceTasks: updatedTasks,
       message: matchResult.success 
-        ? `Booking created! Matched with ${matchResult.assistant?.name || 'an assistant'}`
+        ? `Booking created! Assistant(s) matched.`
         : 'Booking created. Searching for an assistant...',
       matched: matchResult.success
     });
@@ -336,7 +449,31 @@ router.get('/', async (req, res) => {
   if (passengerPhone) q.passengerPhone = passengerPhone;
   if (userId) q.userId = userId;
   
-  const list = await Booking.find(q).sort({ createdAt: -1 }).populate('assistantId');
+  let list = await Booking.find(q).sort({ createdAt: -1 }).populate('assistantId');
+  // Always attach passengerPhone from user profile if possible
+  const User = require('../models/User');
+  list = await Promise.all(list.map(async (b) => {
+    let bookingObj = b.toObject ? b.toObject() : b;
+    // Always attach passengerPhone from user profile if missing
+    if ((!bookingObj.passengerPhone || bookingObj.passengerPhone.trim() === '') && bookingObj.userId) {
+      const user = await User.findById(bookingObj.userId);
+      if (user && user.phone) bookingObj.passengerPhone = user.phone;
+    }
+    // Fallback: try to attach phone from passengerProfile, passengerId, or other fields
+    if (!bookingObj.passengerPhone || bookingObj.passengerPhone.trim() === '') {
+      if (bookingObj.passengerProfile && bookingObj.passengerProfile.phone) bookingObj.passengerPhone = bookingObj.passengerProfile.phone;
+      else if (bookingObj.passengerId && bookingObj.passengerId.phone) bookingObj.passengerPhone = bookingObj.passengerId.phone;
+      else if (bookingObj.phone) bookingObj.passengerPhone = bookingObj.phone;
+    }
+    // Attach assistant rating and bookings completed
+    if (bookingObj.assistantId) {
+      const Assistant = require('../models/Assistant');
+      const assistant = await Assistant.findById(bookingObj.assistantId);
+      bookingObj.assistantRating = assistant && assistant.rating ? assistant.rating : 0;
+      bookingObj.assistantBookings = assistant && assistant.totalBookingsCompleted ? assistant.totalBookingsCompleted : 0;
+    }
+    return bookingObj;
+  }));
   res.json(list);
 });
 
@@ -648,6 +785,14 @@ router.post('/:id/confirm-completion', async (req, res) => {
       // clear completionOtp
       booking.completionOtp = null;
       await booking.save();
+      // Update assistant's totalBookingsCompleted
+      if (booking.assistantId) {
+        const Assistant = require('../models/Assistant');
+        await Assistant.findByIdAndUpdate(
+          booking.assistantId,
+          { $inc: { totalBookingsCompleted: 1 } }
+        );
+      }
       return res.json({ success: true });
     }
     res.status(400).json({ success: false, message: 'Invalid completion OTP' });

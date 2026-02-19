@@ -1,13 +1,52 @@
+// Avatar helpers
+async function uploadAvatar(avatarData) {
+  // avatarData: base64 string or File
+  const token = getToken();
+  let body, headers = {};
+  if (typeof avatarData === 'string' && avatarData.startsWith('data:')) {
+    body = JSON.stringify({ avatar: avatarData });
+    headers['Content-Type'] = 'application/json';
+    return fetch('/api/auth/avatar', { method: 'POST', headers: { ...headers, Authorization: `Bearer ${token}` }, body });
+  } else if (avatarData instanceof File) {
+    const formData = new FormData();
+    formData.append('avatar', avatarData);
+    return fetch('/api/auth/avatar', { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: formData });
+  }
+}
+
+async function fetchAvatar() {
+  const token = getToken();
+  const res = await fetch('/api/auth/avatar', { headers: { Authorization: `Bearer ${token}` } });
+  if (!res.ok) return null;
+  const j = await res.json();
+  return j.success ? j.avatar : null;
+}
 // auth helpers: register, login, token storage
 const API_BASE = '/api';
 
-function getToken() { return localStorage.getItem('railcare_token'); }
+function getToken() {
+  // Always check both storages for compatibility
+  let t = localStorage.getItem('railcare_token');
+  if (!t) t = sessionStorage.getItem('railcare_token');
+  // If found in one but not the other, sync them
+  if (t) {
+    try { localStorage.setItem('railcare_token', t); } catch (e) {}
+    try { sessionStorage.setItem('railcare_token', t); } catch (e) {}
+  }
+  return t;
+}
 function setToken(t) {
   if (t) {
-    localStorage.setItem('railcare_token', t);
+    try {
+      localStorage.setItem('railcare_token', t);
+    } catch (e) {}
+    try {
+      sessionStorage.setItem('railcare_token', t);
+    } catch (e) {}
     try { localStorage.setItem('railcare_logged_in', '1'); } catch (e) {}
   } else {
-    localStorage.removeItem('railcare_token');
+    try { localStorage.removeItem('railcare_token'); } catch (e) {}
+    try { sessionStorage.removeItem('railcare_token'); } catch (e) {}
     try { localStorage.removeItem('railcare_logged_in'); } catch (e) {}
   }
 }
@@ -54,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (j.success && j.token) {
         setToken(j.token);
         msg.textContent = 'Registered and logged in.';
-        setTimeout(() => window.location.href = role === 'assistant' ? 'assistant.html' : role === 'admin' ? 'admin.html' : 'passenger.html', 500);
+        setTimeout(() => window.location.href = role === 'assistant' ? 'assistant.html' : role === 'admin' ? 'admin.html' : 'passenger-premium.html', 500);
       } else {
         msg.textContent = j.message || j.error || 'Registration failed';
       }
@@ -73,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (j.success && j.token) {
         setToken(j.token);
         msg.textContent = 'Logged in.';
-        const redirect = j.user && j.user.role === 'assistant' ? 'assistant.html' : j.user && j.user.role === 'admin' ? 'admin.html' : 'passenger.html';
+        const redirect = j.user && j.user.role === 'assistant' ? 'assistant.html' : j.user && j.user.role === 'admin' ? 'admin.html' : 'passenger-premium.html';
         setTimeout(() => window.location.href = redirect, 400);
       } else {
         msg.textContent = j.message || j.error || 'Login failed';
@@ -114,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (j.success && j.token) {
             setToken(j.token);
             resetMsg.textContent = 'Password reset and logged in';
-            setTimeout(() => window.location.href = j.user && j.user.role === 'assistant' ? 'assistant.html' : j.user && j.user.role === 'admin' ? 'admin.html' : 'passenger.html', 500);
+            setTimeout(() => window.location.href = j.user && j.user.role === 'assistant' ? 'assistant.html' : j.user && j.user.role === 'admin' ? 'admin.html' : 'passenger-premium.html', 500);
           } else resetMsg.textContent = j.message || 'Reset failed';
         } catch (e) { resetMsg.textContent = e.message }
       });
@@ -137,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Expose helper for other scripts
-window.RailCareAuth = { getToken, setToken, authFetch, getCurrentUser, enforceRole };
+window.RailCareAuth = { getToken, setToken, authFetch, getCurrentUser, enforceRole, uploadAvatar, fetchAvatar };
 
 // show logged-in user in header and provide logout
 document.addEventListener('DOMContentLoaded', async () => {
@@ -216,7 +255,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           window.startPassengerPolling?.(name);
           userMenu.style.display = 'none';
         } else {
-          window.location.href = 'passenger.html';
+          window.location.href = 'passenger-premium.html';
         }
       } catch (err) { /* ignore */ }
     });
@@ -238,7 +277,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             card.scrollIntoView({ behavior: 'smooth' });
           } else {
             // not on passenger page, navigate there
-            window.location.href = 'passenger.html';
+            window.location.href = 'passenger-premium.html';
           }
         }
         userMenu.style.display = 'none';
@@ -301,4 +340,8 @@ function openSettingsModal(user) {
 // apply stored theme on load
 document.addEventListener('DOMContentLoaded', () => {
   try { if (localStorage.getItem('railcare_theme_dark') === '1') document.body.classList.add('dark-theme'); } catch(e){}
+  // Ensure global access for all portals (do NOT overwrite helpers)
+  if (!window.RailCareAuth || typeof window.RailCareAuth.getToken !== 'function') {
+    window.RailCareAuth = { getToken, setToken, authFetch, getCurrentUser, enforceRole };
+  }
 });

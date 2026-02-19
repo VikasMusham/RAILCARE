@@ -6,13 +6,6 @@ const BookingSchema = new mongoose.Schema({
   passengerPhone: { type: String, default: '' },
   passengerEmail: { type: String, default: '' },
   station: { type: String, required: true },
-  stationCode: { type: String, default: '' },
-  
-  // Separate station codes for round trip service
-  pickupStationCode: { type: String, default: '' },
-  pickupStationName: { type: String, default: '' },
-  dropStationCode: { type: String, default: '' },
-  dropStationName: { type: String, default: '' },
   
   trainName: { type: String },
   trainNumber: { type: String, default: '' },
@@ -69,7 +62,7 @@ const BookingSchema = new mongoose.Schema({
   // Service Type: determines assistant workflow
   serviceType: { 
     type: String, 
-    enum: ['pickup', 'drop', 'round_trip'], 
+    enum: ['pickup', 'drop', 'round_trip', 'ESCORT', 'LUGGAGE', 'FULL_ASSIST'], 
     default: 'pickup'
   },
   

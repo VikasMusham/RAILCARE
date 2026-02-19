@@ -49,39 +49,45 @@ async function validateTaskAssignment(taskId, assistantId, options = {}) {
     // 1. Validate task exists and is assignable
     const task = await ServiceTask.findById(taskId).populate('bookingId');
     if (!task) {
+      console.warn(`[ValidateAssign] Task not found: ${taskId}`);
       return { valid: false, errors: ['Task not found'], warnings: [] };
     }
 
     if (task.status === 'completed' || task.status === 'cancelled') {
+      console.warn(`[ValidateAssign] Task ${taskId} is ${task.status}`);
       return { valid: false, errors: [`Cannot assign a ${task.status} task`], warnings: [] };
     }
 
     // 2. Validate assistant exists and is active
     const assistant = await Assistant.findById(assistantId);
     if (!assistant) {
+      console.warn(`[ValidateAssign] Assistant not found: ${assistantId}`);
       return { valid: false, errors: ['Assistant not found'], warnings: [] };
     }
 
     if (assistant.applicationStatus !== 'Approved') {
+      console.warn(`[ValidateAssign] Assistant ${assistantId} not approved: status=${assistant.applicationStatus}`);
       return { valid: false, errors: ['Assistant is not approved for bookings'], warnings: [] };
     }
 
     if (!assistant.isEligibleForBookings) {
+      console.warn(`[ValidateAssign] Assistant ${assistantId} not eligible for bookings`);
       return { valid: false, errors: ['Assistant is not eligible for bookings'], warnings: [] };
     }
 
     // 3. Validate station match (CRITICAL for multi-city operations)
     if (!allowCrossStation) {
       // Get station from task
-      const taskStation = task.stationCode;
-      const assistantStation = assistant.stationCode || assistant.station;
+      const taskStation = task.station;
+      const assistantStation = assistant.station;
 
-      // Compare station codes (normalize both)
+      // Compare station names (normalize both)
       const normalizedTaskStation = taskStation?.toUpperCase()?.trim();
       const normalizedAssistantStation = assistantStation?.toUpperCase()?.trim();
 
       if (normalizedTaskStation && normalizedAssistantStation && 
           normalizedTaskStation !== normalizedAssistantStation) {
+        console.warn(`[ValidateAssign] Station mismatch: assistant=${normalizedAssistantStation}, task=${normalizedTaskStation}`);
         errors.push(
           `Assistant station (${normalizedAssistantStation}) does not match task station (${normalizedTaskStation}). ` +
           `Cross-station assignment not allowed.`
@@ -108,6 +114,14 @@ async function validateTaskAssignment(taskId, assistantId, options = {}) {
             );
           }
         }
+
+        // Enforce sequential assignment: drop (arrival) task cannot be assigned until pickup (boarding) is completed
+        if (task.taskType === 'drop') {
+          const pickupTask = siblingTasks.find(t => t.taskType === 'pickup');
+          if (pickupTask && pickupTask.status !== 'completed') {
+            errors.push('Arrival (drop) task cannot be assigned until boarding (pickup) task is completed.');
+          }
+        }
       }
     }
 
@@ -128,7 +142,7 @@ async function validateTaskAssignment(taskId, assistantId, options = {}) {
 
       if (concurrentTasks.length > 0) {
         const taskDetails = concurrentTasks.map(t => 
-          `${t.taskType} at ${t.stationCode} (${new Date(t.scheduledTime).toLocaleTimeString()})`
+          `${t.taskType} at ${t.station} (${new Date(t.scheduledTime).toLocaleTimeString()})`
         ).join(', ');
         
         warnings.push(
@@ -193,6 +207,14 @@ async function assignAssistantToTask(taskId, assistantId, options = {}) {
     }
     await task.save();
 
+    // Lock assistant for this booking
+    const assistant = await Assistant.findById(assistantId);
+    if (assistant) {
+      assistant.isEligibleForBookings = false;
+      assistant.currentBookingId = task.bookingId;
+      await assistant.save();
+    }
+
     // Update booking status if needed
     await updateBookingStatusFromTasks(task.bookingId);
 
@@ -227,6 +249,15 @@ async function unassignAssistantFromTask(taskId, reason = '') {
       return { success: false, errors: ['Task has no assigned assistant'] };
     }
 
+    // Unlock assistant if assigned
+    if (task.assignedAssistant) {
+      const assistant = await Assistant.findById(task.assignedAssistant);
+      if (assistant) {
+        assistant.isEligibleForBookings = true;
+        assistant.currentBookingId = null;
+        await assistant.save();
+      }
+    }
     task.assignedAssistant = null;
     task.assignedAt = null;
     task.status = 'pending';
@@ -315,7 +346,7 @@ async function getBookingTaskAssignments(bookingId) {
       taskId: task._id,
       taskType: task.taskType,
       taskSequence: task.taskSequence,
-      stationCode: task.stationCode,
+      station: task.station,
       scheduledTime: task.scheduledTime,
       status: task.status,
       assistant: task.assignedAssistant ? {
@@ -360,7 +391,7 @@ async function getBookingTaskAssignments(bookingId) {
  */
 async function getAssistantTasks(assistantId, options = {}) {
   const {
-    stationCode = null,
+    station = null,
     status = ['pending', 'assigned', 'in_progress'],
     includeBookingDetails = true,
     hoursAhead = 24
@@ -379,8 +410,8 @@ async function getAssistantTasks(assistantId, options = {}) {
     };
 
     // Filter by station if provided (use assistant's station if not specified)
-    if (stationCode) {
-      query.stationCode = stationCode;
+    if (station) {
+      query.station = station;
     }
 
     // Filter by time window
@@ -406,7 +437,7 @@ async function getAssistantTasks(assistantId, options = {}) {
       tasks: tasks.map(task => ({
         taskId: task._id,
         taskType: task.taskType,
-        stationCode: task.stationCode,
+        station: task.station,
         trainNumber: task.trainNumber,
         scheduledTime: task.scheduledTime,
         assistantArrivalTime: task.assistantArrivalTime,
@@ -443,20 +474,30 @@ async function getAssistantTasks(assistantId, options = {}) {
  */
 async function getAvailableAssistantsForTask(taskId) {
   try {
-    const task = await ServiceTask.findById(taskId);
+    const task = await ServiceTask.findById(taskId).populate('bookingId');
     if (!task) {
       return { success: false, errors: ['Task not found'] };
     }
 
-    // Find assistants at the task's station
+    // For round_trip, ensure pickup and drop use correct station
+    let stationMatch = { $or: [] };
+    if (task.bookingId && task.bookingId.serviceType === 'round_trip') {
+      if (task.taskType === 'pickup') {
+        stationMatch = { station: task.station };
+      } else if (task.taskType === 'drop') {
+        stationMatch = { station: task.station };
+      }
+    } else {
+      // For single pickup/drop, match by station
+      stationMatch = { station: task.station };
+    }
+
+    // Relaxed: ignore isOnline and currentBookingId for availability
     const assistants = await Assistant.find({
-      $or: [
-        { stationCode: task.stationCode },
-        { station: { $regex: new RegExp(task.stationCode, 'i') } }
-      ],
+      ...stationMatch,
       applicationStatus: 'Approved',
       isEligibleForBookings: true
-    }).select('name phone station stationCode rating ratingCount isOnline');
+    }).select('name phone station rating ratingCount isOnline');
 
     // For each assistant, check current workload
     const assistantsWithWorkload = await Promise.all(
@@ -465,7 +506,6 @@ async function getAvailableAssistantsForTask(taskId) {
           assignedAssistant: assistant._id,
           status: { $in: ['assigned', 'in_progress'] }
         });
-
         return {
           id: assistant._id,
           name: assistant.name,
@@ -490,7 +530,7 @@ async function getAvailableAssistantsForTask(taskId) {
     return {
       success: true,
       taskId,
-      stationCode: task.stationCode,
+      station: task.station,
       availableCount: assistantsWithWorkload.filter(a => a.available).length,
       assistants: assistantsWithWorkload
     };

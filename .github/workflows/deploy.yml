@@ -1,0 +1,22 @@
+name: Deploy to Windows Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup SSH key
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_KEY }}
+
+      - name: Run deploy script on server
+        run: |
+          ssh -o StrictHostKeyChecking=no username@server_ip "powershell -File 'E:\connect to lift\railmitra\deploy.ps1'"

@@ -11,6 +11,7 @@ const FeedbackSchema = new mongoose.Schema({
   
   // Ratings (1-5 stars)
   assistantRating: { type: Number, min: 1, max: 5, required: true },
+  assistantBehavior: { type: String }, // New field for behavior feedback
   appRating: { type: Number, min: 1, max: 5, required: true },
   
   // Text feedback

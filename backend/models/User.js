@@ -6,7 +6,8 @@ const UserSchema = new mongoose.Schema({
   phone: { type: String },
   password: { type: String },
   resetToken: { type: String },
-  resetExpires: { type: Date }
+  resetExpires: { type: Date },
+  avatar: { type: String } // base64 or file path
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', UserSchema);
