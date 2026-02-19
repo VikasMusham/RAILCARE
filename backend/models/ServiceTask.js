@@ -28,9 +28,9 @@ const ServiceTaskSchema = new mongoose.Schema({
     required: true
   },
   
-  // Station where service is performed
-  stationCode: { 
-    type: String, 
+  // Station where service is performed (full name)
+  station: {
+    type: String,
     required: true,
     index: true
   },
@@ -146,8 +146,8 @@ const ServiceTaskSchema = new mongoose.Schema({
 
 // Compound indexes for efficient queries
 ServiceTaskSchema.index({ bookingId: 1, taskSequence: 1 });
-ServiceTaskSchema.index({ stationCode: 1, status: 1, scheduledTime: 1 });
-ServiceTaskSchema.index({ trainNumber: 1, stationCode: 1 });
+ServiceTaskSchema.index({ station: 1, status: 1, scheduledTime: 1 });
+ServiceTaskSchema.index({ trainNumber: 1, station: 1 });
 ServiceTaskSchema.index({ status: 1, scheduledTime: 1 });
 
 // Virtual for checking if task is past due
@@ -164,9 +164,9 @@ ServiceTaskSchema.methods.complete = function() {
 };
 
 // Static method to get pending tasks for a station
-ServiceTaskSchema.statics.getPendingForStation = function(stationCode, limit = 50) {
+ServiceTaskSchema.statics.getPendingForStation = function(station, limit = 50) {
   return this.find({
-    stationCode,
+    station,
     status: { $in: ['pending', 'assigned'] }
   })
   .sort({ scheduledTime: 1 })

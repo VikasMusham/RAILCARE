@@ -124,12 +124,14 @@ registerBtn?.addEventListener('click', async () => {
   const langs = document.getElementById('aLangs').value.split(',').map(s=>s.trim()).filter(Boolean);
   if (!name || !station) return alert('Fill name and station');
   try {
-    // prevent duplicate registration: check existing assistants by name+station
+    // prevent duplicate registration: check existing assistants by name+station_code
     const fetcher = window.RailCareAuth?.authFetch || fetch;
+    // Normalize station_code (uppercase, trimmed)
+    const station_code = (station || '').trim().toUpperCase();
     try {
       const listRes = await fetcher('/api/assistants');
       const list = await listRes.json();
-      const dup = list.find(a => a.name === name && a.station === station);
+      const dup = list.find(a => a.name === name && a.station_code === station_code);
       if (dup) {
         assistant = dup;
         try { localStorage.setItem(LS_KEY, assistant._id); } catch(e){}
@@ -143,7 +145,7 @@ registerBtn?.addEventListener('click', async () => {
     // proceed with registration (if logged-in, authFetch will include token so backend can associate userId)
     const res = await fetcher('/api/assistants/register', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, station, languages: langs })
+      body: JSON.stringify({ name, station_code, languages: langs })
     });
     const data = await res.json();
     if (data.success) {
@@ -451,13 +453,26 @@ async function loadBookings() {
     const list = await res.json();
     bookingsList.innerHTML = '';
     if (!list.length) bookingsList.textContent = 'No bookings';
+    // Only show bookings where assistant's languages include the booking's required language (case-insensitive), unless already assigned
+    const assistantLangs = (assistant.languages || []).map(l => l.trim().toLowerCase());
     list.forEach(b => {
+      // Determine booking's required languages
+      let bookingLangs = [];
+      if (Array.isArray(b.preferredLanguages) && b.preferredLanguages.length > 0) {
+        bookingLangs = b.preferredLanguages.map(l => l.trim().toLowerCase());
+      } else if (b.language) {
+        bookingLangs = [b.language.trim().toLowerCase()];
+      }
+      const isAssigned = b.assistantId && assistant && (b.assistantId.toString() === assistant._id.toString());
+      // If not assigned, filter by language
+      if (!isAssigned && bookingLangs.length > 0) {
+        // If any bookingLang is not in assistantLangs, skip
+        const matches = bookingLangs.some(lang => assistantLangs.includes(lang));
+        if (!matches) return; // skip this booking
+      }
       const el = document.createElement('div');
       el.className = 'card';
-      // Determine if this booking is assigned to this assistant
-      const isAssigned = b.assistantId && assistant && (b.assistantId.toString() === assistant._id.toString());
       let controls = '';
-      // Common status line with badge
       function _getStatusClass(status) {
         if (!status) return '';
         const s = status.toLowerCase();

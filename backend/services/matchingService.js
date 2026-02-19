@@ -59,28 +59,89 @@ function calculateMatchScore(assistant, booking) {
  * @param {Object} booking - The booking document
  * @returns {Object} { assistant, score } or null if no match
  */
-async function findBestAssistant(booking) {
+/**
+ * Find the best matching assistant for a booking or a specific station
+ * @param {Object} booking - The booking document
+ * @param {String} [stationOverride] - Optional station code to use instead of booking.station
+ * @returns {Object} { assistant, score } or null if no match
+ */
+async function findBestAssistant(booking, stationOverride) {
   try {
+    // Special handling for Warangal (stationCode 'WL')
+    if ((booking.stationCode === 'WL' || booking.station === 'Warangal')) {
+      // Find any eligible, approved, unassigned Warangal assistant
+      const warangalAssistant = await Assistant.findOne({
+        $or: [
+          { station: 'Warangal' },
+          { stationCode: 'WL' }
+        ],
+        applicationStatus: 'Approved',
+        isEligibleForBookings: true,
+        currentBookingId: null
+      }).lean();
+      if (warangalAssistant) {
+        console.log(`[Matching] Warangal: assigning eligible assistant ${warangalAssistant.name} (${warangalAssistant._id})`);
+        return { assistant: warangalAssistant, score: 100 };
+      }
+    }
+
     // Step 1: Find all eligible assistants for this station
-    const eligibleAssistants = await Assistant.find({
-      station: booking.station,
+    let eligibleAssistants = await Assistant.find({
+      $or: [
+        { station: stationOverride || booking.station },
+        { stationCode: stationOverride || booking.stationCode }
+      ],
       applicationStatus: 'Approved',
       isEligibleForBookings: true,
       isOnline: true,
       currentBookingId: null // Not currently busy
     }).lean();
-    
-    console.log(`[Matching] Found ${eligibleAssistants.length} eligible assistants for station: ${booking.station}`);
-    
+
+    // Strict language filter: assistant must know ALL required languages
+    const bookingLanguages = booking.preferredLanguages || (booking.language ? [booking.language] : []);
+    if (bookingLanguages.length > 0) {
+      const requiredLangs = bookingLanguages.map(l => l.trim().toLowerCase());
+      eligibleAssistants = eligibleAssistants.filter(a =>
+        Array.isArray(a.languages) && requiredLangs.every(reqLang =>
+          a.languages.some(lang => lang && lang.trim().toLowerCase() === reqLang)
+        )
+      );
+      // If no eligible assistants after strict language filter, return null (no match)
+      if (eligibleAssistants.length === 0) {
+        console.log(`[Matching] No assistants found with all required languages: [${requiredLangs.join(', ')}]`);
+        return null;
+      }
+    }
+
+    console.log(`[Matching] Found ${eligibleAssistants.length} eligible assistants for station: ${stationOverride || booking.station}`);
+
     if (eligibleAssistants.length === 0) {
       // Fallback: Try offline but approved assistants
-      const offlineAssistants = await Assistant.find({
-        station: booking.station,
+      let offlineAssistants = await Assistant.find({
+        $or: [
+          { station: booking.station },
+          { stationCode: booking.stationCode }
+        ],
         applicationStatus: 'Approved',
         isEligibleForBookings: true,
         currentBookingId: null
       }).lean();
-      
+
+      // Strict language filter for offline as well
+      if (bookingLanguages.length > 0) {
+        const requiredLangs = bookingLanguages.map(l => l.trim().toLowerCase());
+        offlineAssistants = offlineAssistants.filter(a =>
+          Array.isArray(a.languages) && requiredLangs.every(reqLang =>
+            a.languages.some(lang => lang && lang.trim().toLowerCase() === reqLang)
+          )
+        );
+        // If no offline assistants match, return null (no match)
+        if (offlineAssistants.length === 0) {
+          console.log(`[Matching] No offline assistants found with all required languages: [${requiredLangs.join(', ')}]`);
+          return null;
+        }
+      }
+
       if (offlineAssistants.length > 0) {
         console.log(`[Matching] Found ${offlineAssistants.length} offline assistants as fallback`);
         // Score and sort offline assistants
@@ -91,26 +152,26 @@ async function findBestAssistant(booking) {
         scored.sort((a, b) => b.score - a.score);
         return scored[0];
       }
-      
+
       return null;
     }
-    
+
     // Step 2: Score all eligible assistants
     const scoredAssistants = eligibleAssistants.map(assistant => ({
       assistant,
       score: calculateMatchScore(assistant, booking)
     }));
-    
+
     // Step 3: Sort by score (highest first)
     scoredAssistants.sort((a, b) => b.score - a.score);
-    
+
     console.log(`[Matching] Top 3 scored assistants:`, 
       scoredAssistants.slice(0, 3).map(s => ({ name: s.assistant.name, score: s.score }))
     );
-    
+
     // Return the best match
     return scoredAssistants[0];
-    
+
   } catch (err) {
     console.error('[Matching] Error finding best assistant:', err);
     return null;

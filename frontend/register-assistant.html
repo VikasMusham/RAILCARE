@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+        <link rel="icon" type="image/png" href="favicon.png">
+      <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/png" href="favicon.png">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Assistant Registration - RailMitra</title>
@@ -171,6 +174,35 @@
   </header>
 
   <main class="main">
+      <!-- Legal Modal -->
+      <div id="legalModal" style="display:none;position:fixed;z-index:9999;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;">
+        <div style="background:#fff;max-width:540px;width:90vw;padding:32px 24px 24px 24px;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.18);position:relative;animation:modalIn 0.25s cubic-bezier(.4,1.6,.6,1);">
+          <button onclick="closeLegal()" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:#888;">&times;</button>
+          <div id="legalModalContent" style="max-height:60vh;overflow-y:auto;font-size:15px;color:#222;"></div>
+        </div>
+      </div>
+      <style>
+        @keyframes modalIn { from { opacity:0; transform:translateY(40px) scale(0.98);} to { opacity:1; transform:none;}}
+        #legalModal::-webkit-scrollbar { width: 0 !important; }
+      </style>
+      <script>
+        // Legal texts for modal
+        const legalTexts = {
+          terms: `<b>Terms & Conditions – RailMitra</b><br>RailMitra is a digital platform designed to connect railway passengers with verified assistants to provide support services within station premises.<br><br>By accessing RailMitra, you agree to comply with these Terms.<br><br><b>Service Scope</b><br>RailMitra facilitates assistance services including luggage handling, language guidance, and seat escorting. RailMitra does not control train operations and is not affiliated with railway authorities.<br><b>Pilot Phase Notice</b><br>RailMitra is currently operating in a pilot stage. Features and policies may evolve to improve service quality.<br><b>User Responsibilities</b><br>Passengers must provide accurate booking details, arrive on time, and avoid transporting prohibited items.<br><b>Assistant Verification</b><br>Assistants undergo identity checks; however, RailMitra acts solely as a technology facilitator.<br><b>Payments</b><br>Displayed charges may include service fees, platform fees, and optional insurance.<br><b>Policy Updates</b><br>Continued use indicates acceptance of updated terms.`,
+          privacy: `<b>Privacy Policy – RailMitra</b><br>RailMitra respects your privacy and protects user data through reasonable safeguards.<br><b>Information Collected</b><ul><li>Name</li><li>Phone</li><li>Email</li><li>Booking details</li><li>Location/station</li><li>Uploaded luggage photos</li><li>Assistant identity documents</li></ul><b>Usage</b><br>Data is used only for platform operations, verification, fraud prevention, and support.<br>RailMitra does NOT sell personal data.<br><b>Data Sharing</b><br>Limited data may be shared with assistants, payment providers, or authorities when required.<br>Users may request correction or deletion of their data.`
+        };
+        function showLegal(type) {
+          const modal = document.getElementById('legalModal');
+          const content = document.getElementById('legalModalContent');
+          content.innerHTML = legalTexts[type] || '';
+          modal.style.display = 'flex';
+          document.body.style.overflow = 'hidden';
+        }
+        function closeLegal() {
+          document.getElementById('legalModal').style.display = 'none';
+          document.body.style.overflow = '';
+        }
+      </script>
     <div class="container">
       <div class="card registration-form">
         <h1>🚆 Assistant Registration</h1>
@@ -205,11 +237,12 @@
             <label>Station <span class="required-star">*</span></label>
             <select id="station" name="station" required>
               <option value="">Select your station</option>
-              <option value="Secunderabad">Secunderabad</option>
-              <option value="Kacheguda">Kacheguda</option>
-              <option value="Hyderabad Deccan">Hyderabad Deccan</option>
-              <option value="Kazipet">Kazipet</option>
-              <option value="Vijayawada">Vijayawada</option>
+              <option value="SC">Secunderabad (SC)</option>
+              <option value="KCG">Kacheguda (KCG)</option>
+              <option value="HYB">Hyderabad Deccan (HYB)</option>
+              <option value="KZJ">Kazipet (KZJ)</option>
+              <option value="BZA">Vijayawada (BZA)</option>
+              <option value="WL">Warangal (WL)</option>
               <option value="Warangal">Warangal</option>
             </select>
           </div>
@@ -254,6 +287,13 @@
             <div class="preview-container" id="photoPreview"></div>
           </div>
 
+          <button type="submit" class="submit-btn" id="submitBtn">
+          <div class="form-group" style="margin-bottom: 18px;">
+            <label style="font-weight: 400; display: flex; align-items: flex-start; gap: 8px;">
+              <input type="checkbox" id="termsCheckbox" required style="margin-top: 3px;">
+              <span>I agree to the <a href="#" onclick="showLegal('terms');return false;" style="color: #007bff; text-decoration: underline;">Terms & Conditions</a> and <a href="#" onclick="showLegal('privacy');return false;" style="color: #007bff; text-decoration: underline;">Privacy Policy</a> of RailMitra<span style="color: #d00">*</span></span>
+            </label>
+          </div>
           <button type="submit" class="submit-btn" id="submitBtn">
             🚀 Register as Assistant
           </button>
@@ -337,6 +377,14 @@
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+
+      // Enforce Terms and Conditions checkbox
+      const termsCheckbox = document.getElementById('termsCheckbox');
+      if (!termsCheckbox.checked) {
+        showMessage('You must agree to the Terms & Conditions and Privacy Policy to register.', 'error');
+        termsCheckbox.focus();
+        return;
+      }
 
       // Validate all required files
       const aadhar = document.getElementById('aadhar').files[0];
@@ -439,7 +487,16 @@
           if (data.success && data.assistant) {
             form.style.display = 'none';
             verificationStatus.style.display = 'block';
-            
+            if (data.assistant.revoked) {
+              verificationStatus.className = 'verification-status pending';
+              verificationStatus.innerHTML = `
+                <h3 style="color:#d00">❌ Account Revoked</h3>
+                <p>Your assistant account has been revoked by the admin.</p>
+                <p style="margin-top:10px;">If you believe this is a mistake or want to appeal, please contact support at <a href="mailto:support@railmitra.in">support@railmitra.in</a> or re-apply with updated documents.</p>
+                <a href="register-assistant.html" class="submit-btn" style="display:inline-block;text-decoration:none;margin-top:16px;">Re-Apply as Assistant</a>
+              `;
+              return;
+            }
             if (data.assistant.verified) {
               verificationStatus.className = 'verification-status verified';
               verificationStatus.innerHTML = `

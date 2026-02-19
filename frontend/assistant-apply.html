@@ -4,28 +4,388 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Apply as Assistant - RailMitra</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <style>
+    :root {
+      --pure-black: #000000;
+      --rich-black: #0a0a0a;
+      --charcoal: #141414;
+      --graphite: #1a1a1a;
+      --slate: #252525;
+      --steel: #333333;
+      --silver: #666666;
+      --pearl: #999999;
+      --cloud: #cccccc;
+      --snow: #f5f5f5;
+      --pure-white: #ffffff;
+      --emerald: #10b981;
+      --amber: #f59e0b;
+      --ruby: #ef4444;
+      --sapphire: #3b82f6;
+      --violet: #8b5cf6;
+      --text-xs: 11px;
+      --text-sm: 13px;
+      --text-base: 15px;
+      --text-lg: 17px;
+      --text-xl: 20px;
+      --text-2xl: 24px;
+      --text-3xl: 32px;
+      --text-4xl: 40px;
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 20px;
+      --space-6: 24px;
+      --space-8: 32px;
+      --space-10: 40px;
+      --space-12: 48px;
+      --space-16: 64px;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 24px;
+      --radius-full: 9999px;
+      --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+      --duration-fast: 150ms;
+      --duration-base: 250ms;
+    /* removed stray closing brace */
+
+    /* --- Premium Navbar/Profile Styles (from assistant-premium.html) --- */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      padding: var(--space-4) var(--space-8);
+      background: var(--bg-primary);
+      border-bottom: 1px solid var(--border-color);
+      backdrop-filter: blur(20px);
+    }
+    .main-container {
+      padding-top: 90px; /* Ensure content starts below navbar */
+    }
+    .navbar-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      .profile-dropdown {
+        position: absolute;
+        top: calc(100% + 12px);
+        right: 0;
+        min-width: 280px;
+        background: var(--card-bg);
+        border-radius: var(--radius-lg);
+        box-shadow: 0 12px 40px rgba(0,0,0,0.18);
+        border: 1px solid var(--border-color);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-16px) scale(0.98);
+        transition: opacity 200ms var(--ease-out), transform 200ms var(--ease-out), visibility 200ms;
+        z-index: 1300;
+        overflow: hidden;
+        pointer-events: none;
+      }
+      text-decoration: none;
+      color: var(--text-primary);
+    }
+    .logo-icon {
+      width: 40px;
+      .profile-dropdown.show {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0) scale(1);
+        pointer-events: auto;
+      }
+      height: 40px;
+      background: var(--text-primary);
+      color: var(--bg-primary);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+    .logo-text {
+      font-size: var(--text-xl);
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: var(--space-8);
+    }
+    .nav-link {
+      font-size: var(--text-sm);
+      font-weight: 500;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color var(--duration-fast) var(--ease-out);
+    }
+    .nav-link:hover, .nav-link.active {
+      color: var(--text-primary);
+    }
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      position: relative;
+    }
+    .theme-toggle {
+      width: 40px;
+      height: 40px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-md);
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+    .theme-toggle:hover {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+    }
+    .btn-primary {
+      padding: var(--space-3) var(--space-6);
+      background: var(--text-primary);
+      color: var(--bg-primary);
+      border: none;
+      border-radius: var(--radius-full);
+      font-size: var(--text-sm);
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    .profile-section {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      position: relative;
+    }
+    .profile-trigger {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-2) var(--space-3);
+      background: var(--bg-secondary);
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+      border: 1px solid var(--border-color);
+    }
+    .profile-trigger:hover {
+      background: var(--bg-tertiary);
+    }
+    .profile-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--emerald), var(--sapphire));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: var(--text-sm);
+      color: white;
+      overflow: hidden;
+    }
+    .profile-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .profile-info {
+      display: flex;
+      flex-direction: column;
+    }
+    .profile-greeting {
+      font-size: var(--text-xs);
+      color: var(--text-secondary);
+    }
+    .profile-name {
+      font-size: var(--text-sm);
+      font-weight: 600;
+      color: var(--text-primary);
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .profile-dropdown-icon {
+      color: var(--text-secondary);
+      transition: transform var(--duration-fast) var(--ease-out);
+    }
+    .profile-trigger.open .profile-dropdown-icon {
+      transform: rotate(180deg);
+    }
+    .profile-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      min-width: 280px;
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+      border: 1px solid var(--border-color);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-10px);
+      transition: all var(--duration-fast) var(--ease-out);
+      z-index: 1000;
+      overflow: hidden;
+    }
+    .profile-dropdown.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+    .dropdown-header {
+      padding: var(--space-5);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+    }
+    .dropdown-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--emerald), var(--sapphire));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: var(--text-xl);
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+    .dropdown-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .avatar-upload {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0,0,0,0.6);
+      color: white;
+      font-size: 10px;
+      text-align: center;
+      padding: 2px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity var(--duration-fast);
+    }
+    .dropdown-avatar:hover .avatar-upload {
+      opacity: 1;
+    }
+    .dropdown-user-info h4 {
+      font-size: var(--text-base);
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+    .dropdown-user-info p {
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+    }
+    .dropdown-menu {
+      padding: var(--space-2);
+    }
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      text-decoration: none;
+      font-size: var(--text-sm);
+      transition: background var(--duration-fast);
+      cursor: pointer;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+    }
+    .dropdown-item:hover {
+      background: var(--bg-secondary);
+    }
+    .dropdown-item svg {
+      width: 18px;
+      height: 18px;
+      color: var(--text-secondary);
+    }
+    .dropdown-item.danger {
+      color: var(--ruby);
+    }
+    .dropdown-item.danger svg {
+      color: var(--ruby);
+    }
+    .dropdown-divider {
+      height: 1px;
+      background: var(--border-color);
+      margin: var(--space-2) 0;
+    }
+    .sign-in-btn {
+      display: inline-flex;
+    }
+    .sign-in-btn.hidden {
+      display: none;
+    }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary, #fff);
+      color: var(--text-primary, #000);
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+    }
     .application-container {
       max-width: 700px;
-      margin: 0 auto;
-      padding: 20px;
+      margin: 40px auto;
+      padding: 32px 24px;
+      background: var(--card-bg, #fff);
+      border-radius: var(--radius-xl, 24px);
+      box-shadow: 0 4px 32px rgba(0,0,0,0.08), 0 1.5px 6px rgba(0,0,0,0.04);
     }
     .progress-bar {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 30px;
+      margin-bottom: 36px;
       position: relative;
     }
     .progress-bar::before {
       content: '';
       position: absolute;
       top: 20px;
-      left: 50px;
-      right: 50px;
+      left: 40px;
+      right: 40px;
       height: 4px;
-      background: #e0e0e0;
+      background: var(--cloud, #cccccc);
       z-index: 0;
+      border-radius: 2px;
     }
     .progress-step {
       display: flex;
@@ -35,89 +395,139 @@
       flex: 1;
     }
     .step-circle {
-      width: 40px;
-      height: 40px;
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
-      background: #e0e0e0;
+      background: var(--cloud, #cccccc);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: bold;
-      color: #666;
+      font-weight: 700;
+      font-size: 18px;
+      color: var(--text-secondary, #666);
       margin-bottom: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      transition: background 0.2s;
     }
     .step-circle.active {
-      background: #007bff;
-      color: white;
+      background: var(--sapphire, #3b82f6);
+      color: #fff;
     }
     .step-circle.completed {
-      background: #28a745;
-      color: white;
+      background: var(--emerald, #10b981);
+      color: #fff;
     }
     .step-label {
-      font-size: 12px;
-      color: #666;
+      font-size: 13px;
+      color: var(--text-secondary, #666);
       text-align: center;
+      margin-top: 2px;
     }
     .form-section {
-      background: #f8f9fa;
-      padding: 20px;
-      border-radius: 8px;
-      margin-bottom: 20px;
+      background: var(--bg-secondary, #f5f5f5);
+      padding: 28px 20px 20px 20px;
+      border-radius: var(--radius-lg, 16px);
+      margin-bottom: 28px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.03);
     }
     .form-section h3 {
       margin-top: 0;
-      margin-bottom: 15px;
-      color: #333;
-      border-bottom: 2px solid #007bff;
+      margin-bottom: 18px;
+      color: var(--sapphire, #3b82f6);
+      border-bottom: 2px solid var(--sapphire, #3b82f6);
       padding-bottom: 8px;
+      font-size: 20px;
+      font-weight: 700;
     }
     .form-row {
       display: flex;
-      gap: 15px;
-      margin-bottom: 15px;
+      gap: 18px;
+      margin-bottom: 18px;
     }
     .form-row > div {
       flex: 1;
     }
     .form-group {
-      margin-bottom: 15px;
+      margin-bottom: 18px;
     }
     .form-group label {
       display: block;
-      margin-bottom: 5px;
+      margin-bottom: 6px;
       font-weight: 600;
-      color: #333;
+      color: var(--text-primary, #222);
+      font-size: 15px;
     }
     .form-group label .required {
-      color: #dc3545;
+      color: var(--ruby, #ef4444);
     }
     .form-group input,
     .form-group select,
     .form-group textarea {
       width: 100%;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 14px;
+      padding: 12px;
+      border: 1px solid var(--cloud, #cccccc);
+      border-radius: var(--radius-md, 12px);
+      font-size: 15px;
+      background: var(--input-bg, #f5f5f5);
+      transition: border 0.2s;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border: 1.5px solid var(--sapphire, #3b82f6);
+      outline: none;
     }
     .form-group textarea {
       resize: vertical;
-      min-height: 80px;
+      min-height: 90px;
     }
     .language-tags {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 10px;
       margin-top: 8px;
     }
     .language-tag {
-      padding: 6px 12px;
+      padding: 7px 16px;
       border-radius: 20px;
-      border: 2px solid #ddd;
+      border: 2px solid var(--cloud, #cccccc);
       cursor: pointer;
       transition: all 0.2s;
-      font-size: 13px;
+      font-size: 14px;
+      background: #fff;
+      color: var(--sapphire, #3b82f6);
+      font-weight: 600;
+    }
+    .language-tag.selected {
+      background: var(--sapphire, #3b82f6);
+      color: #fff;
+      border-color: var(--sapphire, #3b82f6);
+    }
+    .submit-btn {
+      width: 100%;
+      padding: 14px 0;
+      background: var(--sapphire, #3b82f6);
+      color: #fff;
+      font-size: 18px;
+      font-weight: 700;
+      border: none;
+      border-radius: var(--radius-lg, 16px);
+      box-shadow: 0 2px 8px rgba(59,130,246,0.08);
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background 0.2s;
+    }
+    .submit-btn:hover {
+      background: var(--violet, #8b5cf6);
+    }
+    @media (max-width: 700px) {
+      .application-container {
+        padding: 12px 2px;
+      }
+      .form-section {
+        padding: 14px 6px 10px 6px;
+      }
+    }
     }
     .language-tag:hover {
       border-color: #007bff;
@@ -207,193 +617,378 @@
   </style>
 </head>
 <body>
-  <header class="site-header">
-    <div class="brand">RailMitra <small>Station Assistance</small></div>
-    <nav>
-      <a href="index.html" class="ghost">Home</a>
-      <span style="margin:0 8px;color:#ccc">•</span>
-      <a href="login.html" class="ghost">Login</a>
-    </nav>
-  </header>
 
-  <main class="main">
-    <div class="application-container">
-      <h1 style="text-align:center;margin-bottom:10px">🚂 Become a RailMitra Assistant</h1>
-      <p style="text-align:center;color:#666;margin-bottom:30px">Join our network of station assistants and help passengers across India</p>
+  <!-- Premium Navbar -->
 
-      <!-- Progress Bar -->
-      <div class="progress-bar">
-        <div class="progress-step">
-          <div class="step-circle active">1</div>
-          <div class="step-label">Apply</div>
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <a href="passenger-premium.html" class="logo">
+        <div class="logo-icon">🚄</div>
+        <span class="logo-text">RailMitra</span>
+      </a>
+      <div class="nav-links">
+        <a href="assistant-premium.html" class="nav-link active">My Dashboard</a>
+        <a href="passenger-premium.html" class="nav-link">Passenger Portal</a>
+      </div>
+      <div class="nav-actions">
+        <button class="theme-toggle" onclick="toggleTheme()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+          </svg>
+        </button>
+        <a href="login-premium.html" class="btn-primary sign-in-btn" id="signInBtn">Sign In</a>
+        <div class="profile-section" id="profileSection">
+          <div class="profile-trigger" onclick="toggleProfileDropdown()">
+            <div class="profile-avatar" id="navAvatar">
+              <span id="navAvatarInitials">A</span>
+              <img id="navAvatarImg" src="" alt="" style="display: none;">
+            </div>
+            <div class="profile-info">
+              <span class="profile-greeting">Hello,</span>
+              <span class="profile-name" id="navUserName">Assistant</span>
+            </div>
+            <svg class="profile-dropdown-icon" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </div>
+          <div class="profile-dropdown" id="profileDropdown">
+            <div class="dropdown-header">
+              <div class="dropdown-avatar" id="dropdownAvatar">
+                <span id="dropdownAvatarInitials">A</span>
+                <img id="dropdownAvatarImg" src="" alt="" style="display: none;">
+                <label class="avatar-upload" for="avatarInput">📷 Change</label>
+              </div>
+              <div class="dropdown-user-info">
+                <h4 id="dropdownUserName">Assistant Name</h4>
+                <p id="dropdownUserPhone">Assistant Account</p>
+              </div>
+            </div>
+            <div class="dropdown-menu">
+              <a href="#" class="dropdown-item" onclick="openSettings(); return false;">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                Settings
+              </a>
+              <div class="dropdown-divider"></div>
+              <button class="dropdown-item danger" onclick="logoutUser()">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                </svg>
+                Sign Out
+              </button>
+            </div>
+          </div>
         </div>
-        <div class="progress-step">
-          <div class="step-circle">2</div>
-          <div class="step-label">Under Review</div>
-        </div>
-        <div class="progress-step">
-          <div class="step-circle">3</div>
-          <div class="step-label">Approved</div>
+        <!-- Avatar file input removed from navbar for clean UI -->
+      </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="main-container">
+    <div class="page-header">
+      <div class="page-badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+        Assistant Application
+      </div>
+      <h1 class="page-title">Become a RailMitra Assistant</h1>
+      <p class="page-description">Join our network of station assistants and help passengers across India</p>
+    </div>
+    <div class="content-grid">
+      <div style="display: contents;">
+        <div class="card">
+          <!-- Progress Bar -->
+          <div class="progress-bar">
+            <div class="progress-step">
+              <div class="step-circle active">1</div>
+              <div class="step-label">Apply</div>
+            </div>
+            <div class="progress-step">
+              <div class="step-circle">2</div>
+              <div class="step-label">Under Review</div>
+            </div>
+            <div class="progress-step">
+              <div class="step-circle">3</div>
+              <div class="step-label">Approved</div>
+            </div>
+          </div>
+          <div id="alertBox"></div>
+          <form id="applicationForm">
+            <!-- ...existing form sections and fields... -->
+            <!-- Personal Information -->
+            <div class="form-section">
+              <h3>👤 Personal Information</h3>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Full Name <span class="required">*</span></label>
+                  <input type="text" id="fullName" required placeholder="Enter your full name" />
+                </div>
+                <div class="form-group">
+                  <label>Phone Number <span class="required">*</span></label>
+                  <input type="tel" id="phone" required placeholder="10-digit mobile number" pattern="[0-9]{10}" />
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Age <span class="required">*</span></label>
+                  <input type="number" id="age" required min="18" max="65" placeholder="Your age" />
+                </div>
+                <div class="form-group">
+                  <label>Years of Experience</label>
+                  <input type="number" id="experience" min="0" max="50" placeholder="Optional" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Permanent Address <span class="required">*</span></label>
+                <textarea id="address" required placeholder="Enter your complete permanent address"></textarea>
+              </div>
+            </div>
+            <!-- Station & Languages -->
+            <div class="form-section">
+              <h3>🚉 Station & Skills</h3>
+              <div class="form-group">
+                <label>Select Station <span class="required">*</span></label>
+                <select id="station" required>
+                  <option value="">-- Select your preferred station --</option>
+                  <option value="SC">Secunderabad (SC)</option>
+                  <option value="KCG">Kacheguda (KCG)</option>
+                  <option value="HYB">Hyderabad Deccan (HYB)</option>
+                  <option value="KZJ">Kazipet (KZJ)</option>
+                  <option value="BZA">Vijayawada (BZA)</option>
+                  <option value="WL">Warangal (WL)</option>
+                  <option value="TPTY">Tirupati (TPTY)</option>
+                  <option value="VSKP">Visakhapatnam (VSKP)</option>
+                  <option value="MAS">Chennai Central (MAS)</option>
+                  <option value="CSTM">Mumbai CST (CSTM)</option>
+                  <option value="NDLS">New Delhi (NDLS)</option>
+                  <option value="HWH">Howrah (HWH)</option>
+                  <option value="Bengaluru">Bengaluru</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Languages You Speak <span class="required">*</span></label>
+                <p style="font-size:12px;color:#666;margin-bottom:8px">Select all languages you can communicate in</p>
+                <div class="language-tags" id="languageTags">
+                  <span class="language-tag" data-lang="Telugu">Telugu</span>
+                  <span class="language-tag" data-lang="Hindi">Hindi</span>
+                  <span class="language-tag" data-lang="English">English</span>
+                  <span class="language-tag" data-lang="Tamil">Tamil</span>
+                  <span class="language-tag" data-lang="Kannada">Kannada</span>
+                  <span class="language-tag" data-lang="Malayalam">Malayalam</span>
+                  <span class="language-tag" data-lang="Marathi">Marathi</span>
+                  <span class="language-tag" data-lang="Bengali">Bengali</span>
+                  <span class="language-tag" data-lang="Gujarati">Gujarati</span>
+                  <span class="language-tag" data-lang="Punjabi">Punjabi</span>
+                  <span class="language-tag" data-lang="Odia">Odia</span>
+                  <span class="language-tag" data-lang="Urdu">Urdu</span>
+                </div>
+                <input type="hidden" id="selectedLanguages" />
+              </div>
+            </div>
+            <!-- Document Upload -->
+            <div class="form-section">
+              <h3>📄 Document Verification</h3>
+              <p style="font-size:13px;color:#666;margin-bottom:15px">Upload clear photos/scans of your documents. Accepted formats: JPG, PNG, PDF (Max 5MB each)</p>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Aadhaar Card <span class="required">*</span></label>
+                  <div class="file-upload-box" id="aadharBox">
+                    <div class="icon">🪪</div>
+                    <div>Click to upload Aadhaar</div>
+                    <input type="file" id="aadharFile" accept=".jpg,.jpeg,.png,.pdf" required />
+                    <div class="filename" id="aadharFilename"></div>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>PAN Card <span class="required">*</span></label>
+                  <div class="file-upload-box" id="panBox">
+                    <div class="icon">💳</div>
+                    <div>Click to upload PAN</div>
+                    <input type="file" id="panFile" accept=".jpg,.jpeg,.png,.pdf" required />
+                    <div class="filename" id="panFilename"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group" style="max-width:300px">
+                <label>Profile Photo <span class="required">*</span></label>
+                <div class="file-upload-box" id="photoBox">
+                  <div class="icon">📷</div>
+                  <div>Click to upload photo</div>
+                  <input type="file" id="photoFile" accept=".jpg,.jpeg,.png" required />
+                  <div class="filename" id="photoFilename"></div>
+                </div>
+                <img id="photoPreview" class="photo-preview" alt="Preview" />
+              </div>
+            </div>
+            <!-- Terms & Submit -->
+            <div class="form-section">
+              <div class="form-group">
+                <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+                  <input type="checkbox" id="termsCheck" required style="width:auto" />
+                  <span>I agree to the <a href="#" onclick="alert('Terms and conditions...')">Terms & Conditions</a> and certify that all information provided is accurate.</span>
+                </label>
+              </div>
+            </div>
+            <div class="submit-section">
+              <button type="submit" class="submit-btn" id="submitBtn">
+                🚀 Submit Application
+              </button>
+              <p style="margin-top:10px;font-size:13px;color:#666">Your application will be reviewed within 24-48 hours</p>
+            </div>
+          </form>
         </div>
       </div>
-
-      <div id="alertBox"></div>
-
-      <form id="applicationForm">
-        <!-- Personal Information -->
-        <div class="form-section">
-          <h3>👤 Personal Information</h3>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Full Name <span class="required">*</span></label>
-              <input type="text" id="fullName" required placeholder="Enter your full name" />
-            </div>
-            <div class="form-group">
-              <label>Phone Number <span class="required">*</span></label>
-              <input type="tel" id="phone" required placeholder="10-digit mobile number" pattern="[0-9]{10}" />
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Age <span class="required">*</span></label>
-              <input type="number" id="age" required min="18" max="65" placeholder="Your age" />
-            </div>
-            <div class="form-group">
-              <label>Years of Experience</label>
-              <input type="number" id="experience" min="0" max="50" placeholder="Optional" />
-            </div>
-          </div>
-          <div class="form-group">
-            <label>Permanent Address <span class="required">*</span></label>
-            <textarea id="address" required placeholder="Enter your complete permanent address"></textarea>
-          </div>
-        </div>
-
-        <!-- Station & Languages -->
-        <div class="form-section">
-          <h3>🚉 Station & Skills</h3>
-          <div class="form-group">
-            <label>Select Station <span class="required">*</span></label>
-            <select id="station" required>
-              <option value="">-- Select your preferred station --</option>
-              <option value="Secunderabad">Secunderabad</option>
-              <option value="Kacheguda">Kacheguda</option>
-              <option value="Hyderabad Deccan">Hyderabad Deccan</option>
-              <option value="Kazipet">Kazipet</option>
-              <option value="Vijayawada">Vijayawada</option>
-              <option value="Warangal">Warangal</option>
-              <option value="Tirupati">Tirupati</option>
-              <option value="Visakhapatnam">Visakhapatnam</option>
-              <option value="Chennai Central">Chennai Central</option>
-              <option value="Mumbai CST">Mumbai CST</option>
-              <option value="New Delhi">New Delhi</option>
-              <option value="Howrah">Howrah</option>
-              <option value="Bengaluru">Bengaluru</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Languages You Speak <span class="required">*</span></label>
-            <p style="font-size:12px;color:#666;margin-bottom:8px">Select all languages you can communicate in</p>
-            <div class="language-tags" id="languageTags">
-              <span class="language-tag" data-lang="Telugu">Telugu</span>
-              <span class="language-tag" data-lang="Hindi">Hindi</span>
-              <span class="language-tag" data-lang="English">English</span>
-              <span class="language-tag" data-lang="Tamil">Tamil</span>
-              <span class="language-tag" data-lang="Kannada">Kannada</span>
-              <span class="language-tag" data-lang="Malayalam">Malayalam</span>
-              <span class="language-tag" data-lang="Marathi">Marathi</span>
-              <span class="language-tag" data-lang="Bengali">Bengali</span>
-              <span class="language-tag" data-lang="Gujarati">Gujarati</span>
-              <span class="language-tag" data-lang="Punjabi">Punjabi</span>
-              <span class="language-tag" data-lang="Odia">Odia</span>
-              <span class="language-tag" data-lang="Urdu">Urdu</span>
-            </div>
-            <input type="hidden" id="selectedLanguages" />
-          </div>
-        </div>
-
-        <!-- Document Upload -->
-        <div class="form-section">
-          <h3>📄 Document Verification</h3>
-          <p style="font-size:13px;color:#666;margin-bottom:15px">Upload clear photos/scans of your documents. Accepted formats: JPG, PNG, PDF (Max 5MB each)</p>
-          
-          <div class="form-row">
-            <div class="form-group">
-              <label>Aadhaar Card <span class="required">*</span></label>
-              <div class="file-upload-box" id="aadharBox">
-                <div class="icon">🪪</div>
-                <div>Click to upload Aadhaar</div>
-                <input type="file" id="aadharFile" accept=".jpg,.jpeg,.png,.pdf" required />
-                <div class="filename" id="aadharFilename"></div>
-              </div>
-            </div>
-            <div class="form-group">
-              <label>PAN Card <span class="required">*</span></label>
-              <div class="file-upload-box" id="panBox">
-                <div class="icon">💳</div>
-                <div>Click to upload PAN</div>
-                <input type="file" id="panFile" accept=".jpg,.jpeg,.png,.pdf" required />
-                <div class="filename" id="panFilename"></div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="form-group" style="max-width:300px">
-            <label>Profile Photo <span class="required">*</span></label>
-            <div class="file-upload-box" id="photoBox">
-              <div class="icon">📷</div>
-              <div>Click to upload photo</div>
-              <input type="file" id="photoFile" accept=".jpg,.jpeg,.png" required />
-              <div class="filename" id="photoFilename"></div>
-            </div>
-            <img id="photoPreview" class="photo-preview" alt="Preview" />
-          </div>
-        </div>
-
-        <!-- Terms & Submit -->
-        <div class="form-section">
-          <div class="form-group">
-            <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
-              <input type="checkbox" id="termsCheck" required style="width:auto" />
-              <span>I agree to the <a href="#" onclick="alert('Terms and conditions...')">Terms & Conditions</a> and certify that all information provided is accurate.</span>
-            </label>
-          </div>
-        </div>
-
-        <div class="submit-section">
-          <button type="submit" class="submit-btn" id="submitBtn">
-            🚀 Submit Application
-          </button>
-          <p style="margin-top:10px;font-size:13px;color:#666">Your application will be reviewed within 24-48 hours</p>
-        </div>
-      </form>
     </div>
-  </main>
+  </div>
 
   <script src="auth.js"></script>
   <script>
-    // Check if user is logged in as assistant
-    (async () => {
-      await window.RailCareAuth?.enforceRole?.('assistant');
-      
-      // Check if already applied
+    // --- Edit/Reapply Mode: If ?edit=true, load previous application and allow editing ---
+    async function maybeLoadEditApplication() {
+      const params = new URLSearchParams(window.location.search);
+      if (!params.get('edit')) return;
+      const token = localStorage.getItem('railcare_token');
+      if (!token) return;
       try {
         const fetcher = window.RailCareAuth?.authFetch || fetch;
-        const res = await fetcher('/api/assistants/my-application');
+        const res = await fetcher('/api/assistants/my-application', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
         const data = await res.json();
-        
         if (data.success && data.assistant) {
-          if (data.assistant.hasApplied) {
-            // Already applied, redirect to status page
-            window.location.href = 'assistant-status.html';
-            return;
-          }
-          // Pre-fill form if partial data exists
-          if (data.assistant.name) document.getElementById('fullName').value = data.assistant.name;
-          if (data.assistant.phone) document.getElementById('phone').value = data.assistant.phone;
+          // Fill form fields with previous data
+          document.getElementById('fullName').value = data.assistant.name || '';
+          document.getElementById('phone').value = data.assistant.phone || '';
+          document.getElementById('age').value = data.assistant.age || '';
+          document.getElementById('station').value = data.assistant.station || '';
+          document.getElementById('address').value = data.assistant.permanentAddress || '';
+          document.getElementById('experience').value = data.assistant.yearsOfExperience || '';
+          // Languages
+          const langs = Array.isArray(data.assistant.languages) ? data.assistant.languages : (data.assistant.languages || '').split(',');
+          document.getElementById('selectedLanguages').value = langs.join(',');
+          document.querySelectorAll('.language-tag').forEach(tag => {
+            if (langs.includes(tag.dataset.lang)) tag.classList.add('selected');
+            else tag.classList.remove('selected');
+          });
         }
-      } catch (e) { /* Not applied yet, continue */ }
-    })();
+      } catch (e) {}
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', maybeLoadEditApplication);
+    } else {
+      maybeLoadEditApplication();
+    }
+    // On page load, check if user already has an application and redirect if so
+    async function checkExistingApplication() {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('edit')) return; // If in edit mode, allow form
+      const token = localStorage.getItem('railcare_token');
+      if (!token) return; // Not logged in, allow form
+      try {
+        const fetcher = window.RailCareAuth?.authFetch || fetch;
+        const res = await fetcher('/api/assistants/my-application', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const data = await res.json();
+        if (data.success && data.assistant) {
+          // Application exists, redirect to status page
+          window.location.href = 'assistant-status.html';
+        }
+      } catch (e) {
+        // If error, allow form (fail open)
+      }
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', checkExistingApplication);
+    } else {
+      checkExistingApplication();
+    }
+    // Profile dropdown toggle logic (match premium dashboard)
+    function toggleProfileDropdown() {
+      const trigger = document.querySelector('.profile-trigger');
+      const dropdown = document.getElementById('profileDropdown');
+      if (!dropdown) return;
+      const isOpen = dropdown.classList.contains('show');
+      if (isOpen) {
+        dropdown.classList.remove('show');
+        trigger.classList.remove('open');
+      } else {
+        dropdown.classList.add('show');
+        trigger.classList.add('open');
+      }
+    }
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+      const trigger = document.querySelector('.profile-trigger');
+      const dropdown = document.getElementById('profileDropdown');
+      if (!trigger || !dropdown) return;
+      if (!trigger.contains(e.target) && !dropdown.contains(e.target)) {
+        dropdown.classList.remove('show');
+        trigger.classList.remove('open');
+      }
+    });
+
+    // Navbar profile logic (match premium dashboard)
+    function getToken() {
+      return localStorage.getItem('railcare_token');
+    }
+    function showSignInButton() {
+      document.getElementById('signInBtn')?.classList.remove('hidden');
+      document.getElementById('profileSection')?.classList.remove('active');
+      document.getElementById('profileSection').style.display = 'none';
+    }
+    function showUserProfile(user) {
+      document.getElementById('signInBtn')?.classList.add('hidden');
+      document.getElementById('profileSection')?.classList.add('active');
+      document.getElementById('profileSection').style.display = 'flex';
+      const name = user.name || 'Assistant';
+      const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+      document.getElementById('navUserName').textContent = name.split(' ')[0];
+      document.getElementById('navAvatarInitials').textContent = initials;
+      document.getElementById('dropdownUserName').textContent = name;
+      // Always show phone number if available
+      document.getElementById('dropdownUserPhone').textContent = user.phone ? user.phone : 'Phone not set';
+      document.getElementById('dropdownAvatarInitials').textContent = initials;
+    }
+    function checkAuthNav() {
+      const token = getToken();
+      if (!token) {
+        showSignInButton();
+        return;
+      }
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const expiry = payload.exp * 1000;
+        if (expiry < Date.now()) {
+          localStorage.removeItem('railcare_token');
+          showSignInButton();
+          return;
+        }
+        // Try to get phone from token payload if present
+        showUserProfile({ name: payload.name, phone: payload.phone || '', role: payload.role });
+      } catch (e) {
+        showSignInButton();
+      }
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', checkAuthNav);
+    } else {
+      checkAuthNav();
+    }
+    document.addEventListener('DOMContentLoaded', checkAuthNav);
+
+    // ...existing code for application form, language selection, file upload, etc...
 
     // Language selection
     const languageTags = document.querySelectorAll('.language-tag');
@@ -462,19 +1057,28 @@
         return;
       }
 
-      // Validate files
-      const aadharFile = document.getElementById('aadharFile').files[0];
-      const panFile = document.getElementById('panFile').files[0];
-      const photoFile = document.getElementById('photoFile').files[0];
 
-      if (!aadharFile || !panFile || !photoFile) {
-        alertBox.innerHTML = '<div class="alert alert-danger">Please upload all required documents</div>';
-        return;
+      // In edit mode, files are optional (only send if changed)
+      const params = new URLSearchParams(window.location.search);
+      const isEditMode = params.get('edit');
+      const aadharInput = document.getElementById('aadharFile');
+      const panInput = document.getElementById('panFile');
+      const photoInput = document.getElementById('photoFile');
+      const aadharFile = aadharInput.files[0];
+      const panFile = panInput.files[0];
+      const photoFile = photoInput.files[0];
+
+      if (!isEditMode) {
+        if (!aadharFile || !panFile || !photoFile) {
+          alertBox.innerHTML = '<div class="alert alert-danger">Please upload all required documents</div>';
+          return;
+        }
       }
 
       submitBtn.disabled = true;
       submitBtn.textContent = '⏳ Submitting...';
       alertBox.innerHTML = '';
+
 
       try {
         const formData = new FormData();
@@ -485,9 +1089,10 @@
         formData.append('languages', document.getElementById('selectedLanguages').value);
         formData.append('permanentAddress', document.getElementById('address').value.trim());
         formData.append('yearsOfExperience', document.getElementById('experience').value || 0);
-        formData.append('aadhar', aadharFile);
-        formData.append('pan', panFile);
-        formData.append('photo', photoFile);
+        // Only append files if present (edit mode)
+        if (aadharFile) formData.append('aadhar', aadharFile);
+        if (panFile) formData.append('pan', panFile);
+        if (photoFile) formData.append('photo', photoFile);
 
         // Get token from correct localStorage key
         const token = localStorage.getItem('railcare_token');
@@ -495,13 +1100,24 @@
           throw new Error('You must be logged in to apply. Please login first.');
         }
         
-        const res = await fetch('/api/assistants/apply', {
+
+
+        // Use the same fetcher logic as elsewhere (auth.js)
+        const fetcher = window.RailCareAuth?.authFetch || fetch;
+        const res = await fetcher('/api/assistants/apply', {
           method: 'POST',
           headers: { 'Authorization': 'Bearer ' + token },
           body: formData
         });
 
         const result = await res.json();
+
+        if (res.status === 403) {
+          alertBox.innerHTML = `<div class="alert alert-danger">❌ Forbidden: You must be logged in as an assistant to reapply. <br>Please <a href="login-premium.html" style="color:#007bff;text-decoration:underline">log in as assistant</a> and try again.</div>`;
+          submitBtn.disabled = false;
+          submitBtn.textContent = '🚀 Submit Application';
+          return;
+        }
 
         if (!res.ok || !result.success) {
           throw new Error(result.message || 'Application failed');

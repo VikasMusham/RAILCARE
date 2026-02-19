@@ -1,3 +1,24 @@
+// Assistant: request re-verification after being revoked
+router.post('/:id/request-reverify', async (req, res) => {
+  try {
+    const assistant = await Assistant.findById(req.params.id);
+    if (!assistant) return res.status(404).json({ success: false, message: 'Not found' });
+    assistant.requestedReverify = true;
+    await assistant.save();
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ success: false, error: err.message }); }
+});
+// Admin: re-verify a revoked assistant
+router.post('/:id/verify-again', authenticate, authorize('admin'), async (req, res) => {
+  try {
+    const assistant = await Assistant.findById(req.params.id);
+    if (!assistant) return res.status(404).json({ success: false, message: 'Not found' });
+    assistant.revoked = false;
+    assistant.verified = true;
+    await assistant.save();
+    res.json({ success: true, assistant });
+  } catch (err) { res.status(500).json({ success: false, error: err.message }); }
+});
 const express = require('express');
 const router = express.Router();
 const Assistant = require('../models/Assistant');
@@ -93,6 +114,7 @@ router.post('/:id/reject', authenticate, authorize('admin'), async (req, res) =>
     const assistant = await Assistant.findById(req.params.id);
     if (!assistant) return res.status(404).json({ success: false });
     assistant.verified = false;
+    assistant.revoked = true;
     await assistant.save();
     res.json({ success: true });
   } catch (err) { res.status(500).json({ success: false, error: err.message }); }

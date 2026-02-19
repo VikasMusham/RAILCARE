@@ -1,14 +1,40 @@
-/**
- * Admin Routes for RailMitra
- * Handles admin-specific operations: view assistants, verify documents
- */
 
 const express = require('express');
 const router = express.Router();
 const Assistant = require('../models/Assistant');
-const Booking = require('../models/Booking');
+// const Booking = require('../models/Booking');
 const AuditLog = require('../models/AuditLog');
 const { authenticate, authorize } = require('../middleware/auth');
+
+// Add Booking model for admin bookings API
+const Booking = require('../models/Booking');
+
+/**
+ * DELETE /api/admin/assistants/:id
+ * Remove an assistant (permanent delete)
+ */
+router.delete('/assistants/:id', async (req, res) => {
+  try {
+    const assistant = await Assistant.findByIdAndDelete(req.params.id);
+    if (!assistant) {
+      return res.status(404).json({ success: false, message: 'Assistant not found' });
+    }
+    // Optionally, log the deletion
+    try {
+      await AuditLog.create({
+        action: 'delete_assistant',
+        actorId: req.user?.id || req.user?._id,
+        actorRole: 'admin',
+        targetType: 'assistant',
+        targetId: String(req.params.id),
+        meta: { assistantName: assistant.name }
+      });
+    } catch (e) {}
+    res.json({ success: true, message: 'Assistant removed successfully' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
 
 // All admin routes require authentication and admin role
 router.use(authenticate);
@@ -84,6 +110,8 @@ router.patch('/verify/:assistantId', async (req, res) => {
 
     assistant.verified = true;
     assistant.documentsVerified = true;
+    assistant.isEligibleForBookings = true;
+    assistant.applicationStatus = 'Approved';
     await assistant.save();
 
     // Create audit log
@@ -193,13 +221,16 @@ router.get('/stats', async (req, res) => {
       pendingAssistants,
       totalBookings,
       pendingBookings,
-      completedBookings
+      inProgressBookings,
+      completedBookings,
+      pendingApplications
     ] = await Promise.all([
       Assistant.countDocuments(),
       Assistant.countDocuments({ verified: true }),
       Assistant.countDocuments({ verified: false }),
       Booking.countDocuments(),
       Booking.countDocuments({ status: 'Pending' }),
+      Booking.countDocuments({ status: { $in: ['Accepted', 'Start Pending', 'In Progress', 'Completion Pending'] } }),
       Booking.countDocuments({ status: 'Completed' }),
       Assistant.countDocuments({ applicationStatus: 'Pending' })
     ]);
@@ -215,6 +246,7 @@ router.get('/stats', async (req, res) => {
         bookings: {
           total: totalBookings,
           pending: pendingBookings,
+          inProgress: inProgressBookings,
           completed: completedBookings
         },
         applications: {
@@ -378,4 +410,46 @@ router.post('/applications/:id/reject', async (req, res) => {
   }
 });
 
+// PATCH /api/admin/clear-demo
+router.patch('/clear-demo', async (req, res) => {
+  try {
+    // Clear demo data: bookings, assistants, users, feedback, audit logs
+    const Booking = require('../models/Booking');
+    const Assistant = require('../models/Assistant');
+    const User = require('../models/User');
+    const Feedback = require('../models/Feedback');
+    const AuditLog = require('../models/AuditLog');
+
+    await Booking.deleteMany({});
+    await Assistant.deleteMany({});
+    await User.deleteMany({ role: { $ne: 'admin' } }); // Keep admin users
+    await Feedback.deleteMany({});
+    await AuditLog.deleteMany({});
+
+    res.json({ success: true, message: 'Demo data cleared' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to clear demo data: ' + err.message });
+  }
+});
+
 module.exports = router;
+
+/**
+ * GET /api/admin/bookings
+ * Get all bookings for admin, including passenger phone and email
+ */
+router.get('/bookings', async (req, res) => {
+  try {
+    const bookings = await Booking.find({})
+      .sort({ createdAt: -1 })
+      .populate('assistantId');
+    res.json({
+      success: true,
+      count: bookings.length,
+      bookings
+    });
+  } catch (err) {
+    console.error('[Admin] Get bookings error:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});

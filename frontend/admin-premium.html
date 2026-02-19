@@ -1,6 +1,12 @@
+<!-- Floating Emergency Test Button (for admin demo/testing) -->
+  <!-- Only one button, after chat panel in DOM -->
+  <script src="socketio-loader.js"></script>
 <!DOCTYPE html>
 <html lang="en">
 <head>
+        <link rel="icon" type="image/png" href="favicon.png">
+      <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/png" href="favicon.png">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RailMitra • Admin Dashboard</title>
@@ -1141,10 +1147,204 @@
       <div class="nav-links">
         <a href="admin-premium.html" class="nav-link active">Admin Panel</a>
         <a href="admin-dashboard.html" class="nav-link" style="color: var(--sapphire);">Super Dashboard</a>
-        <a href="passenger-premium.html" class="nav-link">Passenger Portal</a>
       </div>
+        <!-- Emergency Alert Notification -->
+        <div id="emergencyAlert" style="display:none; position:fixed; right:32px; bottom:110px; z-index:100000; background:#ef4444; color:#fff; padding:18px 28px; border-radius:16px; box-shadow:0 4px 24px rgba(0,0,0,0.18); font-size:18px; font-weight:600; cursor:pointer; transition:all 0.2s;">
+          🚨 New Emergency Chat! Click to respond
+        </div>
+          <script>
+          // Emergency Alert Notification for Admin
+          let lastAlertBookingId = null;
+          function showEmergencyAlert(bookingId, passengerName) {
+            const alertDiv = document.getElementById('emergencyAlert');
+            alertDiv.style.display = 'block';
+            lastAlertBookingId = bookingId;
+            alertDiv.setAttribute('data-passenger', passengerName || '');
+          }
+          function hideEmergencyAlert() {
+            document.getElementById('emergencyAlert').style.display = 'none';
+            lastAlertBookingId = null;
+          }
+          document.getElementById('emergencyAlert').onclick = function() {
+            // Always use the latest bookingId and passenger from the alert
+            if (lastAlertBookingId) {
+              const passengerName = document.getElementById('emergencyAlert').getAttribute('data-passenger') || '';
+              openAdminChatPanel(lastAlertBookingId, passengerName);
+              hideEmergencyAlert();
+            } else {
+              // Fallback: find the most recent bookingId from unread chats
+              const unreadIds = Object.keys(window._adminUnreadChats || {});
+              if (unreadIds.length > 0) {
+                openAdminChatPanel(unreadIds[0]);
+                hideEmergencyAlert();
+              } else {
+                alert('No active emergency chat to open.');
+              }
+            }
+          };
+          // Listen for new emergency chat events
+          // --- Background listener for all emergency chats ---
+          (function listenForEmergencyChats() {
+            if (!window.io) {
+              document.addEventListener('socketio-ready', listenForEmergencyChats, { once: true });
+              return;
+            }
+            const alertSocket = io('http://localhost:3000');
+            // Track unread messages per bookingId
+            window._adminUnreadChats = {};
+            alertSocket.on('emergency_chat', data => {
+              if (data && data.bookingId) {
+                showEmergencyAlert(data.bookingId, data.user);
+                // Mark as unread if chat panel is not open for this booking
+                if (window.adminCurrentBookingId !== data.bookingId || document.getElementById('emergencyChatPanel').style.display !== 'block') {
+                  window._adminUnreadChats[data.bookingId] = (window._adminUnreadChats[data.bookingId] || 0) + 1;
+                  updateEmergencyAlertBadge();
+                }
+              }
+            });
+            function updateEmergencyAlertBadge() {
+              const alertDiv = document.getElementById('emergencyAlert');
+              let badge = document.getElementById('emergencyAlertBadge');
+              const totalUnread = Object.values(window._adminUnreadChats).reduce((a,b)=>a+b,0);
+              if (totalUnread > 0) {
+                if (!badge) {
+                  badge = document.createElement('span');
+                  badge.id = 'emergencyAlertBadge';
+                  badge.style = 'background:#fff;color:#ef4444;font-weight:700;border-radius:50%;padding:2px 8px;font-size:13px;position:absolute;top:8px;right:12px;';
+                  alertDiv.appendChild(badge);
+                }
+                badge.textContent = totalUnread;
+              } else if (badge) {
+                badge.remove();
+              }
+            }
+            // When admin opens a chat, clear unread for that booking
+            window.addEventListener('open-admin-chat', function(e) {
+              if (e.detail && e.detail.bookingId) {
+                delete window._adminUnreadChats[e.detail.bookingId];
+                updateEmergencyAlertBadge();
+              }
+            });
+          })();
+          </script>
+<!-- Emergency Chat Panel (moved to end of body for proper overlay) -->
+
+        <!-- Emergency Chat Panel (Admin) -->
+        <!-- Removed duplicate emergencyChatPanel (fixed) to avoid overlay issues. Only the one in the tabs section remains. -->
+        <script>
+        // Emergency Chat Panel for Admin
+        let adminChatSocket, adminCurrentBookingId = null, adminUserName = 'Admin';
+        // Listen for emergency chat events from backend
+        function openAdminChatPanel(bookingId, passengerName) {
+          const panel = document.getElementById('emergencyChatPanel');
+          if (panel) panel.style.display = 'block';
+          adminCurrentBookingId = bookingId;
+          // Show bookingId and passenger name for debug
+          let infoDiv = document.getElementById('adminChatBookingIdInfo');
+          if (!infoDiv) {
+            infoDiv = document.createElement('div');
+            infoDiv.id = 'adminChatBookingIdInfo';
+            infoDiv.style = 'color:#10b981;font-size:13px;padding:4px 12px;';
+            panel.insertBefore(infoDiv, panel.firstChild.nextSibling);
+          }
+          infoDiv.textContent = 'Booking ID: ' + bookingId + (passengerName ? ' | Passenger: ' + passengerName : '');
+          // Fire event to clear unread
+          window.dispatchEvent(new CustomEvent('open-admin-chat', { detail: { bookingId } }));
+          setupAdminChatSocket();
+        }
+        function closeAdminChatPanel() {
+          document.getElementById('emergencyChatPanel').style.display = 'none';
+          if (adminChatSocket) adminChatSocket.disconnect();
+          adminCurrentBookingId = null;
+        }
+        function setupAdminChatSocket() {
+          console.log('[Admin] setupAdminChatSocket called for bookingId:', adminCurrentBookingId);
+          if (!window.io) {
+            document.addEventListener('socketio-ready', setupAdminChatSocket, { once: true });
+            return;
+          }
+          if (adminChatSocket) adminChatSocket.disconnect();
+          adminChatSocket = io('http://localhost:3000');
+          console.log('[Admin] Emitting join for bookingId:', adminCurrentBookingId);
+          adminChatSocket.emit('join', { role: 'admin', bookingId: adminCurrentBookingId });
+          const chatBox = document.getElementById('adminChatList');
+          chatBox.innerHTML = '';
+          document.getElementById('adminChatInput').value = '';
+          adminChatSocket.on('chat_history', msgs => {
+            console.log('[Admin Chat] Received chat_history:', msgs);
+            chatBox.innerHTML = '';
+            if (msgs.length === 0) {
+              const info = document.createElement('div');
+              info.id = 'adminNoMessages';
+              info.style = 'color:#888; text-align:center; margin:24px 0; font-size:15px;';
+              info.textContent = 'No messages yet.';
+              chatBox.appendChild(info);
+            } else {
+              msgs.forEach(m => appendAdminChatMessage(m));
+              chatBox.scrollTop = chatBox.scrollHeight;
+            }
+          });
+          adminChatSocket.on('chat_message', msg => {
+            // Debug: Show incoming message bookingId and current admin bookingId
+            // ...existing code...
+            console.log('[Admin Chat] Received chat_message:', msg, 'adminCurrentBookingId:', adminCurrentBookingId);
+            // Only append if the chat panel is open for this booking
+            if (adminCurrentBookingId === msg.bookingId && document.getElementById('emergencyChatPanel').style.display === 'block') {
+              appendAdminChatMessage(msg);
+              chatBox.scrollTop = chatBox.scrollHeight;
+              document.getElementById('adminNoMessages')?.remove();
+            } else {
+              // If not open, increment unread count for this booking
+              window._adminUnreadChats = window._adminUnreadChats || {};
+              window._adminUnreadChats[msg.bookingId] = (window._adminUnreadChats[msg.bookingId] || 0) + 1;
+              // Optionally, show alert or badge (already handled by emergency_alert logic)
+            }
+          });
+          adminChatSocket.on('typing', user => {
+            document.getElementById('adminTypingIndicator').textContent = user + ' is typing...';
+          });
+          adminChatSocket.on('stop_typing', () => {
+            document.getElementById('adminTypingIndicator').textContent = '';
+          });
+        }
+        function sendAdminChatMessage() {
+          const input = document.getElementById('adminChatInput');
+          const msg = input.value.trim();
+          if (!msg || !adminChatSocket) return;
+          const messageObj = { bookingId: adminCurrentBookingId, user: adminUserName, text: msg, time: new Date().toISOString() };
+          adminChatSocket.emit('chat_message', messageObj);
+          input.value = '';
+          document.getElementById('adminTypingIndicator').textContent = '';
+        }
+        function appendAdminChatMessage(msg) {
+          const chatBox = document.getElementById('adminChatList');
+          const isSelf = msg.user === adminUserName;
+          const div = document.createElement('div');
+          div.style = `margin-bottom:6px; text-align:${isSelf ? 'right':'left'};`;
+          div.innerHTML = `<span style="display:inline-block; background:${isSelf ? '#10b981':'#444'}; color:#fff; border-radius:8px; padding:6px 12px; max-width:70%; word-break:break-word;">${msg.text}</span><span style="font-size:10px; color:#aaa; margin-left:6px;">${new Date(msg.time).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</span>`;
+          chatBox.appendChild(div);
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+          const input = document.getElementById('adminChatInput');
+          if (input) {
+            input.addEventListener('input', function() {
+              if (adminChatSocket) adminChatSocket.emit('typing', { bookingId: adminCurrentBookingId, user: adminUserName });
+              clearTimeout(window._adminTypingTimeout);
+              window._adminTypingTimeout = setTimeout(() => {
+                if (adminChatSocket) adminChatSocket.emit('stop_typing', { bookingId: adminCurrentBookingId, user: adminUserName });
+              }, 1200);
+            });
+          }
+        });
+        // Hook up emergency help button in bookings to open chat
+        function adminEmergencyHelp(bookingId) {
+          openAdminChatPanel(bookingId);
+        }
+        window.adminEmergencyHelp = adminEmergencyHelp;
+        </script>
       
       <div class="nav-actions">
+        <!-- Emergency button and chat panel removed from navbar as per request -->
         <button class="theme-toggle" onclick="toggleTheme()">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="5"></circle>
@@ -1296,6 +1496,18 @@
         <div class="stat-label">Verified Assistants</div>
         <div class="stat-value" id="statAssistants">0</div>
       </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Jobs Done</div>
+        <div class="stat-value" id="statJobsDone">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Ratings</div>
+        <div class="stat-value" id="statRatingCount">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Avg Rating</div>
+        <div class="stat-value" id="statAvgRating">0.00</div>
+      </div>
     </div>
 
     <!-- Tabs -->
@@ -1308,6 +1520,27 @@
       <button class="tab" data-tab="bookings">📅 Bookings</button>
       <button class="tab" data-tab="feedback">⭐ Feedback</button>
       <button class="tab" data-tab="audit">📜 Audit Logs</button>
+      <span style="flex:1"></span>
+      <button id="adminEmergencyTestBtn" title="Emergency Chat" style="margin-left:16px; background:#ef4444; color:#fff; border:none; border-radius:50%; width:44px; height:44px; font-size:22px; font-weight:700; box-shadow:0 2px 8px rgba(0,0,0,0.12); cursor:pointer; display:flex; align-items:center; justify-content:center;">
+        🚨
+      </button>
+      <div id="emergencyChatPanel" style="display:none; position:absolute; right:0; top:56px; z-index:1002; width:340px; max-width:95vw; background:#fff; border-radius:18px; box-shadow:0 8px 32px rgba(0,0,0,0.22); overflow:hidden; border:2px solid #ef4444;">
+        <div style="background:#ef4444; color:#fff; padding:12px 16px; font-size:17px; font-weight:700; display:flex; align-items:center; justify-content:space-between;">
+          <span>🚨 Emergency Chat</span>
+          <button onclick="closeAdminChatPanel()" style="background:none; border:none; color:#fff; font-size:20px; cursor:pointer;">✕</button>
+        </div>
+        <div id="adminChatList" style="height:180px; overflow-y:auto; padding:10px 10px 0 10px; background:#f9fafb;"></div>
+        <div id="adminTypingIndicator" style="height:16px; color:#888; font-size:12px; padding-left:12px;"></div>
+        <div style="display:flex; border-top:1px solid #eee;">
+          <input id="adminChatInput" type="text" placeholder="Type a message..." style="flex:1; border:none; padding:10px; font-size:14px; outline:none; background:#fff;">
+          <button onclick="sendAdminChatMessage()" style="background:#10b981; color:#fff; border:none; padding:0 14px; font-size:15px; font-weight:600; cursor:pointer;">Send</button>
+        </div>
+      </div>
+      <script>
+      document.getElementById('adminEmergencyTestBtn').onclick = function() {
+        openAdminChatPanel('test-booking-demo');
+      };
+      </script>
     </div>
 
     <!-- Applications Tab -->
@@ -1353,12 +1586,12 @@
               <label class="form-label">Station</label>
               <select id="filterStation" class="form-select">
                 <option value="">All</option>
-                <option>Secunderabad</option>
-                <option>Kacheguda</option>
-                <option>Hyderabad Deccan</option>
-                <option>Kazipet</option>
-                <option>Vijayawada</option>
-                <option>Warangal</option>
+                <option value="SC">Secunderabad (SC)</option>
+                <option value="KCG">Kacheguda (KCG)</option>
+                <option value="HYB">Hyderabad Deccan (HYB)</option>
+                <option value="KZJ">Kazipet (KZJ)</option>
+                <option value="BZA">Vijayawada (BZA)</option>
+                <option value="WL">Warangal (WL)</option>
               </select>
             </div>
             <div class="form-group">
@@ -1378,6 +1611,7 @@
               <input type="text" id="filterPassenger" class="form-input" placeholder="Name...">
             </div>
             <button class="btn btn-secondary" onclick="loadBookings()">Refresh</button>
+            <button class="btn btn-danger" style="margin-left:8px" onclick="clearBookings()">🗑️ Clear Bookings</button>
           </div>
         </div>
         <div id="allBookings"></div>
@@ -1402,6 +1636,7 @@
           <h2 class="card-title">Customer Feedback</h2>
           <button class="btn btn-secondary" onclick="loadFeedback()">Refresh</button>
         </div>
+
         
         <!-- Feedback Stats -->
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
@@ -1483,6 +1718,18 @@
 
   <script src="auth.js"></script>
   <script>
+    // Always use authFetch for admin API requests
+    window.RailCareAuth = window.RailCareAuth || {};
+    // Force window.authFetch to always use local storage/session token
+    window.authFetch = function(url, opts) {
+      opts = opts || {};
+      opts.headers = opts.headers || {};
+      const token = localStorage.getItem('railcare_token') || sessionStorage.getItem('railcare_token');
+      if (token) opts.headers['Authorization'] = 'Bearer ' + token;
+      return fetch(url, opts);
+    };
+  </script>
+  <script>
     // ==================== THEME ====================
     function toggleTheme() {
       document.body.classList.toggle('dark');
@@ -1505,25 +1752,30 @@
 
     async function checkAuth() {
       const token = getToken();
+      console.log('[DEBUG][checkAuth] token:', token);
+      console.log('[DEBUG][checkAuth] localStorage.railcare_token:', localStorage.getItem('railcare_token'));
+      console.log('[DEBUG][checkAuth] sessionStorage.railcare_token:', sessionStorage.getItem('railcare_token'));
       if (!token) {
+        console.log('[DEBUG][checkAuth] No token found, showing sign in button');
         showSignInButton();
         return;
       }
-
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
         const expiry = payload.exp * 1000;
-        
+        console.log('[DEBUG][checkAuth] Token payload:', payload, 'Expiry:', expiry, 'Now:', Date.now());
         if (expiry < Date.now()) {
+          console.log('[DEBUG][checkAuth] Token expired, removing and showing sign in');
           localStorage.removeItem('railcare_token');
           showSignInButton();
           return;
         }
-
-        currentUser = { name: payload.name, phone: '', role: payload.role };
+        currentUser = { name: payload.name, phone: payload.phone || '', role: payload.role };
         userAvatar = localStorage.getItem('railcare_avatar');
+        console.log('[DEBUG][checkAuth] Valid token, showing user profile:', currentUser);
         showUserProfile(currentUser);
       } catch (e) {
+        console.log('[DEBUG][checkAuth] Error parsing token:', e);
         showSignInButton();
       }
     }
@@ -1550,7 +1802,7 @@
       if (dropdownUserName) dropdownUserName.textContent = name;
       
       const dropdownUserPhone = document.getElementById('dropdownUserPhone');
-      if (dropdownUserPhone) dropdownUserPhone.textContent = user.role === 'admin' ? 'Admin Account' : (user.phone || 'Phone not set');
+      if (dropdownUserPhone) dropdownUserPhone.textContent = user.phone ? user.phone : 'Phone not set';
       
       const dropdownAvatarInitials = document.getElementById('dropdownAvatarInitials');
       if (dropdownAvatarInitials) dropdownAvatarInitials.textContent = initials;
@@ -1665,12 +1917,14 @@
       setTimeout(() => { window.location.href = 'login-premium.html'; }, 1000);
     }
 
-    // Check auth on load - wrap in DOMContentLoaded for safety
+    // Robustly check auth and show profile after login
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', checkAuth);
     } else {
       checkAuth();
     }
+    // Also ensure profile is shown after login
+    document.addEventListener('DOMContentLoaded', checkAuth);
 
     // ==================== MODALS ====================
     function closeModal(id) {
@@ -1703,20 +1957,28 @@
     async function loadOverview() {
       try {
         const fetcher = window.RailCareAuth?.authFetch || fetch;
-        const res = await fetcher('/api/admin/overview');
+        // Always use authFetch to include Authorization header
+        const res = await window.RailCareAuth.authFetch('/api/admin/stats');
         const data = await res.json();
-        if (data.success) {
-          const o = data.overview;
-          document.getElementById('statTotal').textContent = o.total || 0;
-          document.getElementById('statPending').textContent = o.pending || 0;
-          document.getElementById('statInProgress').textContent = o.inProgress || 0;
-          document.getElementById('statCompleted').textContent = o.completed || 0;
-          
-          // Count verified assistants
-          const assistantRes = await fetcher('/api/assistants');
-          const assistants = await assistantRes.json();
-          const verified = assistants.filter(a => a.verified || a.applicationStatus === 'Approved').length;
-          document.getElementById('statAssistants').textContent = verified;
+        if (data.success && data.stats) {
+          const stats = data.stats;
+          // Bookings
+          document.getElementById('statTotal').textContent = stats.bookings?.total || 0;
+          document.getElementById('statPending').textContent = stats.bookings?.pending || 0;
+          document.getElementById('statInProgress').textContent = stats.bookings?.inProgress || 0;
+          document.getElementById('statCompleted').textContent = stats.bookings?.completed || 0;
+          // Assistants
+          document.getElementById('statAssistants').textContent = stats.assistants?.verified || 0;
+          // Jobs Done, Ratings, Avg Rating (if present in stats)
+          if (document.getElementById('statJobsDone')) {
+            document.getElementById('statJobsDone').textContent = stats.jobsDone || 0;
+          }
+          if (document.getElementById('statRatingCount')) {
+            document.getElementById('statRatingCount').textContent = stats.ratingCount || 0;
+          }
+          if (document.getElementById('statAvgRating')) {
+            document.getElementById('statAvgRating').textContent = stats.avgRating || '0.00';
+          }
         }
       } catch (e) {}
     }
@@ -1870,45 +2132,143 @@
         const res = await fetcher('/api/assistants');
         const list = await res.json();
         
-        const approved = list.filter(a => a.applicationStatus === 'Approved' || a.verified);
-        
-        if (approved.length === 0) {
-          container.innerHTML = '<div class="empty-state"><p>No verified assistants</p></div>';
-          return;
-        }
-
-        container.innerHTML = approved.map(a => {
-          const ratingText = a.rating ? `${a.rating.toFixed(1)} ★ (${a.ratingCount || 0})` : 'No ratings';
-          
-          return `
-            <div class="app-card">
-              <div class="app-header">
-                <div class="app-user">
-                  <div class="app-avatar">${a.photoFilePath ? `<img src="${a.photoFilePath}">` : '👷'}</div>
+        // Flexible station matching: case-insensitive, trimmed
+        const filterStation = (document.getElementById('filterStation')?.value || '').trim().toLowerCase();
+        const approved = list.filter(a => {
+          if ((a.applicationStatus !== 'Approved' && !a.verified) || a.revoked) return false;
+          if (!filterStation || filterStation === '') return true;
+          return (a.station || '').trim().toLowerCase() === filterStation;
+        });
+        const revoked = list.filter(a => a.revoked);
+        let html = '';
+        if (approved.length > 0) {
+          html += '<h3 style="margin-bottom:12px;">Verified Assistants</h3>';
+          html += approved.map(a => {
+            const ratingText = a.rating ? `${a.rating.toFixed(1)} ★ (${a.ratingCount || 0})` : 'No ratings';
+            return `
+              <div class="app-card">
+                <div class="app-header">
+                  <div class="app-user">
+                    <div class="app-avatar">${a.photoFilePath ? `<img src="${a.photoFilePath}">` : '👷'}</div>
+                    <div>
+                      <div class="app-name">${a.name}</div>
+                      <div class="app-station">${a.station} • ${a.languages?.join(', ') || '-'}</div>
+                    </div>
+                  </div>
+                  <span class="app-status status-approved">Verified</span>
+                </div>
+                <div class="app-details">
                   <div>
-                    <div class="app-name">${a.name}</div>
-                    <div class="app-station">${a.station} • ${a.languages?.join(', ') || '-'}</div>
+                    <div class="app-detail-label">Rating</div>
+                    <div class="app-detail-value">${ratingText}</div>
+                  </div>
+                  <div>
+                    <div class="app-detail-label">Documents</div>
+                    <div class="app-detail-value">${a.documentsVerified ? '✓ Verified' : 'Pending'}</div>
                   </div>
                 </div>
-                <span class="app-status status-approved">Verified</span>
-              </div>
-              <div class="app-details">
-                <div>
-                  <div class="app-detail-label">Rating</div>
-                  <div class="app-detail-value">${ratingText}</div>
-                </div>
-                <div>
-                  <div class="app-detail-label">Documents</div>
-                  <div class="app-detail-value">${a.documentsVerified ? '✓ Verified' : 'Pending'}</div>
+                <div class="app-actions">
+                  <button class="btn btn-secondary btn-sm" onclick="editAssistant('${a._id}')">Edit</button>
+                  <button class="btn btn-danger btn-sm" onclick="revokeAssistant('${a._id}')">Revoke</button>
+                  <button class="btn btn-danger btn-sm" onclick="removeAssistant('${a._id}')">Remove</button>
                 </div>
               </div>
-              <div class="app-actions">
-                <button class="btn btn-secondary btn-sm" onclick="editAssistant('${a._id}')">Edit</button>
-                <button class="btn btn-danger btn-sm" onclick="revokeAssistant('${a._id}')">Revoke</button>
+            `;
+          }).join('');
+        }
+        if (revoked.length > 0) {
+          html += '<h3 style="margin:24px 0 12px 0;color:#d00;">Revoked Assistants</h3>';
+          html += revoked.map(a => {
+            const ratingText = a.rating ? `${a.rating.toFixed(1)} ★ (${a.ratingCount || 0})` : 'No ratings';
+            const reverifyBadge = a.requestedReverify ? `<span style="background:#ffe5b4;color:#b45309;padding:2px 8px;border-radius:12px;font-size:12px;margin-left:8px;">Re-verify Requested</span>` : '';
+            return `
+              <div class="app-card" style="opacity:0.7;">
+                <div class="app-header">
+                  <div class="app-user">
+                    <div class="app-avatar">${a.photoFilePath ? `<img src=\"http://localhost:3000/api/assistants/${a._id}/photo\"` : '👷'}</div>
+                    <div>
+                      <div class="app-name">${a.name} ${reverifyBadge}</div>
+                      <div class="app-station">${a.station} • ${a.languages?.join(', ') || '-'}</div>
+                    </div>
+                  </div>
+                  <span class="app-status status-rejected">Revoked</span>
+                </div>
+                <div class="app-details">
+                  <div>
+                    <div class="app-detail-label">Rating</div>
+                    <div class="app-detail-value">${ratingText}</div>
+                  </div>
+                  <div>
+                    <div class="app-detail-label">Documents</div>
+                    <div class="app-detail-value">${a.documentsVerified ? '✓ Verified' : 'Pending'}</div>
+                  </div>
+                </div>
+                <div class="app-actions">
+                  <button class="btn btn-secondary btn-sm" onclick="editAssistant('${a._id}')">Edit</button>
+                  <button class="btn btn-success btn-sm" onclick="verifyAgainAssistant('${a._id}')">Get Verified Again</button>
+                  <button class="btn btn-danger btn-sm" onclick="removeAssistant('${a._id}')">Remove</button>
+                </div>
               </div>
-            </div>
-          `;
-        }).join('');
+            `;
+          }).join('');
+        }
+        if (!html) {
+          html = '<div class="empty-state"><p>No verified or revoked assistants</p></div>';
+        }
+        container.innerHTML = html;
+        // Admin: Get Verified Again for revoked assistant
+        window.verifyAgainAssistant = async function(id) {
+          if (!confirm('Re-verify this assistant and allow them to be assigned again?')) return;
+          try {
+            const fetcher = window.RailCareAuth?.authFetch || fetch;
+            const res = await fetcher(`/api/assistants/${id}/verify-again`, { method: 'POST' });
+            loadAssistants();
+            loadOverview && loadOverview();
+            if (res.ok) {
+              showToast && showToast('Assistant is now eligible for bookings again.');
+            } else {
+              alert('Failed to re-verify assistant.');
+            }
+          } catch (e) { alert(e.message); }
+        }
+    // Remove assistant function
+    window.removeAssistant = async function(id) {
+      if (!confirm('Are you sure you want to permanently remove this assistant? This cannot be undone.')) return;
+      try {
+        const token = localStorage.getItem('railcare_token');
+        const res = await fetch(`/api/admin/assistants/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        let data;
+        const contentType = res.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          data = await res.json();
+        } else {
+          const text = await res.text();
+          alert('Server error: ' + text.substring(0, 200));
+          return;
+        }
+        if (data.success) {
+          // If the removed assistant is the current user, log out and redirect
+          const currentUser = await window.RailCareAuth?.getCurrentUser?.();
+          if (currentUser && currentUser._id === id) {
+            window.RailCareAuth?.setToken('');
+            window.location.href = 'login-premium.html';
+            return;
+          }
+          loadAssistants();
+          loadOverview && loadOverview();
+        } else {
+          alert('Failed to remove assistant: ' + (data.message || 'Unknown error'));
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
 
       } catch (err) {
         container.innerHTML = `<div class="empty-state"><p style="color: var(--ruby);">Error: ${err.message}</p></div>`;
@@ -1989,24 +2349,15 @@
     }
 
     async function loadBookings() {
+
       const container = document.getElementById('allBookings');
       container.innerHTML = '<div class="loading"></div>';
-      
       try {
         const fetcher = window.RailCareAuth?.authFetch || fetch;
-        const station = document.getElementById('filterStation')?.value || '';
-        const status = document.getElementById('filterStatus')?.value || '';
-        const passenger = document.getElementById('filterPassenger')?.value || '';
-        
-        const qs = [];
-        if (station) qs.push('station=' + encodeURIComponent(station));
-        if (status) qs.push('status=' + encodeURIComponent(status));
-        if (passenger) qs.push('passengerName=' + encodeURIComponent(passenger));
-        
-        const url = '/api/bookings' + (qs.length ? '?' + qs.join('&') : '');
-        const res = await fetcher(url);
-        const list = await res.json();
-        
+        // Admin endpoint does not support filters yet
+        const res = await fetcher('/api/admin/bookings');
+        const data = await res.json();
+        const list = data.bookings || [];
         const seen = new Map();
         (Array.isArray(list) ? list : []).forEach(b => {
           if (b && b._id && !seen.has(b._id)) seen.set(b._id, b);
@@ -2149,8 +2500,11 @@
               ` : ''}
               
               <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                <button class="btn btn-secondary btn-sm" onclick="showEditBooking('${b._id}')">Edit</button>
-                ${b.status !== 'Completed' && b.status !== 'Cancelled' ? `
+                ${(b.status !== 'Completed' && b.status !== 'Cancelled' && b.status !== 'Rejected') ? `<button class="btn btn-secondary btn-sm" onclick="showEditBooking('${b._id}')">Edit</button>` : ''}
+                <button class="btn btn-info btn-sm" style="background:#3b82f6;color:#fff; position:relative;" onclick="openAdminChatPanel('${b._id}', '${b.passengerName || ''}')">💬 Chat
+                  <span id="chatBadge-${b._id}" style="display:none; position:absolute; top:-8px; right:-8px; background:#ef4444; color:#fff; border-radius:50%; font-size:12px; font-weight:700; padding:2px 7px; z-index:10;">0</span>
+                </button>
+                ${(b.status !== 'Completed' && b.status !== 'Cancelled' && b.status !== 'Rejected') ? `
                   ${b.serviceType !== 'round_trip' && !b.assistantId && (b.status === 'Pending' || b.status === 'Searching') ? `<button class="btn btn-success btn-sm" onclick="showAssignUI('${b._id}')">Assign</button>` : ''}
                   <button class="btn btn-danger btn-sm" onclick="cancelBooking('${b._id}')">Cancel</button>
                 ` : ''}
@@ -2453,14 +2807,16 @@
     async function loadFeedback() {
       const container = document.getElementById('feedbackList');
       container.innerHTML = '<div class="loading"></div>';
-      
       try {
-        const fetcher = window.RailCareAuth?.authFetch || fetch;
+        // Always use authFetch to ensure Authorization header is sent
+        const fetcher = window.authFetch || (window.RailCareAuth && window.RailCareAuth.authFetch) || fetch;
         const res = await fetcher('/api/feedback');
         const feedbacks = await res.json();
-        
+
+
+
         if (!Array.isArray(feedbacks) || feedbacks.length === 0) {
-          container.innerHTML = '<div class="empty-state"><p>No feedback received yet</p></div>';
+          container.innerHTML += '<div class="empty-state"><p>No feedback received yet</p></div>';
           document.getElementById('feedbackAvgAssistant').textContent = '0.0';
           document.getElementById('feedbackAvgApp').textContent = '0.0';
           document.getElementById('feedbackTotal').textContent = '0';
@@ -2480,13 +2836,12 @@
         document.getElementById('feedbackTotal').textContent = totalFeedbacks;
         document.getElementById('feedbackRecommend').textContent = recommendPercent + '%';
 
-        container.innerHTML = feedbacks.map(fb => {
+        container.innerHTML += feedbacks.map(fb => {
           const assistantStars = '★'.repeat(fb.assistantRating || fb.rating || 0) + '☆'.repeat(5 - (fb.assistantRating || fb.rating || 0));
           const appStars = '★'.repeat(fb.appRating || fb.rating || 0) + '☆'.repeat(5 - (fb.appRating || fb.rating || 0));
           const date = new Date(fb.createdAt).toLocaleDateString('en-IN', { 
             day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
           });
-          
           // Pre-compute the recommend badge HTML to avoid CSS linter issues with template literals in style attributes
           let recommendBadge = '';
           if (fb.wouldRecommend !== undefined) {
@@ -2495,7 +2850,15 @@
             const recommendText = fb.wouldRecommend ? '👍 Would Recommend' : '👎 Not Recommended';
             recommendBadge = '<span style="padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background: ' + recommendBg + '; color: ' + recommendColor + ';">' + recommendText + '</span>';
           }
-          
+          // Assistant behavior badge
+          let behaviorBadge = '';
+          if (fb.assistantBehavior) {
+            let color = '#3b82f6';
+            if (fb.assistantBehavior === 'Rude') color = '#ef4444';
+            else if (fb.assistantBehavior === 'Perfect') color = '#10b981';
+            else if (fb.assistantBehavior === 'Helpful') color = '#f59e0b';
+            behaviorBadge = `<span style="padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background: rgba(59,130,246,0.15); color: ${color}; margin-right: 8px;">${fb.assistantBehavior}</span>`;
+          }
           return `
             <div style="background: var(--bg-secondary); border-radius: 16px; padding: 20px; border: 1px solid var(--border-color);">
               <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
@@ -2511,20 +2874,20 @@
                   ${recommendBadge}
                 </div>
               </div>
-              
               <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px;">
                 <div>
                   <div style="font-size: 12px; color: var(--text-tertiary); margin-bottom: 4px;">Assistant: ${fb.assistantName || 'Unknown'}</div>
                   <div style="font-size: 20px; color: #f59e0b;">${assistantStars}</div>
+                  ${behaviorBadge}
                 </div>
                 <div>
                   <div style="font-size: 12px; color: var(--text-tertiary); margin-bottom: 4px;">App Rating</div>
                   <div style="font-size: 20px; color: #3b82f6;">${appStars}</div>
                 </div>
               </div>
-              
               ${fb.assistantFeedback || fb.appFeedback || fb.comments ? `
                 <div style="background: var(--bg-primary); border-radius: 10px; padding: 14px; margin-top: 12px;">
+                  <div style="font-size: 13px; color: var(--text-tertiary); margin-bottom: 6px; font-weight: 600;">Feedback given by passenger:</div>
                   ${fb.assistantFeedback ? `
                     <div style="margin-bottom: 10px;">
                       <span style="font-size: 12px; color: var(--text-tertiary); display: block; margin-bottom: 4px;">About Assistant:</span>
@@ -2545,7 +2908,6 @@
             </div>
           `;
         }).join('');
-
       } catch (err) {
         container.innerHTML = `<div class="empty-state"><p style="color: var(--ruby);">Error: ${err.message}</p></div>`;
       }
@@ -2610,7 +2972,7 @@
 
     async function exportFeedbackCsv() {
       try {
-        const fetcher = window.RailCareAuth?.authFetch || fetch;
+        const fetcher = window.authFetch || (window.RailCareAuth && window.RailCareAuth.authFetch) || fetch;
         const res = await fetcher('/api/feedback');
         const list = await res.json();
         if (!list?.length) return alert('No feedback');
@@ -2638,8 +3000,9 @@
     async function clearDemoData() {
       if (!confirm('Clear all demo data?')) return;
       try {
-        const fetcher = window.RailCareAuth?.authFetch || fetch;
-        await fetcher('/api/admin/clear', { method: 'POST' });
+        // Always use authFetch to ensure Authorization header is sent
+        const fetcher = window.RailCareAuth?.authFetch || authFetch || fetch;
+        await fetcher('/api/admin/clear-demo', { method: 'PATCH' });
         loadBookings();
         loadAssistants();
         loadOverview();
@@ -2650,6 +3013,18 @@
     }
 
     // ==================== FILTERS ====================
+
+    async function clearBookings() {
+      if (!confirm('Clear all bookings? This cannot be undone.')) return;
+      try {
+        const fetcher = window.RailCareAuth?.authFetch || fetch;
+        await fetcher('/api/admin/clear-bookings', { method: 'POST' });
+        loadBookings();
+        loadOverview && loadOverview();
+      } catch (err) {
+        alert(err.message || 'Failed to clear bookings');
+      }
+    }
     document.getElementById('filterStation')?.addEventListener('change', loadBookings);
     document.getElementById('filterStatus')?.addEventListener('change', loadBookings);
     document.getElementById('filterPassenger')?.addEventListener('keyup', () => {

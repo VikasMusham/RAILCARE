@@ -9,13 +9,14 @@ const AuditLog = require('../models/AuditLog');
 // Admin overview: counts and bookings by station
 router.get('/overview', authenticate, authorize('admin'), async (req, res) => {
   try {
+    // Dashboard stats: group statuses for real workflow
     const total = await Booking.countDocuments();
     const pending = await Booking.countDocuments({ status: 'Pending' });
-    const accepted = await Booking.countDocuments({ status: 'Accepted' });
-    const inProgress = await Booking.countDocuments({ status: 'In Progress' });
+    // In progress = Accepted, Start Pending, In Progress, Completion Pending
+    const inProgress = await Booking.countDocuments({ status: { $in: ['Accepted', 'Start Pending', 'In Progress', 'Completion Pending'] } });
     const completed = await Booking.countDocuments({ status: 'Completed' });
-    const rejected = await Booking.countDocuments({ status: 'Rejected' });
 
+    // Optionally, add rejected/cancelled if needed
     const byStation = await Booking.aggregate([
       { $group: { _id: '$station', count: { $sum: 1 } } },
       { $sort: { count: -1 } }
@@ -26,18 +27,42 @@ router.get('/overview', authenticate, authorize('admin'), async (req, res) => {
       { $sort: { total: -1 } }
     ]);
 
-    res.json({ success: true, overview: { total, pending, accepted, inProgress, completed, rejected, byStation, assistantStats } });
+    // New: Sum up all assistants' completed jobs and ratings
+    const assistants = await Assistant.find({}, 'totalBookingsCompleted ratingCount rating');
+    const totalJobsDone = assistants.reduce((sum, a) => sum + (a.totalBookingsCompleted || 0), 0);
+    const totalRatingCount = assistants.reduce((sum, a) => sum + (a.ratingCount || 0), 0);
+    const avgRating = assistants.length > 0 ? (assistants.reduce((sum, a) => sum + (a.rating || 0), 0) / assistants.length).toFixed(2) : '0.00';
+
+    res.json({
+      success: true,
+      overview: {
+        total,
+        pending,
+        inProgress,
+        completed,
+        byStation,
+        assistantStats,
+        totalJobsDone,
+        totalRatingCount,
+        avgRating
+      }
+    });
   } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
 
-// Clear demo data: bookings, assistants, non-admin users
-router.post('/clear', authenticate, authorize('admin'), async (req, res) => {
+// Clear only bookings
+router.post('/clear-bookings', authenticate, authorize('admin'), async (req, res) => {
   try {
     await Booking.deleteMany({});
+    res.json({ success: true, message: 'All bookings cleared' });
+  } catch (err) { res.status(500).json({ success: false, error: err.message }); }
+});
+
+// Clear only assistants (but not users)
+router.post('/clear-assistants', authenticate, authorize('admin'), async (req, res) => {
+  try {
     await Assistant.deleteMany({});
-    // keep admin users, remove others
-    await User.deleteMany({ role: { $ne: 'admin' } });
-    res.json({ success: true, message: 'Demo data cleared' });
+    res.json({ success: true, message: 'All assistants cleared' });
   } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
 

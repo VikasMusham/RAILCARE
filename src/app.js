@@ -1,0 +1,27 @@
+const express = require('express');
+const path = require('path');
+const app = express();
+const bookingRoutes = require('./routes/bookingRoutes');
+const assistantRoutes = require('./routes/assistantRoutes');
+const pricingRoutes = require('./routes/pricingRoutes');
+const incidentRoutes = require('./routes/incidentRoutes');
+const auditLogRoutes = require('./routes/auditLogRoutes');
+const authRoutes = require('./routes/authRoutes');
+const helmet = require('./middleware/helmetMiddleware');
+const rateLimit = require('./middleware/rateLimitMiddleware');
+const mongoSanitize = require('./middleware/mongoSanitizeMiddleware');
+const errorHandler = require('./middleware/errorHandler');
+app.use(express.json());
+app.use(helmet);
+app.use(rateLimit);
+app.use(mongoSanitize);
+// Serve static frontend files
+app.use(express.static(path.join(__dirname, '../frontend')));
+app.use('/api/auth', authRoutes);
+app.use('/admin/bookings', bookingRoutes);
+app.use('/admin/assistants', assistantRoutes);
+app.use('/admin/pricing', pricingRoutes);
+app.use('/admin/incidents', incidentRoutes);
+app.use('/admin/audit-logs', auditLogRoutes);
+app.use(errorHandler);
+module.exports = app;

@@ -12,6 +12,10 @@ const { uploadAllDocuments } = require('../middleware/upload');
 const path = require('path');
 const fs = require('fs');
 
+// Add assistant task actions (accept/decline endpoints)
+const assistantTaskActions = require('./assistantTaskActions');
+router.use(assistantTaskActions);
+
 // ============================================
 // REGISTRATION WITH FILE UPLOADS (Multer)
 // ============================================
@@ -53,7 +57,6 @@ router.post('/register-with-docs', uploadAllDocuments, async (req, res) => {
         });
       }
     }
-
     const existingByNameStation = await Assistant.findOne({ name, station });
     if (existingByNameStation) {
       return res.status(400).json({
@@ -64,11 +67,11 @@ router.post('/register-with-docs', uploadAllDocuments, async (req, res) => {
 
     // Get file paths from uploaded files
     const files = req.files || {};
+
+    // Save assistant with normalized station_code and document file paths
     const aadharFile = files.aadhar?.[0];
     const panFile = files.pan?.[0];
     const photoFile = files.photo?.[0];
-
-    // Create assistant record
     const assistant = new Assistant({
       name: name.trim(),
       phone: phone?.trim() || null,
@@ -77,8 +80,10 @@ router.post('/register-with-docs', uploadAllDocuments, async (req, res) => {
       aadharFilePath: aadharFile ? `/uploads/aadhar/${aadharFile.filename}` : null,
       panFilePath: panFile ? `/uploads/pan/${panFile.filename}` : null,
       photoFilePath: photoFile ? `/uploads/photos/${photoFile.filename}` : null,
+      status: 'active',
       verified: false,
-      documentsVerified: false
+      documentsVerified: false,
+      isEligibleForBookings: false
     });
 
     // Try to link to logged-in user if token present
@@ -406,13 +411,20 @@ router.get('/:id/bookings', async (req, res) => {
   try {
     const assistant = await Assistant.findById(req.params.id);
     if (!assistant) return res.status(404).json({ success: false });
-    
-    const bookings = await Booking.find({
-      $or: [
-        { station: assistant.station, status: 'Pending' },
-        { assistantId: assistant._id }
-      ]
-    }).sort({ createdAt: -1 });
+    // Find all ServiceTasks assigned to this assistant
+    // Only show tasks that are actionable (pending or assigned)
+    const tasks = await require('../models/ServiceTask').find({
+      assignedAssistant: assistant._id,
+      status: { $in: ['pending', 'assigned'] }
+    }).populate('bookingId');
+    // Collect unique bookings
+    const bookingsMap = {};
+    for (const task of tasks) {
+      if (task.bookingId && !bookingsMap[task.bookingId._id]) {
+        bookingsMap[task.bookingId._id] = task.bookingId;
+      }
+    }
+    const bookings = Object.values(bookingsMap).sort((a, b) => b.createdAt - a.createdAt);
     res.json(bookings);
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -743,6 +755,7 @@ router.post('/apply', authenticate, authorize('assistant'), uploadAllDocuments, 
   }
 });
 
+
 /**
  * POST /api/assistants/:id/approve-application
  * Admin: Approve an application
@@ -759,8 +772,9 @@ router.post('/:id/approve-application', authenticate, authorize('admin'), async 
     assistant.editableApplication = false;
     assistant.verified = true;
     assistant.documentsVerified = true;
+    assistant.isEligibleForBookings = true;
+    // No stationCode logic needed; only use station
     assistant.rejectionReason = '';
-
     await assistant.save();
 
     console.log('[Admin] Approved application:', assistant._id);

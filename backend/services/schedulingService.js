@@ -141,22 +141,14 @@ function calculateAssistantArrivalTime(trainArrivalDate, bufferMinutes = DEFAULT
  */
 function detectStationType(stationCode, stationName = '') {
   const code = stationCode.toUpperCase();
-  const name = stationName.toUpperCase();
-  
-  // Major junctions (high traffic, multiple platforms)
-  const majorJunctions = ['NDLS', 'BCT', 'CSTM', 'HWH', 'MAS', 'SBC', 'BZA', 'SC', 'NGP', 'BPL', 'LKO', 'CNB', 'PNBE', 'GHY'];
-  if (majorJunctions.includes(code)) return 'junction';
-  
-  // Check for junction in name
+  const name = (stationCode || stationName || '').toUpperCase();
   if (name.includes('JN') || name.includes('JUNCTION')) return 'junction';
-  
-  // Terminal stations
   if (name.includes('TERMINAL') || name.includes('TERMINUS')) return 'terminal';
-  
-  // Halt stations (small stops, usually 1-2 min halt)
   if (name.includes('HALT') || name.includes('H.')) return 'halt';
-  
   return 'regular';
+    if (name.includes('TERMINAL') || name.includes('TERMINUS')) return 'terminal';
+    if (name.includes('HALT') || name.includes('H.')) return 'halt';
+    return 'regular';
 }
 
 /**
@@ -166,10 +158,10 @@ function detectStationType(stationCode, stationName = '') {
  * @returns {Object} Stop data with position info
  */
 async function getStopMetadata(trainNumber, stationCode) {
-  // Get the specific stop
+  // Get the specific stop by station code
   const stop = await TrainStop.findOne({ 
     trainNumber, 
-    stationCode 
+    stationCode: stationCode 
   }).lean();
   
   if (!stop) {
@@ -181,12 +173,12 @@ async function getStopMetadata(trainNumber, stationCode) {
   
   // Get first and last stop sequences
   const [firstStop, lastStop] = await Promise.all([
-    TrainStop.findOne({ trainNumber }).sort({ stopSequence: 1 }).select('stopSequence stationCode').lean(),
-    TrainStop.findOne({ trainNumber }).sort({ stopSequence: -1 }).select('stopSequence stationCode').lean()
+    TrainStop.findOne({ trainNumber }).sort({ stopSequence: 1 }).select('stopSequence stationName').lean(),
+    TrainStop.findOne({ trainNumber }).sort({ stopSequence: -1 }).select('stopSequence stationName').lean()
   ]);
   
   // Detect station type
-  const stationType = detectStationType(stop.stationCode, stop.stationName);
+  const stationType = detectStationType(stop.stationName);
   
   return {
     found: true,
@@ -313,43 +305,36 @@ async function createServiceTasks(booking, options = {}) {
   
   if (booking.serviceType === 'pickup') {
     // Single pickup task
-    const stationCode = booking.pickupStationCode || booking.stationCode;
-    const validation = await validateServiceType(booking.trainNumber, stationCode, 'pickup');
-    
+    const station = booking.pickupStation || booking.station;
+    const validation = await validateServiceType(booking.trainNumber, station, 'pickup');
     if (!validation.valid) {
       return { success: false, tasks: [], errors: validation.errors };
     }
-    
     taskConfigs.push({
       taskType: 'pickup',
-      stationCode,
+      station,
       validation,
       taskSequence: 1
     });
-    
   } else if (booking.serviceType === 'drop') {
     // Single drop task
-    const stationCode = booking.dropStationCode || booking.stationCode;
-    const validation = await validateServiceType(booking.trainNumber, stationCode, 'drop');
-    
+    const station = booking.dropStation || booking.station;
+    const validation = await validateServiceType(booking.trainNumber, station, 'drop');
     if (!validation.valid) {
       return { success: false, tasks: [], errors: validation.errors };
     }
-    
     taskConfigs.push({
       taskType: 'drop',
-      stationCode,
+      station,
       validation,
       taskSequence: 1
     });
-    
   } else if (booking.serviceType === 'round_trip') {
     // Two tasks at different stations
-    
     // Validate pickup station
     const pickupValidation = await validateServiceType(
       booking.trainNumber, 
-      booking.pickupStationCode, 
+      booking.pickupStation, 
       'pickup'
     );
     if (!pickupValidation.valid) {
@@ -357,16 +342,15 @@ async function createServiceTasks(booking, options = {}) {
     } else {
       taskConfigs.push({
         taskType: 'pickup',
-        stationCode: booking.pickupStationCode,
+        station: booking.pickupStation,
         validation: pickupValidation,
         taskSequence: 1
       });
     }
-    
     // Validate drop station
     const dropValidation = await validateServiceType(
       booking.trainNumber, 
-      booking.dropStationCode, 
+      booking.dropStation, 
       'drop'
     );
     if (!dropValidation.valid) {
@@ -374,12 +358,11 @@ async function createServiceTasks(booking, options = {}) {
     } else {
       taskConfigs.push({
         taskType: 'drop',
-        stationCode: booking.dropStationCode,
+        station: booking.dropStation,
         validation: dropValidation,
         taskSequence: 2
       });
     }
-    
     // If any validation failed for round trip, return errors
     if (errors.length > 0) {
       return { success: false, tasks: [], errors };
@@ -391,19 +374,16 @@ async function createServiceTasks(booking, options = {}) {
     try {
       const { stop, stationType } = config.validation.metadata;
       const trainArrivalDate = parseTimeToDate(stop.arrivalTime, baseDate);
-      
       // INTELLIGENT BUFFER: Calculate based on station type, peak hours, and conditions
       const intelligentBuffer = forceBuffer || calculateIntelligentBuffer(
         stationType || 'regular',
         trainArrivalDate
       );
-      
       const assistantArrival = calculateAssistantArrivalTime(trainArrivalDate, intelligentBuffer);
-      
       const task = new ServiceTask({
         bookingId: booking._id,
         taskType: config.taskType,
-        stationCode: config.stationCode,
+        station: config.station,
         trainNumber: booking.trainNumber,
         // Both boarding (pickup) and deboarding (drop) happen AFTER train arrives
         // Assistant arrives BEFORE train (assistantArrivalTime), service happens AFTER
@@ -419,7 +399,6 @@ async function createServiceTasks(booking, options = {}) {
         bufferReason: `${stationType || 'regular'} station, ${isPeakHour(trainArrivalDate) ? 'peak' : 'off-peak'} hours`,
         status: 'pending'
       });
-      
       await task.save();
       tasks.push(task);
     } catch (err) {
@@ -513,12 +492,12 @@ async function cancelBookingTasks(bookingId) {
  * @param {number} limit - Max tasks to return
  * @returns {Array} Tasks
  */
-async function getUpcomingTasks(stationCode, hoursAhead = 4, limit = 20) {
+async function getUpcomingTasks(station, hoursAhead = 4, limit = 20) {
   const now = new Date();
   const futureLimit = new Date(now.getTime() + hoursAhead * 60 * 60 * 1000);
-  
+  // Case-insensitive station name match
   return ServiceTask.find({
-    stationCode,
+    station: { $regex: new RegExp('^' + station.trim() + '$', 'i') },
     status: { $in: ['pending', 'assigned'] },
     scheduledTime: { $gte: now, $lte: futureLimit }
   })
