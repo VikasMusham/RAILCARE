@@ -26,12 +26,16 @@ router.get('/stats', async (req, res) => {
     tomorrow.setDate(tomorrow.getDate() + 1);
 
     // Run all aggregations in parallel for performance
+    const Feedback = require('../models/Feedback');
     const [
       bookingStats,
       assistantStats,
       revenueStats,
       applicationStats,
-      weeklyTrend
+      weeklyTrend,
+      totalJobsDone,
+      totalRatings,
+      avgRating
     ] = await Promise.all([
       // Booking statistics
       Booking.aggregate([
@@ -56,7 +60,7 @@ router.get('/stats', async (req, res) => {
           }
         }
       ]),
-      
+
       // Assistant statistics
       Assistant.aggregate([
         {
@@ -77,7 +81,7 @@ router.get('/stats', async (req, res) => {
           }
         }
       ]),
-      
+
       // Revenue statistics
       Booking.aggregate([
         { $match: { status: 'Completed', paymentStatus: 'Paid' } },
@@ -93,7 +97,7 @@ router.get('/stats', async (req, res) => {
           }
         }
       ]),
-      
+
       // Application statistics
       Assistant.aggregate([
         {
@@ -113,7 +117,7 @@ router.get('/stats', async (req, res) => {
           }
         }
       ]),
-      
+
       // Weekly booking trend
       Booking.aggregate([
         {
@@ -128,6 +132,18 @@ router.get('/stats', async (req, res) => {
           }
         },
         { $sort: { _id: 1 } }
+      ]),
+
+      // Total jobs done (completed bookings)
+      Booking.countDocuments({ status: 'Completed' }),
+
+      // Total ratings (feedback count)
+      Feedback.countDocuments({ assistantRating: { $exists: true } }),
+
+      // Average rating (assistantRating)
+      Feedback.aggregate([
+        { $match: { assistantRating: { $exists: true } } },
+        { $group: { _id: null, avg: { $avg: '$assistantRating' } } }
       ])
     ]);
 
@@ -158,7 +174,11 @@ router.get('/stats', async (req, res) => {
         onHold: applicationStats[0].onHold[0]?.count || 0,
         rejected: applicationStats[0].rejected[0]?.count || 0
       },
-      weeklyTrend
+      weeklyTrend,
+      // New stats for dashboard
+      totalJobsDone: totalJobsDone || 0,
+      totalRatings: totalRatings || 0,
+      avgRating: (Array.isArray(avgRating) && avgRating.length > 0) ? Number(avgRating[0].avg.toFixed(2)) : 0
     };
 
     res.json({ success: true, stats });

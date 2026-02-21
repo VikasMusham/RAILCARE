@@ -1,6 +1,41 @@
-
 const express = require('express');
 const router = express.Router();
+
+// Edit user (admin)
+router.put('/users/:id', async (req, res) => {
+  try {
+    const { name, phone, role } = req.body;
+    const user = await require('../models/User').findById(req.params.id);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    if (name) user.name = name;
+    if (phone) user.phone = phone;
+    if (role) user.role = role;
+    await user.save();
+    res.json({ success: true, user });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error', error: err.message });
+  }
+});
+
+// Remove user (admin)
+router.delete('/users/:id', async (req, res) => {
+  try {
+    const user = await require('../models/User').findByIdAndDelete(req.params.id);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error', error: err.message });
+  }
+});
+// User stats controller
+const userController = require('../controllers/userController');
+
+/**
+ * GET /api/admin/user-stats
+ * Get user counts and details grouped by role
+ */
+router.get('/user-stats', userController.getUserStats);
+
 const Assistant = require('../models/Assistant');
 // const Booking = require('../models/Booking');
 const AuditLog = require('../models/AuditLog');
@@ -223,7 +258,8 @@ router.get('/stats', async (req, res) => {
       pendingBookings,
       inProgressBookings,
       completedBookings,
-      pendingApplications
+      pendingApplications,
+      feedbacks
     ] = await Promise.all([
       Assistant.countDocuments(),
       Assistant.countDocuments({ verified: true }),
@@ -232,8 +268,13 @@ router.get('/stats', async (req, res) => {
       Booking.countDocuments({ status: 'Pending' }),
       Booking.countDocuments({ status: { $in: ['Accepted', 'Start Pending', 'In Progress', 'Completion Pending'] } }),
       Booking.countDocuments({ status: 'Completed' }),
-      Assistant.countDocuments({ applicationStatus: 'Pending' })
+      Assistant.countDocuments({ applicationStatus: 'Pending' }),
+      require('../models/Feedback').find({})
     ]);
+
+    // Calculate rating stats
+    const ratingCount = feedbacks.length;
+    const avgRating = ratingCount > 0 ? (feedbacks.reduce((sum, f) => sum + (f.assistantRating || f.rating || 0), 0) / ratingCount).toFixed(2) : '0.00';
 
     res.json({
       success: true,
@@ -251,7 +292,10 @@ router.get('/stats', async (req, res) => {
         },
         applications: {
           pending: pendingApplications
-        }
+        },
+        jobsDone: completedBookings,
+        ratingCount,
+        avgRating
       }
     });
   } catch (err) {
@@ -440,7 +484,12 @@ module.exports = router;
  */
 router.get('/bookings', async (req, res) => {
   try {
-    const bookings = await Booking.find({})
+    const { status, station, passengerName } = req.query;
+    const q = {};
+    if (status) q.status = status;
+    if (station) q.station = station;
+    if (passengerName) q.passengerName = { $regex: passengerName, $options: 'i' };
+    const bookings = await Booking.find(q)
       .sort({ createdAt: -1 })
       .populate('assistantId');
     res.json({

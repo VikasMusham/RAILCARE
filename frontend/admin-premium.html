@@ -1,4 +1,3 @@
-<!-- Floating Emergency Test Button (for admin demo/testing) -->
   <!-- Only one button, after chat panel in DOM -->
   <script src="socketio-loader.js"></script>
 <!DOCTYPE html>
@@ -1520,10 +1519,9 @@
       <button class="tab" data-tab="bookings">📅 Bookings</button>
       <button class="tab" data-tab="feedback">⭐ Feedback</button>
       <button class="tab" data-tab="audit">📜 Audit Logs</button>
+        <button class="tab" data-tab="user-roles">👥 User Roles & Details</button>
       <span style="flex:1"></span>
-      <button id="adminEmergencyTestBtn" title="Emergency Chat" style="margin-left:16px; background:#ef4444; color:#fff; border:none; border-radius:50%; width:44px; height:44px; font-size:22px; font-weight:700; box-shadow:0 2px 8px rgba(0,0,0,0.12); cursor:pointer; display:flex; align-items:center; justify-content:center;">
-        🚨
-      </button>
+      <!-- Emergency Test Button removed -->
       <div id="emergencyChatPanel" style="display:none; position:absolute; right:0; top:56px; z-index:1002; width:340px; max-width:95vw; background:#fff; border-radius:18px; box-shadow:0 8px 32px rgba(0,0,0,0.22); overflow:hidden; border:2px solid #ef4444;">
         <div style="background:#ef4444; color:#fff; padding:12px 16px; font-size:17px; font-weight:700; display:flex; align-items:center; justify-content:space-between;">
           <span>🚨 Emergency Chat</span>
@@ -1536,11 +1534,7 @@
           <button onclick="sendAdminChatMessage()" style="background:#10b981; color:#fff; border:none; padding:0 14px; font-size:15px; font-weight:600; cursor:pointer;">Send</button>
         </div>
       </div>
-      <script>
-      document.getElementById('adminEmergencyTestBtn').onclick = function() {
-        openAdminChatPanel('test-booking-demo');
-      };
-      </script>
+      <!-- Emergency Test Button script removed -->
     </div>
 
     <!-- Applications Tab -->
@@ -1598,12 +1592,17 @@
               <label class="form-label">Status</label>
               <select id="filterStatus" class="form-select">
                 <option value="">All</option>
-                <option>Pending</option>
-                <option>Searching</option>
-                <option>Accepted</option>
-                <option>In Progress</option>
-                <option>Completed</option>
-                <option>Rejected</option>
+                <option value="Pending">Pending</option>
+                <option value="Searching">Searching</option>
+                <option value="Assigned">Assigned</option>
+                <option value="Accepted">Accepted</option>
+                <option value="Start Pending">Start Pending</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Completion Pending">Completion Pending</option>
+                <option value="Completed">Completed</option>
+                <option value="Rejected">Rejected</option>
+                <option value="Cancelled">Cancelled</option>
+                <option value="Emergency">Emergency</option>
               </select>
             </div>
             <div class="form-group">
@@ -1659,6 +1658,19 @@
         </div>
         
         <div id="feedbackList" style="display: grid; gap: 16px;"></div>
+      </div>
+    </div>
+
+    <!-- User Roles & Details Tab -->
+    <div class="tab-content" id="tab-user-roles">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">User Roles & Details</h2>
+          <button class="btn btn-secondary" onclick="loadUserStats()">Refresh</button>
+        </div>
+        <div id="userRolesDetailsContainer">
+          <div class="loading"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -1944,12 +1956,161 @@
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         tab.classList.add('active');
         document.getElementById('tab-' + tab.dataset.tab)?.classList.add('active');
-        
+
         if (tab.dataset.tab === 'applications') loadApplications();
         else if (tab.dataset.tab === 'assistants') loadAssistants();
         else if (tab.dataset.tab === 'bookings') loadBookings();
         else if (tab.dataset.tab === 'feedback') loadFeedback();
         else if (tab.dataset.tab === 'audit') loadAuditLogs();
+        else if (tab.dataset.tab === 'user-roles') {
+          // Show user roles and details
+          const container = document.getElementById('userRolesDetailsContainer');
+          container.innerHTML = '<div class="loading"></div>';
+          loadUserStats(container);
+            // ==================== USER STATS ====================
+            async function loadUserStats(container) {
+              if (!container) {
+                container = document.getElementById('userRolesDetailsContainer');
+              }
+              container.innerHTML = '<div class="loading"></div>';
+              try {
+                const fetcher = window.RailCareAuth?.authFetch || fetch;
+                const res = await fetcher('/api/admin/user-stats');
+                const data = await res.json();
+                if (!data.success || !Array.isArray(data.summary)) {
+                  container.innerHTML = '<div class="empty-state"><p>Error loading user stats</p></div>';
+                  return;
+                }
+                // Flatten users from all roles
+                const users = data.summary.flatMap(group => group.users.map(u => ({...u, role: group.role})));
+                if (users.length === 0) {
+                  container.innerHTML = '<div class="empty-state"><p>No users found</p></div>';
+                  return;
+                }
+                let html = `<div style="overflow-x:auto;"><table class="table" style="width:100%;border-collapse:collapse;">
+                  <thead>
+                    <tr style="background:var(--bg-secondary);">
+                      <th style="padding:8px 12px;">Name</th>
+                      <th style="padding:8px 12px;">Phone</th>
+                      <th style="padding:8px 12px;">Role</th>
+                      <th style="padding:8px 12px;">Created</th>
+                      <th style="padding:8px 12px;">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>`;
+                html += users.map(u => {
+                  const created = u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'}) : '-';
+                  return `<tr>
+                    <td style="padding:8px 12px;">${u.name || '-'}</td>
+                    <td style="padding:8px 12px;">${u.phone || '-'}</td>
+                    <td style="padding:8px 12px;">${u.role || '-'}</td>
+                    <td style="padding:8px 12px;">${created}</td>
+                    <td style="padding:8px 12px;">
+                      <button class="btn btn-secondary btn-sm" onclick="showEditUserModal('${u._id}','${u.name || ''}','${u.phone || ''}','${u.role || ''}')">Edit</button>
+                      <button class="btn btn-danger btn-sm" onclick="removeUser('${u._id}','${u.name || ''}')">Remove</button>
+                    </td>
+                  </tr>`;
+                }).join('');
+                html += '</tbody></table></div>';
+                container.innerHTML = html;
+
+
+                // Modal for editing user
+                if (!document.getElementById('editUserModal')) {
+                  const modal = document.createElement('div');
+                  modal.id = 'editUserModal';
+                  modal.className = 'modal-overlay';
+                  modal.innerHTML = `
+                    <div class="modal">
+                      <div class="modal-header">
+                        <h3 class="modal-title">Edit User</h3>
+                        <button class="modal-close" onclick="closeEditUserModal()">✕</button>
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label">Name</label>
+                        <input type="text" id="editUserName" class="form-input">
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label">Phone</label>
+                        <input type="text" id="editUserPhone" class="form-input">
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label">Role</label>
+                        <select id="editUserRole" class="form-input">
+                          <option value="admin">admin</option>
+                          <option value="assistant">assistant</option>
+                          <option value="passenger">passenger</option>
+                        </select>
+                      </div>
+                      <input type="hidden" id="editUserId">
+                      <button class="btn btn-dark" style="width: 100%;" onclick="submitEditUser()">Save Changes</button>
+                    </div>
+                  `;
+                  document.body.appendChild(modal);
+                }
+
+                window.showEditUserModal = function(id, name, phone, role) {
+                  document.getElementById('editUserId').value = id;
+                  document.getElementById('editUserName').value = name;
+                  document.getElementById('editUserPhone').value = phone;
+                  document.getElementById('editUserRole').value = role;
+                  document.getElementById('editUserModal').classList.add('active');
+                };
+                window.closeEditUserModal = function() {
+                  document.getElementById('editUserModal').classList.remove('active');
+                };
+                window.submitEditUser = async function() {
+                  const id = document.getElementById('editUserId').value;
+                  const name = document.getElementById('editUserName').value.trim();
+                  const phone = document.getElementById('editUserPhone').value.trim();
+                  const role = document.getElementById('editUserRole').value;
+                  if (!name || !role) {
+                    alert('Name and role are required');
+                    return;
+                  }
+                  try {
+                    const fetcher = window.RailCareAuth?.authFetch || fetch;
+                    const res = await fetcher(`/api/admin/users/${id}`, {
+                      method: 'PUT',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ name, phone, role })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                      showToast && showToast('User updated');
+                      closeEditUserModal();
+                      loadUserStats();
+                    } else {
+                      alert('Failed to update user: ' + (data.message || 'Unknown error'));
+                    }
+                  } catch (e) {
+                    alert('Error: ' + e.message);
+                  }
+                };
+
+                window.removeUser = async function(id, name) {
+                  if (!confirm(`Remove user '${name}'? This cannot be undone.`)) return;
+                  try {
+                    const fetcher = window.RailCareAuth?.authFetch || fetch;
+                    const res = await fetcher(`/api/admin/users/${id}`, {
+                      method: 'DELETE'
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                      showToast && showToast('User removed');
+                      loadUserStats();
+                    } else {
+                      alert('Failed to remove user: ' + (data.message || 'Unknown error'));
+                    }
+                  } catch (e) {
+                    alert('Error: ' + e.message);
+                  }
+                };
+              } catch (e) {
+                container.innerHTML = `<div class="empty-state"><p style="color: var(--ruby);">Error: ${e.message}</p></div>`;
+              }
+            }
+        }
       });
     });
 
@@ -2354,10 +2515,35 @@
       container.innerHTML = '<div class="loading"></div>';
       try {
         const fetcher = window.RailCareAuth?.authFetch || fetch;
-        // Admin endpoint does not support filters yet
-        const res = await fetcher('/api/admin/bookings');
+        // Collect filter values
+        const status = document.getElementById('filterStatus')?.value || '';
+        const station = document.getElementById('filterStation')?.value || '';
+        const passenger = document.getElementById('filterPassenger')?.value || '';
+        // Always fetch all bookings, filter on frontend for robustness
+        const url = '/api/admin/bookings';
+        const res = await fetcher(url);
         const data = await res.json();
-        const list = data.bookings || [];
+        let list = data.bookings || [];
+        // Robust frontend filtering (case-insensitive, trims)
+        if (status) {
+          list = list.filter(b => (b.status || '').toLowerCase().trim() === status.toLowerCase().trim());
+        }
+        if (station) {
+          // Match by code or by full station name (case-insensitive)
+          const stationMap = {
+            SC: ['SC', 'Secunderabad', 'Secunderabad (SC)'],
+            KCG: ['KCG', 'Kacheguda', 'Kacheguda (KCG)'],
+            HYB: ['HYB', 'Hyderabad', 'Hyderabad Deccan', 'Hyderabad Deccan (HYB)'],
+            KZJ: ['KZJ', 'Kazipet', 'Kazipet (KZJ)'],
+            BZA: ['BZA', 'Vijayawada', 'Vijayawada (BZA)'],
+            WL: ['WL', 'Warangal', 'Warangal (WL)']
+          };
+          const allowed = stationMap[station] || [station];
+          list = list.filter(b => allowed.some(val => (b.station || '').toLowerCase().trim() === val.toLowerCase().trim()));
+        }
+        if (passenger) {
+          list = list.filter(b => (b.passengerName || '').toLowerCase().includes(passenger.toLowerCase()));
+        }
         const seen = new Map();
         (Array.isArray(list) ? list : []).forEach(b => {
           if (b && b._id && !seen.has(b._id)) seen.set(b._id, b);
@@ -2370,22 +2556,26 @@
         }
 
         container.innerHTML = _currentBookings.map(b => {
-          const statusClass = {
-            'Pending': 'status-pending',
-            'Searching': 'status-pending',
-            'Accepted': 'status-approved',
-            'Start Pending': 'status-approved',
-            'In Progress': 'status-approved',
-            'Completion Pending': 'status-approved',
-            'Completed': 'status-approved',
-            'Rejected': 'status-rejected',
-            'Cancelled': 'status-rejected'
-          }[b.status] || 'status-pending';
-          
+          // Status badge color logic
+          const statusColors = {
+            'Pending': { text: 'PENDING', color: '#f59e0b', bg: '#fff7e6' },
+            'Searching': { text: 'SEARCHING', color: '#f59e0b', bg: '#fff7e6' },
+            'Assigned': { text: 'ASSIGNED', color: '#3b82f6', bg: '#e6f0ff' },
+            'Accepted': { text: 'ACCEPTED', color: '#3b82f6', bg: '#e6f0ff' },
+            'Start Pending': { text: 'START PENDING', color: '#8b5cf6', bg: '#f3e8ff' },
+            'In Progress': { text: 'IN PROGRESS', color: '#10b981', bg: '#e6fff7' },
+            'Completion Pending': { text: 'COMPLETION PENDING', color: '#6366f1', bg: '#e6eaff' },
+            'Completed': { text: 'COMPLETED', color: '#22c55e', bg: '#e6fff2' },
+            'Rejected': { text: 'REJECTED', color: '#ef4444', bg: '#ffe6e6' },
+            'Cancelled': { text: 'CANCELLED', color: '#ef4444', bg: '#ffe6e6' },
+            'Emergency': { text: 'EMERGENCY', color: '#dc2626', bg: '#ffe6e6' }
+          };
+          const badge = statusColors[b.status] || { text: b.status, color: '#888', bg: '#eee' };
+
           const createdDate = b.createdAt ? new Date(b.createdAt).toLocaleDateString('en-IN', { 
             day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
           }) : '—';
-          
+
           const assistantName = b.assistantId?.name || 'Not Assigned';
 
           return `
@@ -2395,10 +2585,8 @@
                   <div class="booking-passenger" style="font-size: 16px; font-weight: 600;">${b.passengerName || 'Unknown'}</div>
                   <div class="booking-meta" style="font-size: 12px; color: var(--text-tertiary);">Created: ${createdDate}</div>
                 </div>
-                <span class="app-status ${statusClass}">${b.status}</span>
+                <span style="padding: 4px 14px; border-radius: 16px; font-size: 13px; font-weight: 600; background: ${badge.bg}; color: ${badge.color}; letter-spacing: 1px;">${badge.text}</span>
               </div>
-              
-              <!-- Contact Details -->
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; background: var(--bg-secondary); border-radius: 8px; margin-bottom: 12px; font-size: 13px;">
                 <div>
                   <span style="color: var(--text-tertiary); font-size: 11px;">📞 Phone</span>
@@ -2409,8 +2597,6 @@
                   <div style="font-weight: 500;">${b.passengerEmail || '—'}</div>
                 </div>
               </div>
-              
-              <!-- Journey Details -->
               <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 12px; background: var(--bg-secondary); border-radius: 8px; margin-bottom: 12px; font-size: 13px;">
                 <div>
                   <span style="color: var(--text-tertiary); font-size: 11px;">🚉 Station</span>
@@ -2429,8 +2615,6 @@
                   <div style="font-weight: 500;">${b.seat || '—'}</div>
                 </div>
               </div>
-              
-              <!-- Service Type & Direction -->
               ${b.serviceType ? `
               <div style="padding: 10px 12px; background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1)); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 8px; margin-bottom: 12px;">
                 <div style="display: flex; align-items: center; justify-content: space-between;">
@@ -2449,8 +2633,6 @@
                 </div>
               </div>
               ` : ''}
-              
-              <!-- Services & Assistant -->
               <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding: 12px; background: var(--bg-secondary); border-radius: 8px; margin-bottom: 12px; font-size: 13px;">
                 <div>
                   <span style="color: var(--text-tertiary); font-size: 11px;">🛎️ Services</span>
@@ -2465,22 +2647,17 @@
                   <div style="font-weight: 500;">₹${b.price || 0}</div>
                 </div>
               </div>
-              
               ${renderLuggageDisplay(b)}
-              
               ${b.passengerNotes ? `
               <div style="padding: 8px 12px; background: rgba(59, 130, 246, 0.1); border-radius: 6px; margin-bottom: 12px; font-size: 12px; color: var(--sapphire);">
                 <strong>📝 Notes:</strong> ${b.passengerNotes}
               </div>
               ` : ''}
-              
               ${b.language || (b.preferredLanguages && b.preferredLanguages.length > 0) ? `
               <div style="padding: 8px 12px; background: rgba(16, 185, 129, 0.1); border-radius: 6px; margin-bottom: 12px; font-size: 12px; color: var(--emerald);">
                 <strong>🌐 Language:</strong> ${b.preferredLanguages?.join(', ') || b.language || '—'}
               </div>
               ` : ''}
-              
-              <!-- DISTRIBUTED TASK ASSIGNMENT (for round_trip) -->
               ${b.serviceType === 'round_trip' ? `
               <div id="taskAssignment-${b._id}" style="border: 2px solid rgba(139, 92, 246, 0.3); border-radius: 12px; padding: 16px; margin-bottom: 12px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.05), rgba(99, 102, 241, 0.05));">
                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
@@ -2498,7 +2675,6 @@
                 </div>
               </div>
               ` : ''}
-              
               <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                 ${(b.status !== 'Completed' && b.status !== 'Cancelled' && b.status !== 'Rejected') ? `<button class="btn btn-secondary btn-sm" onclick="showEditBooking('${b._id}')">Edit</button>` : ''}
                 <button class="btn btn-info btn-sm" style="background:#3b82f6;color:#fff; position:relative;" onclick="openAdminChatPanel('${b._id}', '${b.passengerName || ''}')">💬 Chat
@@ -2806,7 +2982,7 @@
     // ==================== FEEDBACK ====================
     async function loadFeedback() {
       const container = document.getElementById('feedbackList');
-      container.innerHTML = '<div class="loading"></div>';
+      container.innerHTML = '';
       try {
         // Always use authFetch to ensure Authorization header is sent
         const fetcher = window.authFetch || (window.RailCareAuth && window.RailCareAuth.authFetch) || fetch;
@@ -2920,7 +3096,7 @@
       
       try {
         const fetcher = window.RailCareAuth?.authFetch || fetch;
-        const res = await fetcher('/api/admin/audit');
+        const res = await fetcher('/api/admin/audit-logs');
         const j = await res.json();
         
         if (!j.success || !j.logs?.length) {
