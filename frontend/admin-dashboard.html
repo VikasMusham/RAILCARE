@@ -1210,18 +1210,26 @@
       document.getElementById('activeBookings').textContent = dashboardData.bookings.active || 0;
       document.getElementById('onlineAssistants').textContent = dashboardData.assistants.online || 0;
       document.getElementById('completedToday').textContent = dashboardData.bookings.completed || 0;
-      
+
       document.getElementById('totalAssistants').textContent = 
         `${dashboardData.assistants.verified || 0} verified`;
-      
+
       const total = dashboardData.bookings.today || 1;
       const completed = dashboardData.bookings.completed || 0;
       document.getElementById('completionRate').textContent = 
         `${Math.round((completed / total) * 100)}% completion`;
-      
+
       document.getElementById('pendingCount').textContent = dashboardData.applications.pending || 0;
       document.getElementById('bookingsTodayChange').textContent = 
         `${dashboardData.bookings.total || 0} total`;
+
+      // New: Update total jobs done, total ratings, avg rating
+      if (document.getElementById('totalJobsDone'))
+        document.getElementById('totalJobsDone').textContent = dashboardData.totalJobsDone || 0;
+      if (document.getElementById('totalRatings'))
+        document.getElementById('totalRatings').textContent = dashboardData.totalRatings || 0;
+      if (document.getElementById('avgRating'))
+        document.getElementById('avgRating').textContent = (dashboardData.avgRating || 0).toFixed(2);
     }
 
     // Fetch live bookings
@@ -1259,44 +1267,58 @@
       tbody.innerHTML = bookings.map(booking => `
         <tr>
           <td>
-            <div class="passenger-info">
-              <div class="passenger-avatar">${getInitials(booking.passengerId?.name || booking.passengerName)}</div>
-              <div class="passenger-details">
-                <h4>${booking.passengerId?.name || booking.passengerName || 'Unknown'}</h4>
-                <span>${timeAgo(booking.createdAt)}</span>
+            <div class="stat-card">
+              <div class="stat-icon">📦</div>
+              <div class="stat-label">Bookings Today</div>
+              <div class="stat-value" id="bookingsToday">-</div>
+              <div class="stat-change positive">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+                </svg>
+                <span id="bookingsTodayChange">Loading...</span>
               </div>
             </div>
-          </td>
-          <td>${booking.station || '-'}</td>
-          <td>${booking.serviceType || '-'}</td>
-          <td>
-            ${booking.assistantId ? `
-              <div class="online-badge ${booking.assistantId.isOnline ? '' : 'offline'}">
-                <div class="online-indicator"></div>
-                ${booking.assistantId.name}
+
+            <div class="stat-card">
+              <div class="stat-icon">🎯</div>
+              <div class="stat-label">Active Bookings</div>
+              <div class="stat-value" id="activeBookings">-</div>
+              <div class="stat-change" id="activeChange">
+                <span>Real-time</span>
               </div>
-            ` : '<span style="color: var(--pearl)">Not assigned</span>'}
-          </td>
-          <td>
-            <span class="status-badge ${getStatusClass(booking.status)}">
-              <span class="status-dot"></span>
-              ${booking.status}
-            </span>
-          </td>
-          <td>
-            <div class="action-group">
-              ${!booking.assistantId ? `
-                <button class="action-btn success" onclick="matchBooking('${booking._id}')" title="Auto Match">
-                  <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                  </svg>
-                </button>
-              ` : ''}
-              <button class="action-btn" onclick="openReassign('${booking._id}', '${booking.station}')" title="Reassign">
-                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
-                </svg>
-              </button>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon">👤</div>
+              <div class="stat-label">Online Assistants</div>
+              <div class="stat-value" id="onlineAssistants">-</div>
+              <div class="stat-change" id="totalAssistants">- verified</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon">✅</div>
+              <div class="stat-label">Completed Today</div>
+              <div class="stat-value" id="completedToday">-</div>
+              <div class="stat-change positive">
+                <span id="completionRate">-% completion</span>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon">💼</div>
+              <div class="stat-label">Total Jobs Done</div>
+              <div class="stat-value" id="totalJobsDone">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">⭐</div>
+              <div class="stat-label">Total Ratings</div>
+              <div class="stat-value" id="totalRatings">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">🌟</div>
+              <div class="stat-label">Avg Rating</div>
+              <div class="stat-value" id="avgRating">0.00</div>
+            </div>
               <button class="action-btn danger" onclick="markEmergency('${booking._id}')" title="Emergency">
                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>

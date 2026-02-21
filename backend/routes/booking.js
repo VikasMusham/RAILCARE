@@ -1,24 +1,3 @@
-// Update passenger phone for a booking
-router.post('/:id/update-phone', async (req, res) => {
-  try {
-    const { phone } = req.body;
-    if (!phone || phone.trim() === '') {
-      return res.status(400).json({ success: false, message: 'Phone number required.' });
-    }
-    const booking = await Booking.findById(req.params.id);
-    if (!booking) return res.status(404).json({ success: false, message: 'Booking not found.' });
-    booking.passengerPhone = phone;
-    await booking.save();
-    // Optionally update user profile if linked
-    if (booking.userId) {
-      const User = require('../models/User');
-      await User.findByIdAndUpdate(booking.userId, { phone });
-    }
-    return res.json({ success: true, booking });
-  } catch (err) {
-    return res.status(500).json({ success: false, error: err.message });
-  }
-});
 const express = require('express');
 const router = express.Router();
 const Booking = require('../models/Booking');
@@ -41,6 +20,28 @@ const {
   getLuggageDisplayString,
   LUGGAGE_PRICES
 } = require('../services/pricingService');
+
+// Update passenger phone for a booking
+router.post('/:id/update-phone', async (req, res) => {
+  try {
+    const { phone } = req.body;
+    if (!phone || phone.trim() === '') {
+      return res.status(400).json({ success: false, message: 'Phone number required.' });
+    }
+    const booking = await Booking.findById(req.params.id);
+    if (!booking) return res.status(404).json({ success: false, message: 'Booking not found.' });
+    booking.passengerPhone = phone;
+    await booking.save();
+    // Optionally update user profile if linked
+    if (booking.userId) {
+      const User = require('../models/User');
+      await User.findByIdAndUpdate(booking.userId, { phone });
+    }
+    return res.json({ success: true, booking });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
 
 // ========== RESEND OTP ENDPOINTS ========== 
 // Resend Start OTP
