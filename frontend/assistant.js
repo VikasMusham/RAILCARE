@@ -501,6 +501,10 @@ async function loadBookings() {
           controls = `<input placeholder="Enter start OTP" data-id="${b._id}" class="otpInput" />
             <button data-id="${b._id}" class="verifyOtp">Verify OTP</button>
             <button data-id="${b._id}" class="reject">Cancel</button>`;
+              // If payment method is Cash on Delivery and not yet marked Paid, show Collect Cash button
+              if (b.paymentMethod === 'Cash on Delivery' && b.paymentStatus !== 'Paid') {
+                controls += `<button data-id="${b._id}" class="collectCash" style="margin-left:8px;background:#f59e42;color:#fff;padding:6px 16px;border-radius:4px;">Collect Cash</button>`;
+              }
         } else if (b.status === 'In Progress') {
           // In progress: show mark completed button
           controls = `<button data-id="${b._id}" class="requestComplete">Mark Completed</button>
@@ -517,9 +521,21 @@ async function loadBookings() {
         }
       }
 
+      // Payment info line
+      // Payment status badge color
+      let paymentStatusColor = '#f59e42'; // Pending (amber)
+      if (b.paymentStatus === 'Paid') paymentStatusColor = '#10b981'; // Paid (emerald)
+      else if (b.paymentStatus === 'Failed') paymentStatusColor = '#ef4444'; // Failed (red)
+      else if (b.paymentStatus === 'Refunded') paymentStatusColor = '#6366f1'; // Refunded (indigo)
+      const paymentLine = `<div style="margin:8px 0 4px 0;font-size:1em;">
+        <span style="color:#0e7490;font-weight:600;">Payment:</span> <b>${b.paymentMethod || '—'}</b>
+        <span style="margin-left:12px;background:${paymentStatusColor};color:#fff;padding:2px 8px;border-radius:4px;">${b.paymentStatus || '—'}</span>
+        <span style="margin-left:12px;color:#6366f1;">Txn ID: <b>${b.transactionId || '—'}</b></span>
+      </div>`;
       el.innerHTML = `<div><strong>${b.passengerName}</strong> — ${b.trainName || ''} (${b.coach||''}/${b.seat||''})</div>
         <div>Services: ${b.services?.join(',')||'-'}</div>
         <div>Lang: ${b.language||'-'}</div>
+        ${paymentLine}
         ${statusLine}
         <div style="margin-top:8px">${controls}</div>`;
       bookingsList.appendChild(el);
@@ -530,6 +546,25 @@ async function loadBookings() {
     bookingsList.querySelectorAll('.verifyOtp').forEach(btn => btn.addEventListener('click', verifyOtp));
     bookingsList.querySelectorAll('.requestComplete').forEach(btn => btn.addEventListener('click', requestComplete));
     bookingsList.querySelectorAll('.assistantConfirmCompletion').forEach(btn => btn.addEventListener('click', assistantConfirmCompletion));
+        bookingsList.querySelectorAll('.collectCash').forEach(btn => btn.addEventListener('click', collectCash));
+  // Handler for Collect Cash button
+  async function collectCash(e) {
+    const bookingId = e.target.dataset.id;
+    if (!confirm('Confirm you have collected cash from passenger?')) return;
+    try {
+      const fetcher = window.RailCareAuth?.authFetch || fetch;
+      const res = await fetcher(`/api/bookings/${bookingId}/mark-cash-paid`, { method: 'POST' });
+      const j = await res.json();
+      if (j.success) {
+        alert('Cash collected and payment marked as Paid.');
+        loadBookings();
+      } else {
+        alert('Error: ' + (j.message || 'Failed to mark payment'));
+      }
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  }
   } catch (err) { alert(err.message) }
 }
 
@@ -580,6 +615,7 @@ function renderDetail(b) {
   el.className = 'card';
   const assistantAssigned = b.assistantId && assistant && (b.assistantId.toString() === assistant._id.toString());
   const priceLine = b.price ? `<div>Price: ₹${b.price.toFixed(2)}</div>` : '';
+  const paymentLine = `<div style="margin:10px 0 6px 0;font-size:1.1em;"><span style="color:#0e7490;font-weight:600;">Payment:</span> <b>${b.paymentMethod || '—'}</b> <span style="margin-left:12px;color:#059669;">Status: <b>${b.paymentStatus || '—'}</b></span></div>`;
   let controls = '';
   if (!assistantAssigned) {
     controls = `<div>Not assigned to you</div>`;
@@ -611,16 +647,51 @@ function renderDetail(b) {
     return `<span class="status-badge">${s}</span>`;
   })(b.status);
 
+  let codButton = '';
+  if (
+    b.paymentMethod === 'Cash on Delivery' &&
+    b.paymentStatus !== 'Paid' &&
+    assistantAssigned &&
+    b.status === 'Completion Pending'
+  ) {
+    codButton = `<div style="margin:12px 0 0 0;padding:12px 0;background:linear-gradient(90deg,#fef9c3,#fde68a);border-radius:10px;font-size:1.1em;">
+      <div style="margin-bottom:8px;color:#b45309;font-weight:600;">Collect Cash from Passenger</div>
+      <div style="font-size:1.3em;font-weight:700;color:#0e7490;">₹${b.price?.toFixed(2) || '--'}</div>
+      <button data-id="${b._id}" class="codPaidBtn" style="margin-top:10px;background:linear-gradient(90deg,#f59e42,#fbbf24);color:#fff;padding:10px 28px;border:none;border-radius:8px;font-size:1em;font-weight:600;">Cash Collected: Mark as Paid</button>
+    </div>`;
+  }
   el.innerHTML = `<div><h3>Booking — ${b.passengerName}</h3>
     <div>Station: ${b.station}</div>
     <div>Train: ${b.trainName||'-'}</div>
     <div>Coach/Seat: ${b.coach||''}/${b.seat||''}</div>
     <div>Services: ${b.services?.join(',')||'-'}</div>
     ${priceLine}
+    ${paymentLine}
     <div class="status-line">Status: ${sb}</div>
     <div style="margin-top:8px">${controls}</div>
+    ${codButton}
     <div style="margin-top:12px"><button id="backToList">Back to list</button></div>
     </div>`;
+    // COD Paid button handler
+    el.querySelectorAll('.codPaidBtn').forEach(btn => btn.addEventListener('click', async (e) => {
+      const id = e.target.dataset.id;
+      if (!confirm('Confirm you have collected cash from passenger?')) return;
+      try {
+        const fetcher = window.RailCareAuth?.authFetch || fetch;
+        const res = await fetcher('/api/payment/cod-paid', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ bookingId: id })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert('Marked as paid!');
+          showBookingDetail(id);
+        } else {
+          alert('Failed to mark as paid: ' + (data.message || JSON.stringify(data)));
+        }
+      } catch (err) { alert(err.message) }
+    }));
   bookingsList.appendChild(el);
 
   // attach handlers

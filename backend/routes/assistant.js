@@ -1,3 +1,21 @@
+// Assistant: mark cash as collected for COD booking
+router.post('/booking/:bookingId/cash-collected', async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.bookingId);
+    if (!booking) return res.status(404).json({ success: false, message: 'Booking not found' });
+    if (booking.paymentMethod !== 'COD') {
+      return res.status(400).json({ success: false, message: 'Booking is not Cash on Delivery' });
+    }
+    if (booking.cashCollected) {
+      return res.status(400).json({ success: false, message: 'Cash already marked as collected' });
+    }
+    booking.cashCollected = true;
+    await booking.save();
+    return res.json({ success: true, booking });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
 // Assistant: request re-verification after being revoked
 router.post('/:id/request-reverify', async (req, res) => {
   try {
@@ -151,12 +169,14 @@ router.post('/:id/upload-json', async (req, res) => {
       return res.status(404).json({ success: false, message: 'Assistant not found' });
     }
 
-    const { aadharBase64, aadharName, panBase64, panName } = req.body || {};
+
+    const { aadharBase64, aadharName, panBase64, panName, photoBase64, photoName } = req.body || {};
 
     const hasAadhar = Boolean(aadharBase64 && aadharName);
     const hasPan = Boolean(panBase64 && panName);
-    if (!hasAadhar && !hasPan) {
-      return res.status(400).json({ success: false, message: 'Please select at least one document (Aadhar or PAN) to upload' });
+    const hasPhoto = Boolean(photoBase64 && photoName);
+    if (!hasAadhar && !hasPan && !hasPhoto) {
+      return res.status(400).json({ success: false, message: 'Please select at least one document (Aadhar, PAN, or Photo) to upload' });
     }
 
     const uploadsDir = path.join(__dirname, '..', 'uploads', 'assistants', String(assistant._id));
@@ -177,6 +197,9 @@ router.post('/:id/upload-json', async (req, res) => {
       }
       if (hasPan) {
         assistant.documents.pan = safeWrite(panBase64, panName);
+      }
+      if (hasPhoto) {
+        assistant.photoFilePath = safeWrite(photoBase64, photoName);
       }
       // any new upload invalidates prior verification/remark
       assistant.documentsVerified = false;

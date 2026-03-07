@@ -452,12 +452,24 @@ async function loadBookings() {
     _currentBookings = Array.from(seen.values());
     allBookings.innerHTML = '';
     if (!_currentBookings.length) { allBookings.textContent = 'No bookings found'; return; }
-    _currentBookings.forEach(b=>{
+    _currentBookings.forEach(b => {
       const el = document.createElement('div');
       el.className = 'card';
-      el.innerHTML = `<div><strong>${b.passengerName}</strong> — ${b.station} — ${b.status}</div>
+      // Payment info line
+      // Payment status badge color
+      let paymentStatusColor = '#f59e42'; // Pending (amber)
+      if (b.paymentStatus === 'Paid') paymentStatusColor = '#10b981'; // Paid (emerald)
+      else if (b.paymentStatus === 'Failed') paymentStatusColor = '#ef4444'; // Failed (red)
+      else if (b.paymentStatus === 'Refunded') paymentStatusColor = '#6366f1'; // Refunded (indigo)
+      const paymentLine = `<div style="margin:8px 0 4px 0;font-size:1em;">
+        <span style="color:#0e7490;font-weight:600;">Payment:</span> <b>${b.paymentMethod || '—'}</b>
+        <span style="margin-left:12px;background:${paymentStatusColor};color:#fff;padding:2px 8px;border-radius:4px;">${b.paymentStatus || '—'}</span>
+        <span style="margin-left:12px;color:#6366f1;">Txn ID: <b>${b.transactionId || '—'}</b></span>
+      </div>`;
+      el.innerHTML = `<div><strong>${b.passengerName}</strong> — ${b.station} — <span style="color:#0e7490;font-weight:600;">${b.status}</span></div>
         <div>Train: ${b.trainName||'-'} Coach/Seat: ${b.coach||''}/${b.seat||''}</div>
-        <div>Services: ${b.services?.join(',')||'-'}</div>`;
+        <div>Services: ${b.services?.join(',')||'-'}</div>
+        ${paymentLine}`;
       const assignWrap = document.createElement('div');
       assignWrap.style.marginTop = '8px';
       // Edit button always available

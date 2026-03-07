@@ -6,6 +6,7 @@ const Assistant = require('../models/Assistant');
 const taskAssignmentService = require('../services/taskAssignmentService');
 const taskQueueProcessor = require('../services/taskQueueProcessor');
 
+
 /**
  * Mark a service task as completed and trigger round-trip logic
  * If this is a pickup (boarding) task for a round-trip, activate the arrival (drop) task
@@ -39,7 +40,16 @@ exports.completeTask = async (req, res) => {
       }
     }
 
-    res.json({ success: true, message: 'Task completed', task });
+    // Explicitly include payment info from booking if available
+    let paymentInfo = {};
+    if (task.bookingId) {
+      paymentInfo = {
+        paymentStatus: task.bookingId.paymentStatus,
+        paymentMethod: task.bookingId.paymentMethod,
+        transactionId: task.bookingId.transactionId
+      };
+    }
+    res.json({ success: true, message: 'Task completed', task, ...paymentInfo });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

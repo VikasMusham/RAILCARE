@@ -4,7 +4,7 @@ const railwayApiService = require('../services/railwayApiService');
 
 exports.createBooking = async (req, res, next) => {
   try {
-    const { passenger, train, services, station, pickupStation, dropStation, stationCode } = req.body;
+    const { passenger, train, services, station, pickupStation, dropStation, stationCode, paymentMethod, paymentStatus } = req.body;
     const bookingId = 'BK' + Math.floor(100000 + Math.random() * 900000);
     // Normalize station fields
     const normalizedStation = (station || '').toUpperCase().trim();
@@ -28,6 +28,23 @@ exports.createBooking = async (req, res, next) => {
       }
     }
 
+    // Normalize paymentMethod and paymentStatus
+    let normalizedPaymentMethod = paymentMethod;
+    if (!normalizedPaymentMethod || typeof normalizedPaymentMethod !== 'string' || !normalizedPaymentMethod.trim()) {
+      normalizedPaymentMethod = 'Unknown';
+    } else {
+      const pm = normalizedPaymentMethod.trim().toLowerCase();
+      if (pm === 'cash on delivery' || pm === 'cod') {
+        normalizedPaymentMethod = 'COD';
+      } else if (pm === 'razorpay') {
+        normalizedPaymentMethod = 'Razorpay';
+      }
+    }
+    let normalizedPaymentStatus = paymentStatus;
+    if (!normalizedPaymentStatus || typeof normalizedPaymentStatus !== 'string' || !normalizedPaymentStatus.trim()) {
+      normalizedPaymentStatus = 'Pending';
+    }
+
     const booking = new Booking({
       passenger,
       train,
@@ -38,6 +55,8 @@ exports.createBooking = async (req, res, next) => {
       dropStation: normalizedDropStation,
       stationCode: normalizedStationCode,
       passengerPhone,
+      paymentMethod: normalizedPaymentMethod,
+      paymentStatus: normalizedPaymentStatus,
     });
     await booking.save();
     res.json({ bookingId });
@@ -52,7 +71,17 @@ exports.getBookingById = async (req, res, next) => {
     if (!booking) return res.status(404).json({ error: 'Booking not found' });
     const trainStatus = await railwayApiService.getTrainStatus(booking.train.number);
     const recommendation = recommendationService.getRecommendedArrival(booking.train.expectedArrival);
-    res.json({ booking, trainStatus, recommendation });
+    // Explicitly include payment info
+    res.json({
+      booking: {
+        ...booking.toObject(),
+        paymentStatus: booking.paymentStatus,
+        paymentMethod: booking.paymentMethod,
+        transactionId: booking.transactionId
+      },
+      trainStatus,
+      recommendation
+    });
   } catch (err) {
     next(err);
   }

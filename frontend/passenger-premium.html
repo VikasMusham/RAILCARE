@@ -1,191 +1,14 @@
-<!-- Train Live Status Modal -->
-<div id="trainStatusModal" style="display:none; position:fixed; z-index:100000; left:0; top:0; width:100vw; height:100vh; background:rgba(24,24,27,0.82); align-items:center; justify-content:center;">
-  <div style="background:#23232b; color:#f3f4f6; border-radius:18px; max-width:540px; width:92vw; padding:32px 24px; box-shadow:0 8px 40px rgba(0,0,0,0.18); position:relative; display:flex; flex-direction:column;">
-    <button onclick="closeTrainStatusModal()" style="position:absolute; top:12px; right:16px; background:none; border:none; color:#fff; font-size:22px; cursor:pointer;">&times;</button>
-    <h2 style="margin-bottom:18px;">🚄 Live Train Status</h2>
-    <div id="trainStatusInfo" style="margin-bottom:18px;"></div>
-    <div id="trainStatusMap" style="height:260px; border-radius:12px; overflow:hidden;"></div>
-  </div>
-</div>
-<!-- Leaflet.js for map rendering -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <!-- Leaflet.js for map rendering -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- QRCode library for UPI payments -->
+  <script src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js"></script>
   <script src="socketio-loader.js"></script>
-// ...existing code...
-<!-- Emergency Modal -->
-<div id="emergencyModal" style="display:none; position:fixed; z-index:99999; left:0; top:0; width:100vw; height:100vh; background:rgba(24,24,27,0.82); align-items:center; justify-content:center;">
-  <div style="background:#23232b; color:#f3f4f6; border-radius:18px; max-width:400px; width:92vw; padding:32px 24px; box-shadow:0 8px 40px rgba(0,0,0,0.18); position:relative; display:flex; flex-direction:column;">
-    <button onclick="closeEmergencyModal()" style="position:absolute; top:12px; right:16px; background:none; border:none; color:#fff; font-size:22px; cursor:pointer;">&times;</button>
-    <h2 style="margin-bottom:18px;">🚨 Emergency Help</h2>
-    <div style="margin-bottom:18px;">
-      <b>Call Admin:</b><br>
-      <a href="tel:+911234567890" style="color:#10b981; font-size:18px; font-weight:600;">+91 12345 67890</a>
-    </div>
-    <div style="flex:1; display:flex; flex-direction:column;">
-      <b>Message Admin <span id="passengerChatBookingId" style="font-size:12px;color:#10b981;margin-left:8px;"></span>:</b>
-        <div id="chatBox" style="background:#18181b; border-radius:8px; border:1px solid #444; height:180px; overflow-y:auto; margin-top:8px; padding:8px 6px 8px 8px; font-size:14px; color:#fff; margin-bottom:8px;"></div>
-      <div id="typingIndicator" style="font-size:12px; color:#aaa; min-height:18px; margin-bottom:4px;"></div>
-      <div style="display:flex; gap:6px;">
-        <input id="chatInput" type="text" placeholder="Type your message..." style="flex:1; border-radius:6px; border:1px solid #444; background:#23232b; color:#fff; padding:7px 10px; font-size:14px; outline:none;" onkeydown="if(event.key==='Enter'){sendChatMessage();}" />
-        <button onclick="sendChatMessage()" style="background:#ef4444; color:#fff; border:none; border-radius:6px; padding:7px 18px; font-size:15px; font-weight:600; cursor:pointer;">Send</button>
-      </div>
-    </div>
-  </div>
-</div>
-<script>
-let chatSocket, chatBookingId, chatUserName = 'Passenger';
-function triggerEmergencyHelp(bookingId) {
-  document.getElementById('emergencyModal').style.display = 'flex';
-  window.currentEmergencyBookingId = bookingId;
-  chatBookingId = bookingId;
-  document.getElementById('passengerChatBookingId').textContent = bookingId;
-  setupChatSocket();
-}
-function closeEmergencyModal() {
-  document.getElementById('emergencyModal').style.display = 'none';
-  if (chatSocket) chatSocket.disconnect();
-}
-function setupChatSocket() {
-  if (!window.io) {
-    document.addEventListener('socketio-ready', setupChatSocket, { once: true });
-    return;
-  }
-  if (chatSocket) chatSocket.disconnect();
-  chatSocket = io('http://localhost:3000');
-  chatSocket.emit('join', { role: 'passenger', bookingId: chatBookingId });
-  const chatBox = document.getElementById('chatBox');
-  chatBox.innerHTML = '';
-  document.getElementById('chatInput').value = '';
-  chatSocket.on('chat_history', msgs => {
-    chatBox.innerHTML = '';
-    msgs.forEach(m => appendChatMessage(m));
-    chatBox.scrollTop = chatBox.scrollHeight;
-  });
-  chatSocket.on('chat_message', msg => {
-    appendChatMessage(msg);
-    chatBox.scrollTop = chatBox.scrollHeight;
-  });
-  chatSocket.on('typing', user => {
-    document.getElementById('typingIndicator').textContent = user + ' is typing...';
-  });
-  chatSocket.on('stop_typing', () => {
-    document.getElementById('typingIndicator').textContent = '';
-  });
-}
-function sendChatMessage() {
-  console.log('[Passenger] sendChatMessage called');
-  const input = document.getElementById('chatInput');
-  const msg = input.value.trim();
-  if (!msg) {
-    alert('Please enter a message before sending.');
-    return;
-  }
-  if (!chatSocket) {
-    alert('Chat connection not established. Please close and reopen the emergency chat.');
-    console.error('chatSocket not initialized');
-    return;
-  }
-  if (!chatBookingId) {
-    alert('Booking ID missing. Please close and reopen the emergency chat.');
-    console.error('chatBookingId missing');
-    return;
-  }
-  const messageObj = { bookingId: chatBookingId, user: chatUserName, text: msg, time: new Date().toISOString() };
-  console.log('Sending message:', messageObj);
-  try {
-    console.log('[Passenger] Emitting chat_message:', messageObj);
-    chatSocket.emit('chat_message', messageObj, (ack) => {
-      if (ack && ack.error) {
-        alert('Message failed to send: ' + ack.error);
-        console.error('Emit error:', ack.error);
-      } else {
-        console.log('Message sent successfully');
-      }
-    });
-  } catch (err) {
-    alert('Error sending message: ' + err.message);
-    console.error('Emit exception:', err);
-  }
-  input.value = '';
-  document.getElementById('typingIndicator').textContent = '';
-}
-function appendChatMessage(msg) {
-  // --- Train Live Status ---
-  function openTrainStatusModal(trainNumber) {
-    const modal = document.getElementById('trainStatusModal');
-    const infoDiv = document.getElementById('trainStatusInfo');
-    const mapDiv = document.getElementById('trainStatusMap');
-    modal.style.display = 'flex';
-    infoDiv.innerHTML = 'Loading live status...';
-    mapDiv.innerHTML = '';
-    fetch(`https://api.railradar.org/api/v1/trains/live-map?train_number=${encodeURIComponent(trainNumber)}`)
-      .then(r => r.json())
-      .then(data => {
-        if (!data || !data.train || !data.train.current_position) {
-          infoDiv.innerHTML = '<span style="color:#ef4444">Live status not available for this train.</span>';
-          return;
-        }
-        const pos = data.train.current_position;
-        const delay = pos.delay_minutes ? `${pos.delay_minutes} min delay` : 'On time';
-        infoDiv.innerHTML = `<b>Train:</b> ${data.train.train_number} - ${data.train.train_name || ''}<br><b>Current Location:</b> ${pos.station_name || 'Unknown'}<br><b>Status:</b> ${delay}`;
-        // Map
-        mapDiv.innerHTML = '<div id="trainMap" style="width:100%;height:100%;"></div>';
-        const map = L.map('trainMap').setView([pos.lat, pos.lng], 8);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          maxZoom: 18,
-          attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-        L.marker([pos.lat, pos.lng]).addTo(map)
-          .bindPopup(`<b>${data.train.train_number}</b><br>${pos.station_name || ''}<br>${delay}`)
-          .openPopup();
-      })
-      .catch(() => {
-        infoDiv.innerHTML = '<span style="color:#ef4444">Could not fetch live status.</span>';
-      });
-  }
-  function closeTrainStatusModal() {
-    document.getElementById('trainStatusModal').style.display = 'none';
-    document.getElementById('trainStatusMap').innerHTML = '';
-  }
-  // Add Track Train button to each booking card (after rendering bookings)
-  document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(() => {
-      document.querySelectorAll('[data-train-number]').forEach(btn => {
-        btn.onclick = function() {
-          openTrainStatusModal(this.getAttribute('data-train-number'));
-        };
-      });
-    }, 1000);
-  });
-  const chatBox = document.getElementById('chatBox');
-  const isSelf = msg.user === chatUserName;
-  const div = document.createElement('div');
-  div.style = `margin-bottom:6px; text-align:${isSelf ? 'right':'left'};`;
-  div.innerHTML = `<span style="display:inline-block; background:${isSelf ? '#ef4444':'#444'}; color:#fff; border-radius:8px; padding:6px 12px; max-width:70%; word-break:break-word;">${msg.text}</span><span style="font-size:10px; color:#aaa; margin-left:6px;">${new Date(msg.time).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</span>`;
-  chatBox.appendChild(div);
-}
-document.addEventListener('DOMContentLoaded', function() {
-  const input = document.getElementById('chatInput');
-  if (input) {
-    input.addEventListener('input', function() {
-      if (chatSocket) chatSocket.emit('typing', { bookingId: chatBookingId, user: chatUserName });
-      clearTimeout(window._typingTimeout);
-      window._typingTimeout = setTimeout(() => {
-        if (chatSocket) chatSocket.emit('stop_typing', { bookingId: chatBookingId });
-      }, 1200);
-    });
-  }
-});
-</script>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-      <link rel="icon" type="image/png" href="favicon.png">
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <link rel="icon" type="image/png" href="favicon.png">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RailMitra • Premium Station Assistance</title>
@@ -3038,7 +2861,7 @@ document.addEventListener('DOMContentLoaded', function() {
           </div>
         </div>
         
-        <input type="file" id="avatarInput" accept="image/*" onchange="handleAvatarUpload(event)">
+        <input type="file" id="avatarInput" accept="image/*" onchange="handleAvatarUpload(event)" style="display:none;">
       </div>
     </div>
   </nav>
@@ -3082,8 +2905,8 @@ document.addEventListener('DOMContentLoaded', function() {
   </div>
 
   <!-- My Bookings Modal -->
-  <div class="settings-modal" id="bookingsModal">
-    <div class="settings-content" style="max-width: 750px; max-height: 90vh; width: 95%;">
+  <div class="settings-modal" id="bookingsModal" style="position:fixed;z-index:10000;left:0;top:0;width:100vw;height:100vh;background:rgba(24,24,27,0.82);display:flex;align-items:center;justify-content:center;">
+    <div class="settings-content" style="max-width: 750px; max-height: 90vh; width: 95%;background:#fff;border-radius:18px;box-shadow:0 8px 40px rgba(0,0,0,0.18);overflow-y:auto;">
       <div class="settings-header" style="position: sticky; top: 0; background: var(--card-bg); z-index: 10;">
         <h3>📋 My Bookings</h3>
         <button class="settings-close" onclick="closeBookingsModal()">✕</button>
@@ -3351,6 +3174,11 @@ document.addEventListener('DOMContentLoaded', function() {
         
         <form id="bookingForm" onsubmit="submitBooking(event)">
           <div class="form-grid">
+            <!-- Phone Number (visible only if not logged in) -->
+            <div class="form-group" id="phoneInputGroup" style="display:none;">
+              <label class="form-label">Phone Number</label>
+              <input type="tel" class="form-input" id="passengerPhone" placeholder="Enter your phone number" pattern="[0-9]{10}" maxlength="10" autocomplete="tel">
+            </div>
             <div class="form-group">
               <label class="form-label">Full Name</label>
               <input type="text" class="form-input" id="passengerName" placeholder="Enter your name" required>
@@ -3579,7 +3407,108 @@ document.addEventListener('DOMContentLoaded', function() {
             <h2 class="progress-title">Booking Confirmed</h2>
             <p class="progress-booking-id" id="bookingIdDisplay">#RM-2024-0000</p>
             <span style="font-size: 18px; font-weight: 600; color: var(--emerald);">Total Bill: <span id="confirmedBookingPrice">—</span></span>
+            <br>
+            <span id="paymentMethodDisplay" style="font-size:15px;color:#0e7490;font-weight:500;"></span>
+            <span id="paymentStatusDisplay" style="font-size:15px;color:#059669;font-weight:500;margin-left:12px;"></span>
           </div>
+          <!-- QR Code Payment Section (hidden when payment is already Paid) -->
+          <div id="upiPaymentBox" style="display:none; margin:18px 0 0 0; padding:18px 18px 12px 18px; background:#f8fafc; border-radius:14px; box-shadow:0 2px 12px rgba(16,185,129,0.08); max-width:340px;">
+            <div style="font-size:12px; color:#f59e0b; background:#fef3c7; padding:6px 10px; border-radius:6px; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+              If you already paid, please ignore this.
+            </div>
+            <div style="font-size:16px; font-weight:600; color:#0e7490; margin-bottom:8px;">Pay Instantly via UPI</div>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div style="background:#fff; border-radius:10px; border:1px solid #e5e7eb; padding:4px;">
+                <canvas id="upiQrCanvas" width="120" height="120" style="display:none;"></canvas>
+                <img id="upiQrImage" src="" alt="UPI QR Code" width="120" height="120" style="display:block; border-radius:8px;" />
+              </div>
+              <div style="flex:1;">
+                <div style="font-size:15px; color:#222; margin-bottom:4px;">Amount: <span id="upiAmount" style="font-weight:600; color:#059669;">—</span></div>
+                <div style="font-size:14px; color:#444;">UPI ID: <span id="upiId" style="font-weight:600; color:#0e7490;">9494628724-2@ybl</span>
+                  <button onclick="copyUpiId()" style="margin-left:6px; font-size:13px; padding:2px 8px; border-radius:6px; border:none; background:#e0f2fe; color:#0369a1; cursor:pointer;">Copy</button>
+                </div>
+                <div style="font-size:12px; color:#888; margin-top:6px;">Scan QR in any UPI app or tap UPI ID to pay.</div>
+              </div>
+            </div>
+          </div>
+            <!-- QRCode library loaded in head -->
+            <script>
+              // UPI QR Payment logic
+              const upiId = '9494628724-2@ybl';
+              function getConfirmedAmount() {
+                // Try to get confirmed amount from DOM
+                let amt = document.getElementById('confirmedBookingPrice');
+                if (amt && amt.textContent && amt.textContent.replace(/[^\d.]/g, '')) {
+                  return amt.textContent.replace(/[^\d.]/g, '');
+                }
+                // fallback to totalAmount
+                let total = document.getElementById('totalAmount');
+                if (total && total.textContent && total.textContent.replace(/[^\d.]/g, '')) {
+                  return total.textContent.replace(/[^\d.]/g, '');
+                }
+                return '';
+              }
+              function renderUpiQr() {
+                const amount = getConfirmedAmount();
+                document.getElementById('upiAmount').textContent = amount ? `₹${amount}` : '—';
+                const upiString = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=RailMitra&am=${amount}&cu=INR`;
+                const canvas = document.getElementById('upiQrCanvas');
+                const qrImage = document.getElementById('upiQrImage');
+                
+                // Try JS QRCode library first, fallback to image API
+                if (window.QRCode && canvas) {
+                  canvas.style.display = 'block';
+                  qrImage.style.display = 'none';
+                  QRCode.toCanvas(canvas, upiString, { width: 120, margin: 1 }, function (error) {
+                    if (error) {
+                      // Fallback to image API
+                      useQrImageFallback(upiString);
+                    }
+                  });
+                } else {
+                  // Use image API fallback
+                  useQrImageFallback(upiString);
+                }
+                
+                function useQrImageFallback(data) {
+                  if (qrImage) {
+                    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(data)}`;
+                    qrImage.src = qrApiUrl;
+                    qrImage.style.display = 'block';
+                    if (canvas) canvas.style.display = 'none';
+                  }
+                }
+              }
+              
+              // Show/hide UPI payment box based on payment status
+              function updateUpiPaymentBoxVisibility(paymentStatus) {
+                const upiBox = document.getElementById('upiPaymentBox');
+                if (upiBox) {
+                  // Show UPI box if payment is NOT already Paid
+                  if (paymentStatus && paymentStatus.toLowerCase() === 'paid') {
+                    upiBox.style.display = 'none';
+                  } else {
+                    upiBox.style.display = 'block';
+                    renderUpiQr();
+                  }
+                }
+              }
+              
+              function copyUpiId() {
+                const upi = document.getElementById('upiId').textContent;
+                navigator.clipboard.writeText(upi);
+                showToast('UPI ID copied!');
+              }
+              document.addEventListener('DOMContentLoaded', function() {
+                // Initial render - will be updated when booking data loads
+                renderUpiQr();
+                // Update QR if amount changes dynamically
+                const observer = new MutationObserver(renderUpiQr);
+                const amtEl = document.getElementById('confirmedBookingPrice');
+                if (amtEl) observer.observe(amtEl, { childList: true, subtree: true });
+              });
+            </script>
           <div class="progress-status-badge" id="statusBadge">
             <div class="status-dot"></div>
             <span id="statusText">Pending</span>
@@ -3785,7 +3714,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Toast notification
     function showToast(message, duration = 3000) {
-      const toast = document.getElementById('toast');
+      let toast = document.getElementById('toast');
+      if (!toast) {
+        // Optionally log or handle missing toast element
+        return;
+      }
       toast.textContent = message;
       toast.classList.add('show');
       setTimeout(() => toast.classList.remove('show'), duration);
@@ -3827,6 +3760,7 @@ document.addEventListener('DOMContentLoaded', function() {
           return;
         }
         currentUser = { name: payload.name, phone: payload.phone || '', role: payload.role };
+        window.currentUser = currentUser;
         console.log('[DEBUG][checkAuthNav] Valid token, showing user profile:', currentUser);
         showUserProfile(currentUser);
       } catch (e) {
@@ -3861,6 +3795,9 @@ document.addEventListener('DOMContentLoaded', function() {
       console.log('[showUserProfile] Starting with user:', user);
       const signInBtn = document.getElementById('signInBtn');
       const profileSection = document.getElementById('profileSection');
+
+      // Always sync window.currentUser
+      window.currentUser = user;
       if (signInBtn) signInBtn.classList.add('hidden');
       if (profileSection) profileSection.classList.add('active');
 
@@ -3961,8 +3898,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Close dropdown when clicking outside
     document.addEventListener('click', (e) => {
       const profileSection = document.getElementById('profileSection');
-      if (!profileSection.contains(e.target)) {
-        document.getElementById('profileDropdown').classList.remove('show');
+      if (profileSection && !profileSection.contains(e.target)) {
+        document.getElementById('profileDropdown')?.classList.remove('show');
         document.querySelector('.profile-trigger')?.classList.remove('open');
       }
     });
@@ -4040,12 +3977,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (res.ok) {
           currentUser.name = name;
+          window.currentUser = currentUser;
           showUserProfile(currentUser);
           closeSettings();
           showToast('Settings saved!');
         } else {
           // Still update locally even if API fails
           currentUser.name = name;
+          window.currentUser = currentUser;
           showUserProfile(currentUser);
           closeSettings();
           showToast('Settings saved locally');
@@ -4053,6 +3992,7 @@ document.addEventListener('DOMContentLoaded', function() {
       } catch (e) {
         // Update locally
         currentUser.name = name;
+        window.currentUser = currentUser;
         showUserProfile(currentUser);
         closeSettings();
         showToast('Settings saved locally');
@@ -4321,6 +4261,38 @@ document.addEventListener('DOMContentLoaded', function() {
                   cursor: pointer;
                 ">Track Booking</button>
                 ${showEmergency ? `<button onclick="triggerEmergencyHelp('${b._id}')" style="margin-left: 12px; padding: 8px 20px; background: #ef4444; color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;">🚨 Emergency Help</button>` : ''}
+              </div>
+              ` : ''}
+              
+              ${(b.status === 'Cancelled' || b.status === 'Rejected') && 
+                (b.paymentMethod === 'UPI' || b.paymentMethod === 'UPI_QR' || b.paymentMethod === 'upi_qr') && 
+                (b.paymentStatus === 'Paid' || b.paymentStatus === 'pending_verification') ? `
+              <div style="
+                margin-top: 16px;
+                padding: 14px;
+                background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+                border: 1px solid #10b981;
+                border-radius: 12px;
+              ">
+                <div style="display: flex; align-items: flex-start; gap: 12px;">
+                  <div style="
+                    width: 32px; height: 32px; 
+                    background: #10b981; 
+                    border-radius: 8px;
+                    display: flex; align-items: center; justify-content: center;
+                    flex-shrink: 0;
+                  ">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <div style="font-weight: 600; color: #047857; margin-bottom: 4px;">Refund Initiated</div>
+                    <div style="font-size: 13px; color: #065f46; line-height: 1.5;">
+                      Your payment of <strong>₹${b.price || '—'}</strong> will be refunded to your original payment method within <strong>1-2 business days</strong>.
+                    </div>
+                  </div>
+                </div>
               </div>
               ` : ''}
             </div>
@@ -4899,6 +4871,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Submit booking
     async function submitBooking(e) {
+        // Debug log for phone extraction
+        console.log('[Booking][DEBUG] window.currentUser at submit:', window.currentUser);
       e.preventDefault();
       
       if (selectedServices.length === 0) {
@@ -4945,21 +4919,76 @@ document.addEventListener('DOMContentLoaded', function() {
       const { total, insuranceChecked } = calculateTotal();
       
       // Build booking data based on service type
+      // Always require a phone number
+      let phone = '';
+      if (window.currentUser && typeof window.currentUser.phone === 'string') {
+        // Normalize: extract last 10 digits if phone has country code or formatting
+        const digits = window.currentUser.phone.replace(/\D/g, '');
+        if (digits.length >= 10) {
+          phone = digits.slice(-10);
+        }
+      }
+      if (!phone) {
+        // Fallback to input field if not logged in or phone missing
+        const phoneInput = document.getElementById('passengerPhone');
+        phone = phoneInput ? phoneInput.value.replace(/\D/g, '').slice(-10) : '';
+      }
+      console.log('[Booking][DEBUG] Phone used for booking:', phone);
+      // Debug log for phone value used
+      console.log('[DEBUG][submitBooking] Using phone for validation:', phone, 'window.currentUser:', window.currentUser);
+      if (!phone || !/^\d{10}$/.test(phone)) {
+        showToast('Please enter a valid 10-digit phone number');
+        btn.disabled = false;
+        btn.innerHTML = `Create Booking — <span id=\"submitTotal\">₹${total.toFixed(2)}</span>`;
+        return;
+      }
+
       const data = {
-        passengerName: document.getElementById('passengerName').value,
-        trainName: document.getElementById('trainName').value || undefined,
-        coach: document.getElementById('coach').value || undefined,
-        seat: document.getElementById('seat').value || undefined,
-        services: selectedServices,
-        serviceType: selectedServiceType, // pickup, drop, or round_trip
-        insurance: insuranceChecked,
-        // NEW: Multi-luggage cart items (server calculates price)
-        luggageItems: getLuggageItemsArray(),
-        // LEGACY: Keep for backward compatibility (server uses luggageItems if present)
-        luggageSize: currentLuggageSize,
-        luggageQuantity: currentLuggageQuantity
-        // Note: totalAmount NOT sent - server calculates final price
+        // Required for backend Booking schema
+        passengerName: document.getElementById('passengerName').value || '',
+        passengerPhone: phone,
+        station: (selectedPickupStation && selectedPickupStation.stationName) || (selectedDropStation && selectedDropStation.stationName) || '',
+        trainName: document.getElementById('trainName').value || '',
+        trainNumber: document.getElementById('selectedTrainNumber')?.value || '',
+        coach: document.getElementById('coach').value || '',
+        seat: document.getElementById('seat').value || '',
+        services: Array.isArray(selectedServices) ? selectedServices : [],
+        language: (selectedServices.includes('Language') && document.getElementById('language').value) ? document.getElementById('language').value : '',
+        // Luggage
+        luggageItems: Array.isArray(getLuggageItemsArray()) ? getLuggageItemsArray() : [],
+        luggageSize: currentLuggageSize || '',
+        luggageQuantity: currentLuggageQuantity || 0,
+        insurance: !!insuranceChecked,
+        // Price
+        price: total,
+        amount: total,
+        // Smart flow
+        pickupStation: selectedPickupStation ? selectedPickupStation.stationName : '',
+        dropStation: selectedDropStation ? selectedDropStation.stationName : '',
+        stationCode: (selectedPickupStation && selectedPickupStation.stationCode) || (selectedDropStation && selectedDropStation.stationCode) || '',
+        // New fields for backend
+        pickupStationName: selectedPickupStation ? selectedPickupStation.stationName : '',
+        pickupStationCode: selectedPickupStation ? selectedPickupStation.stationCode : '',
+        dropStationName: selectedDropStation ? selectedDropStation.stationName : '',
+        dropStationCode: selectedDropStation ? selectedDropStation.stationCode : '',
+        serviceType: getSelectedServiceType() || '',
+        // Optionals
+        passengerEmail: document.getElementById('passengerEmail')?.value || '',
+        preferredLanguages: (selectedServices.includes('Language') && document.getElementById('language').value) ? [document.getElementById('language').value] : [],
+        passengerNotes: document.getElementById('passengerNotes')?.value || ''
       };
+      // Remove empty/undefined/null fields for backend strict validation, but NEVER remove passengerPhone
+      Object.keys(data).forEach(key => {
+        if (
+          key !== 'passengerPhone' &&
+          (data[key] === undefined ||
+          data[key] === null ||
+          (typeof data[key] === 'string' && data[key].trim() === '') ||
+          (Array.isArray(data[key]) && data[key].length === 0))
+        ) {
+          delete data[key];
+        }
+      });
       // Only add language if Language Help is selected
       if (selectedServices.includes('Language')) {
         data.language = document.getElementById('language').value;
@@ -4996,36 +5025,17 @@ document.addEventListener('DOMContentLoaded', function() {
       }
 
       try {
-        const token = getToken();
-        const headers = { 'Content-Type': 'application/json' };
-        if (token) headers['Authorization'] = `Bearer ${token}`;
-
-        const res = await fetch('/api/bookings', {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(data)
-        });
-
-        const result = await res.json();
-
-        if (result.success || result.booking) {
-          currentBookingId = result.booking?._id || result._id;
-          showToast('Booking confirmed! Finding assistant...');
-          showProgressSection(result.booking || result);
-          startPolling();
-          
-          // Reset smart booking flow and luggage for next booking
-          resetSmartBookingFlow();
-          resetLuggageSelection();
-          hideLuggageDetails();
-        } else {
-          throw new Error(result.message || result.errors?.join('. ') || 'Booking failed');
-        }
+        // Call the new payment-integrated booking function
+        await createBookingAndPay(data);
+        // Reset smart booking flow and luggage for next booking
+        resetSmartBookingFlow();
+        resetLuggageSelection();
+        hideLuggageDetails();
       } catch (err) {
         showToast(err.message || 'Booking failed. Please try again.');
       } finally {
         btn.disabled = false;
-        btn.innerHTML = `Create Booking — <span id="submitTotal">₹${total.toFixed(2)}</span>`;
+        btn.innerHTML = `Create Booking — <span id=\"submitTotal\">₹${total.toFixed(2)}</span>`;
       }
     }
 
@@ -5049,13 +5059,24 @@ document.addEventListener('DOMContentLoaded', function() {
             }
       const status = booking.status;
       const statusText = document.getElementById('statusText');
-      
       statusText.textContent = status;
+      // Show payment method and status
+      const paymentMethodEl = document.getElementById('paymentMethodDisplay');
+      const paymentStatusEl = document.getElementById('paymentStatusDisplay');
+      // Prefer backend value, but fallback to what user selected if blank
+      let method = booking.paymentMethod && booking.paymentMethod !== 'Unknown' ? booking.paymentMethod : (localStorage.getItem('railmitra_last_payment_method') || '—');
+      if (paymentMethodEl) paymentMethodEl.textContent = 'Payment Method: ' + method;
+      if (paymentStatusEl) paymentStatusEl.textContent = 'Status: ' + (booking.paymentStatus || '—');
+      
+      // Show/hide UPI payment box based on payment status
+      if (typeof updateUpiPaymentBoxVisibility === 'function') {
+        updateUpiPaymentBoxVisibility(booking.paymentStatus);
+      }
       
       // Handle cancelled/rejected status immediately
       if (status === 'Cancelled' || status === 'Rejected') {
         statusText.style.color = '#ef4444';
-        showCancelledModal(status === 'Rejected' ? 'Cancelled by Admin' : 'Booking Cancelled');
+        showCancelledModal(status === 'Rejected' ? 'Cancelled by Admin' : 'Booking Cancelled', booking);
         return;
       }
       
@@ -5172,7 +5193,7 @@ document.addEventListener('DOMContentLoaded', function() {
               showFeedbackModal(booking);
             } else if (booking.status === 'Cancelled' || booking.status === 'Rejected') {
               clearInterval(pollInterval);
-              showCancelledModal(booking.status === 'Rejected' ? 'Cancelled by Admin' : 'Booking Cancelled');
+              showCancelledModal(booking.status === 'Rejected' ? 'Cancelled by Admin' : 'Booking Cancelled', booking);
             }
           }
         } catch (err) {
@@ -5182,7 +5203,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Show cancelled modal and redirect to booking page
-    function showCancelledModal(reason) {
+    function showCancelledModal(reason, booking = {}) {
+      // Check if payment was UPI/QR and needs refund message
+      const paymentMethod = booking.paymentMethod || '';
+      const paymentStatus = booking.paymentStatus || '';
+      const isUpiPayment = paymentMethod === 'UPI' || paymentMethod === 'UPI_QR' || paymentMethod === 'upi_qr';
+      const wasPaid = paymentStatus === 'Paid' || paymentStatus === 'pending_verification';
+      const showRefundMessage = isUpiPayment && wasPaid;
+      
       // Create modal overlay
       const modal = document.createElement('div');
       modal.id = 'cancelledModal';
@@ -5193,10 +5221,38 @@ document.addEventListener('DOMContentLoaded', function() {
         backdrop-filter: blur(8px);
       `;
       
+      const refundHtml = showRefundMessage ? `
+        <div style="
+          background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+          border: 1px solid #10b981;
+          border-radius: 12px;
+          padding: 16px;
+          margin-bottom: 24px;
+          text-align: left;
+        ">
+          <div style="display: flex; align-items: flex-start; gap: 12px;">
+            <div style="
+              width: 32px; height: 32px; background: #10b981; border-radius: 8px;
+              display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            ">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+            </div>
+            <div>
+              <div style="font-weight: 600; color: #047857; margin-bottom: 4px;">Refund Initiated</div>
+              <div style="font-size: 13px; color: #065f46; line-height: 1.5;">
+                Your payment of <strong>₹${booking.price || '—'}</strong> will be refunded to your original payment method within <strong>1-2 business days</strong>.
+              </div>
+            </div>
+          </div>
+        </div>
+      ` : '';
+      
       modal.innerHTML = `
         <div style="
           background: var(--card-bg); border-radius: 24px; padding: 48px;
-          max-width: 400px; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+          max-width: 420px; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.3);
         ">
           <div style="
             width: 80px; height: 80px; background: #ef4444; border-radius: 50%;
@@ -5204,9 +5260,10 @@ document.addEventListener('DOMContentLoaded', function() {
             margin: 0 auto 24px; font-size: 40px;
           ">❌</div>
           <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 12px; color: var(--text-primary);">${reason}</h2>
-          <p style="color: var(--text-secondary); margin-bottom: 32px; line-height: 1.6;">
+          <p style="color: var(--text-secondary); margin-bottom: 24px; line-height: 1.6;">
             Your booking has been cancelled. You can create a new booking request.
           </p>
+          ${refundHtml}
           <button onclick="closeAndRedirectToBooking()" style="
             padding: 16px 40px; background: var(--text-primary); color: var(--bg-primary);
             border: none; border-radius: 12px; font-size: 16px; font-weight: 600;
@@ -6481,24 +6538,43 @@ document.addEventListener('DOMContentLoaded', function() {
 	  document.getElementById('insuranceChk').addEventListener('change', updatePriceDisplay);
 	  // Initial price display
 	  updatePriceDisplay();
-	  // Check for existing booking in URL
-	  const urlParams = new URLSearchParams(window.location.search);
-	  const bookingId = urlParams.get('booking');
-	  if (bookingId) {
-		currentBookingId = bookingId;
-		document.getElementById('book').style.display = 'none';
-		document.getElementById('services').style.display = 'none';
-		document.getElementById('track').classList.add('active');
-		startPolling();
-		fetch(`/api/bookings/${bookingId}`)
-		  .then(res => res.json())
-		  .then(data => {
-			if (data.success || data.booking) {
-			  updateProgressUI(data.booking || data);
-			}
-		  })
-		  .catch(console.error);
-	  }
+    // Check for existing booking in URL and show progress UI if present
+    const urlParams = new URLSearchParams(window.location.search);
+    const bookingId = urlParams.get('booking');
+    if (bookingId) {
+      currentBookingId = bookingId;
+      document.getElementById('book').style.display = 'none';
+      document.getElementById('services').style.display = 'none';
+      document.getElementById('track').classList.add('active');
+      document.getElementById('track').scrollIntoView({ behavior: 'smooth' });
+      // Fetch booking and show progress
+      fetch(`/api/bookings/${bookingId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success || data.booking) {
+            showProgressSection(data.booking || data);
+          }
+        })
+        .catch(console.error);
+      // Start polling for updates
+      startPolling();
+    }
+    
+    // Show/hide phone input based on login state
+    function updatePhoneInputVisibility() {
+      const phoneGroup = document.getElementById('phoneInputGroup');
+      const phoneInput = document.getElementById('passengerPhone');
+      if (!window.currentUser || !window.currentUser.phone) {
+        if (phoneGroup) phoneGroup.style.display = '';
+        if (phoneInput) phoneInput.required = true;
+      } else {
+        if (phoneGroup) phoneGroup.style.display = 'none';
+        if (phoneInput) phoneInput.required = false;
+      }
+    }
+    updatePhoneInputVisibility();
+    // Also update on login/logout events
+    window.addEventListener('userProfileUpdated', updatePhoneInputVisibility);
 	}
 
 	// Run initApp when DOM is ready or immediately if already loaded
@@ -6511,3 +6587,980 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	// Ensure all blocks are closed
 	</script>
+  <!-- Payment Method Selection UI and Integration -->
+
+<script>
+// QR/UPI Payment UI and integration
+async function createBookingAndPay(formData) {
+        // Store booking state in localStorage for payment persistence
+        localStorage.setItem('railmitra_pending_booking', JSON.stringify(formData));
+        // Store service type for confirmation page
+        window.lastBookingServiceType = formData.serviceType || '';
+      // Show warning if serviceType is missing
+      if (!formData.serviceType || typeof formData.serviceType !== 'string' || formData.serviceType.trim() === '') {
+        alert('Please select a service type (e.g., Pickup, Drop, or Round Trip) before booking.');
+        return;
+      }
+    // Ensure stationCode is set for backend compatibility
+    if (!formData.stationCode && formData.station) {
+      formData.stationCode = formData.station;
+    }
+  // Ensure paymentMethod is set for backend compatibility
+  if (!formData.paymentMethod) {
+    formData.paymentMethod = 'upi_qr';
+  }
+  console.log('[DEBUG][createBookingAndPay] Payload:', formData);
+  const requiredFields = ['station', 'stationCode', 'serviceType'];
+  for (const field of requiredFields) {
+    if (!formData[field] || typeof formData[field] !== 'string' || formData[field].trim() === '') {
+      alert(`Missing required field: ${field}. Please select all required options before booking.`);
+      return;
+    }
+  }
+  // Instead of creating booking immediately, show payment page and only create booking after payment
+  // Use price or amount for payment display
+  let paymentAmount = '';
+  if (typeof formData.price !== 'undefined' && formData.price !== null) {
+    paymentAmount = parseFloat(formData.price);
+  } else if (typeof formData.amount !== 'undefined' && formData.amount !== null) {
+    paymentAmount = parseFloat(formData.amount);
+  }
+  if (!paymentAmount || isNaN(paymentAmount)) {
+    paymentAmount = '';
+  }
+  showUPIPaymentOptions(null, paymentAmount, formData.passenger || formData.passengerName || {});
+}
+
+function showUPIPaymentOptions(bookingId, amount, passengerDetails) {
+  // Device detection - use both user agent AND screen width for reliability
+  function isMobile() {
+    const userAgentMobile = /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const smallScreen = window.innerWidth < 768;
+    // Only consider it mobile if BOTH conditions suggest mobile
+    // This prevents false positives on touchscreen laptops
+    return userAgentMobile && smallScreen;
+  }
+  
+  const isMobileDevice = isMobile();
+  console.log('[Payment] Device detection:', { isMobile: isMobileDevice, screenWidth: window.innerWidth, userAgent: navigator.userAgent.substring(0, 50) });
+  
+  const upiId = '9494628724-2@ybl';
+  const numAmount = parseFloat(amount) || 0;
+  const pendingBooking = JSON.parse(localStorage.getItem('railmitra_pending_booking') || '{}');
+  const tempBookingId = pendingBooking.passengerPhone ? `BK${pendingBooking.passengerPhone.slice(-4)}${Date.now().toString().slice(-4)}` : `BK${Date.now().toString().slice(-8)}`;
+  const upiDeepLink = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=RailMitra&am=${numAmount}&cu=INR&tn=Booking-${tempBookingId}`;
+  
+  const main = document.querySelector('main') || document.body;
+  const payDiv = document.createElement('div');
+  payDiv.style = 'max-width:480px;margin:48px auto;padding:32px;background:#fff;border-radius:24px;box-shadow:0 4px 24px rgba(0,0,0,0.08);text-align:center;';
+  
+  // Insert payment UI HTML with mobile/desktop detection - matching dashboard colors
+  payDiv.innerHTML = `
+    <div style="margin-bottom:28px;">
+      <div style="width:56px;height:56px;background:#18181b;border-radius:50%;margin:0 auto 18px;display:flex;align-items:center;justify-content:center;">
+        <svg width="26" height="26" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+        </svg>
+      </div>
+      <h2 style="font-size:1.5rem;font-weight:700;color:#18181b;margin:0 0 10px 0;letter-spacing:-0.02em;">Complete Your Payment</h2>
+      <p style="font-size:1.35rem;color:#71717a;margin:0;">Amount: <b style="color:#18181b;">₹<span id="amount-value">${numAmount ? numAmount.toFixed(2) : '—'}</span></b></p>
+    </div>
+    
+    <!-- UPI App Button Section (shown on mobile only - won't work on desktop) -->
+    <div id="mobile-upi-section" style="display:${isMobileDevice ? 'block' : 'none'};margin:24px 0;">
+      <button id="pay-upi-app-btn" style="
+        width:100%;
+        max-width:300px;
+        padding:16px 28px;
+        background:#18181b;
+        color:#fff;
+        border:none;
+        border-radius:50px;
+        font-size:16px;
+        font-weight:600;
+        cursor:pointer;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        gap:10px;
+        margin:0 auto;
+        transition:transform 0.2s,background 0.2s;
+      ">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+        </svg>
+        Pay ₹${numAmount ? numAmount.toFixed(2) : '0'} with UPI App
+      </button>
+      <p style="font-size:13px;color:#a1a1aa;margin-top:14px;">
+        Opens PhonePe, Google Pay, Paytm or other UPI apps
+      </p>
+    </div>
+    
+    <!-- QR Code Section (shown on desktop/laptop only) -->
+    <div id="desktop-qr-section" style="display:${isMobileDevice ? 'none' : 'block'};margin:24px 0;padding:24px;background:#fafafa;border-radius:16px;border:1px solid #e4e4e7;">
+      <p style="font-size:14px;color:#71717a;margin:0 0 16px 0;font-weight:500;">Scan QR code with your phone:</p>
+      <div style="display:flex;align-items:center;justify-content:center;gap:24px;flex-wrap:wrap;">
+        <div style="background:#fff;padding:14px;border-radius:14px;border:1px solid #e4e4e7;">
+          <canvas id="upiQrCanvas" width="140" height="140" style="display:none;"></canvas>
+          <img id="upiQrImage" src="" alt="UPI QR Code" width="140" height="140" style="display:block;" />
+        </div>
+        <div style="text-align:left;max-width:200px;">
+          <div style="font-size:14px;color:#71717a;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+            <svg width="18" height="18" fill="none" stroke="#10b981" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+            </svg>
+            Scan with any UPI app
+          </div>
+          <div style="font-size:13px;color:#a1a1aa;margin-bottom:14px;">PhonePe, Google Pay, Paytm, etc.</div>
+          <div style="font-size:13px;color:#52525b;">
+            UPI ID: <span style="font-weight:600;color:#18181b;">${upiId}</span>
+          </div>
+          <button onclick="navigator.clipboard.writeText('${upiId}');showToast('UPI ID copied!');" style="margin-top:10px;font-size:13px;padding:8px 16px;border-radius:8px;border:1px solid #e4e4e7;background:#fff;color:#18181b;cursor:pointer;font-weight:500;transition:background 0.2s;" onmouseover="this.style.background='#f4f4f5'" onmouseout="this.style.background='#fff'">Copy UPI ID</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- UPI ID Section for Mobile (only shown on mobile when QR is hidden) -->
+    <div id="mobile-upi-id-section" style="display:${isMobileDevice ? 'block' : 'none'};margin-top:18px;padding:14px 18px;background:#fafafa;border-radius:12px;border:1px solid #e4e4e7;">
+        <div style="font-size:13px;color:#52525b;">
+          UPI ID: <span style="font-weight:600;color:#18181b;">${upiId}</span>
+          <button onclick="navigator.clipboard.writeText('${upiId}');showToast('UPI ID copied!');" style="margin-left:10px;font-size:12px;padding:5px 12px;border-radius:6px;border:1px solid #e4e4e7;background:#fff;color:#18181b;cursor:pointer;font-weight:500;">Copy</button>
+        </div>
+    </div>
+    
+    <!-- Payment Confirmation Section (shown for both) -->
+    <div style="margin-top:24px;padding:24px;background:#fafafa;border-radius:16px;border:1px solid #e4e4e7;">
+      <p style="font-size:14px;color:#52525b;margin:0 0 6px 0;font-weight:500;">After payment, verify with either:</p>
+      <p style="font-size:12px;color:#a1a1aa;margin:0 0 18px 0;">Transaction ID <b>or</b> Screenshot (at least one required)</p>
+      <input type="text" id="upiTxnId" placeholder="Enter UPI Transaction ID / UTR Number" style="
+        width:100%;
+        max-width:300px;
+        padding:14px 18px;
+        border:1px solid #e4e4e7;
+        border-radius:12px;
+        font-size:15px;
+        margin-bottom:14px;
+        outline:none;
+        background:#fff;
+        transition:border-color 0.2s;
+      " onfocus="this.style.borderColor='#18181b'" onblur="this.style.borderColor='#e4e4e7'" />
+      <br>
+      <label id="screenshotLabel" style="display:inline-block;padding:12px 20px;background:#fff;border-radius:10px;cursor:pointer;font-size:14px;color:#71717a;border:1px dashed #d4d4d8;margin-bottom:8px;transition:border-color 0.2s;">
+        <span id="screenshotLabelText">📷 Upload Payment Screenshot</span>
+        <input type="file" id="upiTxnScreenshot" accept="image/*" style="display:none;" onchange="window.selectedScreenshotFile = this.files[0]; document.getElementById('screenshotLabelText').textContent = '✅ Screenshot selected: ' + this.files[0].name; this.parentElement.style.borderColor='#10b981'; this.parentElement.style.color='#18181b';" />
+      </label>
+    </div>
+    
+    <!-- Action Buttons -->
+    <div style="margin-top:28px;display:flex;flex-wrap:wrap;justify-content:center;gap:12px;">
+      <button id="submit-upi-payment" style="
+        padding:14px 32px;
+        background:#18181b;
+        color:#fff;
+        border:none;
+        border-radius:50px;
+        font-size:15px;
+        font-weight:600;
+        cursor:pointer;
+        transition:background 0.2s;
+      " onmouseover="this.style.background='#27272a'" onmouseout="this.style.background='#18181b'">Submit Payment</button>
+      <button id="pay-cod" style="
+        padding:14px 32px;
+        background:#fff;
+        color:#18181b;
+        border:1px solid #e4e4e7;
+        border-radius:50px;
+        font-size:15px;
+        font-weight:600;
+        cursor:pointer;
+        transition:background 0.2s;
+      " onmouseover="this.style.background='#f4f4f5'" onmouseout="this.style.background='#fff'">Cash on Delivery</button>
+      <button id="cancel-payment" style="
+        padding:14px 24px;
+        background:transparent;
+        color:#a1a1aa;
+        border:none;
+        border-radius:50px;
+        font-size:15px;
+        font-weight:500;
+        cursor:pointer;
+        transition:color 0.2s;
+      " onmouseover="this.style.color='#18181b'" onmouseout="this.style.color='#a1a1aa'">Cancel</button>
+    </div>
+  `;
+  main.innerHTML = '';
+  main.appendChild(payDiv);
+  
+  // Assign event handlers after DOM is updated
+  setTimeout(() => {
+    // Cancel button handler
+    const cancelBtn = document.getElementById('cancel-payment');
+    if (cancelBtn) {
+      cancelBtn.onclick = () => {
+        localStorage.removeItem('railmitra_pending_booking');
+        window.location.href = 'passenger-premium.html';
+      };
+    }
+    
+    // Mobile "Pay with UPI App" button handler
+    const payUpiAppBtn = document.getElementById('pay-upi-app-btn');
+    if (payUpiAppBtn) {
+      payUpiAppBtn.onclick = () => {
+        console.log('[UPI] Opening UPI deep link:', upiDeepLink);
+        // Try to open UPI app
+        window.location.href = upiDeepLink;
+        
+        // Show toast after a delay
+        setTimeout(() => {
+          showToast('Opening UPI app... Complete payment and enter Transaction ID below.');
+        }, 500);
+      };
+      
+      // Add hover effect for mobile button
+      payUpiAppBtn.onmouseenter = () => {
+        payUpiAppBtn.style.background = '#27272a';
+      };
+      payUpiAppBtn.onmouseleave = () => {
+        payUpiAppBtn.style.background = '#18181b';
+      };
+    }
+    
+    // Render QR code for desktop users
+    function renderQr() {
+      const canvas = document.getElementById('upiQrCanvas');
+      const qrImage = document.getElementById('upiQrImage');
+      console.log('[QR] Rendering QR code, amount:', numAmount, 'QRCode available:', !!window.QRCode, 'isMobile:', isMobileDevice);
+      
+      // Only render QR if on desktop
+      if (!isMobileDevice && numAmount && !isNaN(numAmount)) {
+        const upiString = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=RailMitra&am=${numAmount}&cu=INR&tn=Booking-${tempBookingId}`;
+        console.log('[QR] UPI String:', upiString);
+        
+        // Try using JavaScript QRCode library first
+        if (window.QRCode && canvas) {
+          canvas.style.display = 'block';
+          if (qrImage) qrImage.style.display = 'none';
+          QRCode.toCanvas(canvas, upiString, { width: 140, margin: 1 }, function (error) {
+            if (error) {
+              console.error('[QR] Canvas error, using image fallback:', error);
+              useQrImageFallback(upiString);
+            } else {
+              console.log('[QR] QR code rendered successfully via canvas');
+            }
+          });
+        } else {
+          // Fallback: Use QR code API service (image-based)
+          useQrImageFallback(upiString);
+        }
+        
+        function useQrImageFallback(data) {
+          if (qrImage) {
+            // Use Google Charts QR API as fallback
+            const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(data)}`;
+            qrImage.src = qrApiUrl;
+            qrImage.style.display = 'block';
+            if (canvas) canvas.style.display = 'none';
+            console.log('[QR] Using image API fallback:', qrApiUrl);
+          }
+        }
+      }
+    }
+    
+    // Call renderQr for desktop users
+    if (!isMobileDevice) {
+      setTimeout(renderQr, 200);
+    }
+  }, 200);
+
+  setTimeout(() => {
+    const submitBtn = document.getElementById('submit-upi-payment');
+    if (submitBtn) {
+      submitBtn.onclick = async () => {
+        const txnId = document.getElementById('upiTxnId').value.trim();
+        const screenshotInput = document.getElementById('upiTxnScreenshot');
+        const screenshotFile = window.selectedScreenshotFile || (screenshotInput && screenshotInput.files && screenshotInput.files[0]);
+        const hasScreenshot = !!screenshotFile;
+        
+        // Validate: Either transaction ID or screenshot must be provided
+        if (!txnId && !hasScreenshot) {
+          alert('Please enter UPI Transaction ID or upload payment screenshot');
+          return;
+        }
+        const bookingPayload = JSON.parse(localStorage.getItem('railmitra_pending_booking'));
+        // Ensure paymentMethod is set to 'upi_qr' for UPI payments
+        bookingPayload.paymentMethod = 'upi_qr';
+        // Create booking first if not already created and get bookingId
+        let bookingId = bookingPayload._id || bookingPayload.bookingId;
+        if (!bookingId) {
+          // Create booking in backend (pending payment)
+          const bookingRes = await fetch('/api/bookings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(bookingPayload)
+          });
+          let bookingData = null;
+          try {
+            bookingData = await bookingRes.json();
+          } catch (e) {
+            console.error('Booking API did not return JSON:', e);
+            alert('Booking API error: Invalid response.');
+            return;
+          }
+          if (!bookingRes.ok || !bookingData || !bookingData.success) {
+            console.error('Booking creation failed:', bookingData);
+            alert('Booking could not be created: ' + (bookingData && bookingData.message ? bookingData.message : 'Unknown error. Please try again.'));
+            return;
+          }
+          bookingId = bookingData.bookingId || bookingData._id || (bookingData.booking && bookingData.booking._id);
+        }
+        if (!bookingId) {
+          alert('Booking could not be created. Please try again.');
+          return;
+        }
+        // Upload UPI proof and transaction ID
+        const formData = new FormData();
+        formData.append('bookingId', bookingId);
+        formData.append('upiRef', txnId || ''); // Transaction ID (optional if screenshot provided)
+        if (hasScreenshot && screenshotFile) {
+          formData.append('proof', screenshotFile);
+        }
+        const uploadRes = await fetch('/api/payment/upload-proof', {
+          method: 'POST',
+          body: formData
+        });
+        const uploadData = await uploadRes.json();
+        if (!uploadData.success) {
+          alert('Failed to upload payment proof. Please try again.');
+          return;
+        }
+        localStorage.removeItem('railmitra_pending_booking');
+        showBookingConfirmation(bookingId, bookingPayload.passenger || bookingPayload.passengerName || {}, 'UPI/QR Payment');
+      };
+    }
+    const codBtn = document.getElementById('pay-cod');
+    if (codBtn) {
+      codBtn.onclick = async () => {
+        // Create booking in backend only after COD
+        const bookingPayload = JSON.parse(localStorage.getItem('railmitra_pending_booking'));
+        bookingPayload.paymentMethod = 'cod';
+        const bookingRes = await fetch('/api/bookings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(bookingPayload)
+        });
+        const bookingData = await bookingRes.json();
+        let bookingId = bookingData.bookingId || bookingData._id || (bookingData.booking && bookingData.booking._id);
+        localStorage.removeItem('railmitra_pending_booking');
+        showBookingConfirmation(bookingId, bookingPayload.passenger || bookingPayload.passengerName || {}, 'Cash on Delivery');
+      };
+    }
+    const cancelBtn = document.getElementById('cancel-payment');
+    if (cancelBtn) {
+      cancelBtn.onclick = () => {
+        localStorage.removeItem('railmitra_pending_booking');
+        window.location.href = 'passenger-premium.html';
+      };
+    }
+  }, 0);
+}
+
+// On page load, always show payment page if pending booking exists and booking is not completed
+document.addEventListener('DOMContentLoaded', function() {
+  const pending = localStorage.getItem('railmitra_pending_booking');
+  const urlParams = new URLSearchParams(window.location.search);
+  const bookingId = urlParams.get('booking');
+  if (pending && !bookingId) {
+    // Always show payment page until payment is completed or cancelled
+    const formData = JSON.parse(pending);
+    createBookingAndPay(formData);
+  }
+});
+
+function showBookingConfirmation(bookingId, passengerDetails, paymentMethod) {
+  // Get service type BEFORE removing pending booking from localStorage
+  const pendingBooking = JSON.parse(localStorage.getItem('railmitra_pending_booking') || '{}');
+  const selectedServiceType = window.lastBookingServiceType || pendingBooking.serviceType || '—';
+  
+  // Format service type for display
+  const serviceTypeDisplay = {
+    'pickup': 'Pickup (Platform to Exit)',
+    'drop': 'Drop (Entry to Platform)',
+    'round_trip': 'Round Trip',
+    'ESCORT': 'Escort Service',
+    'LUGGAGE': 'Luggage Assistance',
+    'FULL_ASSIST': 'Full Assistance'
+  };
+  const formattedServiceType = serviceTypeDisplay[selectedServiceType] || selectedServiceType;
+  
+  // Remove pending booking state on success
+  localStorage.removeItem('railmitra_pending_booking');
+  const main = document.querySelector('main') || document.body;
+  main.innerHTML = `
+    <div style="background:#fff;border-radius:24px;box-shadow:0 4px 24px rgba(0,0,0,0.08);padding:48px 32px 36px 32px;max-width:480px;margin:48px auto;text-align:center;border:1px solid #e4e4e7;">
+      <div style="width:56px;height:56px;background:#18181b;border-radius:50%;margin:0 auto 20px;display:flex;align-items:center;justify-content:center;">
+        <svg width="28" height="28" fill="none" stroke="#10b981" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+        </svg>
+      </div>
+      <h2 style="font-size:1.75rem;font-weight:700;margin-bottom:16px;color:#18181b;letter-spacing:-0.02em;">Booking Confirmed!</h2>
+      <p style="font-size:1.05rem;color:#52525b;margin-bottom:10px;">Your booking <b style="color:#18181b">#${bookingId}</b> is confirmed.</p>
+      <p style="font-size:1.05rem;color:#52525b;margin-bottom:10px;">Service Type: <b style="color:#18181b">${formattedServiceType}</b></p>
+      <p style="font-size:1.05rem;color:#52525b;margin-bottom:10px;">Payment Method: <b style="color:#18181b">${paymentMethod}</b></p>
+      <p style="font-size:1rem;color:#71717a;margin-bottom:24px;">Thank you, <b style="color:#18181b">${escapeHtml(passengerDetails.name || 'Passenger')}</b>!</p>
+      <a href="passenger-premium.html?booking=${bookingId}" style="display:inline-block;padding:14px 36px;background:#18181b;color:#fff;border:none;border-radius:50px;font-size:16px;font-weight:600;text-decoration:none;transition:background 0.2s;" onmouseover="this.style.background='#27272a'" onmouseout="this.style.background='#18181b'">Track Booking</a>
+    </div>
+  `;
+}
+</script>
+
+<!-- Train Live Status Modal -->
+<div id="trainStatusModal" style="display:none; position:fixed; z-index:100000; left:0; top:0; width:100vw; height:100vh; background:rgba(24,24,27,0.82); align-items:center; justify-content:center;">
+  <div style="background:#23232b; color:#f3f4f6; border-radius:18px; max-width:540px; width:92vw; padding:32px 24px; box-shadow:0 8px 40px rgba(0,0,0,0.18); position:relative; display:flex; flex-direction:column;">
+    <button onclick="closeTrainStatusModal()" style="position:absolute; top:12px; right:16px; background:none; border:none; color:#fff; font-size:22px; cursor:pointer;">&times;</button>
+    <h2 style="margin-bottom:18px;">🚄 Live Train Status</h2>
+    <div id="trainStatusInfo" style="margin-bottom:18px;"></div>
+    <div id="trainStatusMap" style="height:260px; border-radius:12px; overflow:hidden;"></div>
+  </div>
+</div>
+
+<!-- Emergency Modal - Premium Edition -->
+<style>
+  @keyframes emergencyPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+    50% { box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); }
+  }
+  @keyframes onlinePulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(0.9); }
+  }
+  @keyframes typingBounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-4px); }
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes messageIn {
+    from { opacity: 0; transform: scale(0.95) translateY(8px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .emergency-modal-scrollbar::-webkit-scrollbar { width: 4px; }
+  .emergency-modal-scrollbar::-webkit-scrollbar-track { background: transparent; }
+  .emergency-modal-scrollbar::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
+  .emergency-modal-scrollbar::-webkit-scrollbar-thumb:hover { background: #52525b; }
+  .quick-help-chip {
+    padding: 8px 14px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    color: #a1a1aa;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    backdrop-filter: blur(4px);
+  }
+  .quick-help-chip:hover {
+    background: linear-gradient(135deg, rgba(239,68,68,0.15) 0%, rgba(239,68,68,0.08) 100%);
+    border-color: rgba(239,68,68,0.3);
+    color: #fca5a5;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239,68,68,0.15);
+  }
+  .chat-message-bubble {
+    animation: messageIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .suggestion-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #e4e4e7;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid rgba(63,63,70,0.5);
+  }
+  .suggestion-item:last-child { border-bottom: none; }
+  .suggestion-item:hover {
+    background: linear-gradient(90deg, rgba(239,68,68,0.12) 0%, rgba(239,68,68,0.05) 100%);
+    padding-left: 20px;
+  }
+</style>
+
+<div id="emergencyModal" style="display:none; position:fixed; z-index:99999; left:0; top:0; width:100vw; height:100vh; background:linear-gradient(180deg, rgba(0,0,0,0.85) 0%, rgba(24,24,27,0.95) 100%); align-items:center; justify-content:center; backdrop-filter: blur(12px);">
+  <div style="background: linear-gradient(180deg, rgba(39,39,42,0.95) 0%, rgba(24,24,27,0.98) 100%); color:#f3f4f6; border-radius:24px; max-width:460px; width:94vw; padding:0; box-shadow: 0 25px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.05); position:relative; display:flex; flex-direction:column; max-height: 92vh; overflow:hidden;">
+    
+    <!-- Header -->
+    <div style="padding: 20px 24px; background: linear-gradient(180deg, rgba(239,68,68,0.08) 0%, transparent 100%); border-bottom: 1px solid rgba(255,255,255,0.05);">
+      <button onclick="closeEmergencyModal()" style="position:absolute; top:16px; right:16px; background:rgba(255,255,255,0.06); border:none; color:#71717a; font-size:16px; cursor:pointer; width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; transition: all 0.2s;" onmouseover="this.style.background='rgba(239,68,68,0.15)'; this.style.color='#fca5a5';" onmouseout="this.style.background='rgba(255,255,255,0.06)'; this.style.color='#71717a';">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+      
+      <div style="display:flex; align-items:center; gap:14px;">
+        <div style="position:relative;">
+          <div style="width:54px; height:54px; background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:26px; animation: emergencyPulse 2s infinite;">🚨</div>
+          <div id="chatConnectionStatus" style="position:absolute; bottom:-2px; right:-2px; width:16px; height:16px; background:#10b981; border-radius:50%; border:3px solid #27272a; animation: onlinePulse 2s infinite;"></div>
+        </div>
+        <div>
+          <h2 style="margin:0; font-size:22px; font-weight:800; letter-spacing:-0.5px;">Emergency Help</h2>
+          <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
+            <span id="passengerChatBookingId" style="font-size:11px; color:#10b981; font-weight:600; font-family: monospace;"></span>
+            <span style="width:4px; height:4px; background:#3f3f46; border-radius:50%;"></span>
+            <span id="chatStatusText" style="font-size:11px; color:#71717a;">Connecting...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Call Admin Card -->
+    <div style="margin: 16px 20px 0; padding:14px 16px; background: linear-gradient(135deg, rgba(16,185,129,0.12) 0%, rgba(16,185,129,0.05) 100%); border: 1px solid rgba(16,185,129,0.2); border-radius:14px; display:flex; align-items:center; gap:14px; transition: all 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(16,185,129,0.2)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
+      <div style="width:42px; height:42px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius:12px; display:flex; align-items:center; justify-content:center; box-shadow: 0 4px 12px rgba(16,185,129,0.3);">
+        <svg width="20" height="20" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      </div>
+      <div style="flex:1;">
+        <div style="font-size:10px; color:#34d399; font-weight:700; text-transform:uppercase; letter-spacing:1px;">Priority Helpline</div>
+        <a href="tel:+911234567890" style="color:#fff; font-size:18px; font-weight:700; text-decoration:none; letter-spacing:0.5px;">+91 12345 67890</a>
+      </div>
+      <svg width="20" height="20" fill="none" stroke="#34d399" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </div>
+    
+    <!-- Chat Section -->
+    <div style="flex:1; display:flex; flex-direction:column; padding:16px 20px 20px; min-height:0;">
+      <div style="font-size:11px; font-weight:700; color:#52525b; text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; display:flex; align-items:center; gap:8px;">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Live Chat with Admin
+        <div style="flex:1;"></div>
+        <div style="width:6px; height:6px; background:#10b981; border-radius:50%; animation: onlinePulse 2s infinite;"></div>
+        <span style="font-size:10px; color:#10b981; font-weight:600; text-transform:none; letter-spacing:0;">Online</span>
+      </div>
+      
+      <!-- Chat Box -->
+      <div id="chatBox" class="emergency-modal-scrollbar" style="background: linear-gradient(180deg, #0a0a0c 0%, #0f0f12 100%); border-radius:16px; border:1px solid rgba(255,255,255,0.06); flex:1; min-height:160px; max-height:220px; overflow-y:auto; padding:16px; font-size:14px; color:#fff; margin-bottom:12px; scroll-behavior:smooth;">
+        <div id="chatWelcome" style="text-align:center; padding:20px 10px;">
+          <div style="width:48px; height:48px; background:rgba(239,68,68,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 12px;">
+            <svg width="24" height="24" fill="none" stroke="#ef4444" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <div style="font-size:13px; color:#71717a; line-height:1.5;">Start a conversation with our support team. We're here to help!</div>
+        </div>
+      </div>
+      
+      <!-- Quick Help Section -->
+      <div id="quickHelpSection" style="margin-bottom:12px;">
+        <div style="font-size:10px; font-weight:700; color:#52525b; text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          Quick Responses
+        </div>
+        <div id="quickHelpButtons" style="display:flex; flex-wrap:wrap; gap:8px; max-height:80px; overflow-y:auto; padding:2px;" class="emergency-modal-scrollbar"></div>
+      </div>
+      
+      <!-- Typing Indicator -->
+      <div id="typingIndicator" style="font-size:12px; color:#71717a; min-height:20px; margin-bottom:6px; display:flex; align-items:center; gap:8px;"></div>
+      
+      <!-- Chat Input -->
+      <div style="position:relative;">
+        <div id="chatSuggestions" style="display:none; position:absolute; bottom:100%; left:0; right:0; background: linear-gradient(180deg, rgba(39,39,42,0.98) 0%, rgba(30,30,33,0.98) 100%); border:1px solid rgba(255,255,255,0.08); border-radius:14px; margin-bottom:8px; box-shadow: 0 -8px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05); overflow:hidden; z-index:10; backdrop-filter: blur(12px);"></div>
+        <div style="display:flex; gap:10px; align-items:stretch;">
+          <div style="flex:1; position:relative;">
+            <input id="chatInput" type="text" placeholder="Type your emergency message..." autocomplete="off" style="width:100%; border-radius:14px; border:2px solid rgba(255,255,255,0.06); background: linear-gradient(180deg, rgba(39,39,42,0.8) 0%, rgba(30,30,33,0.8) 100%); color:#fff; padding:14px 18px; font-size:14px; outline:none; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);" onfocus="this.style.borderColor='#ef4444'; this.style.boxShadow='0 0 0 4px rgba(239,68,68,0.12), 0 4px 20px rgba(239,68,68,0.15)'; this.style.background='rgba(39,39,42,0.95)';" onblur="this.style.borderColor='rgba(255,255,255,0.06)'; this.style.boxShadow='none'; this.style.background='linear-gradient(180deg, rgba(39,39,42,0.8) 0%, rgba(30,30,33,0.8) 100%)';" oninput="handleChatInputChange()" onkeydown="handleChatInputKeydown(event)" />
+          </div>
+          <button id="sendMessageBtn" onclick="sendChatMessage()" style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); color:#fff; border:none; border-radius:14px; padding:0 22px; font-size:14px; font-weight:600; cursor:pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 15px rgba(239,68,68,0.35); display:flex; align-items:center; justify-content:center;" onmouseover="this.style.transform='translateY(-2px) scale(1.02)'; this.style.boxShadow='0 8px 25px rgba(239,68,68,0.45)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 4px 15px rgba(239,68,68,0.35)';">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="display:block;"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Quick Help and Suggestions Data
+const quickHelpMessages = [
+  { icon: "👤", text: "I can't find my assistant" },
+  { icon: "📍", text: "Where should I meet?" },
+  { icon: "⏰", text: "Train arrived early" },
+  { icon: "⏳", text: "Train is delayed" },
+  { icon: "🧳", text: "Need luggage help" },
+  { icon: "🚉", text: "Wrong platform" },
+  { icon: "📵", text: "No response from assistant" }
+];
+
+const chatSuggestionKeywords = {
+  'assistant': [
+    "Assistant has not arrived",
+    "Assistant is late",
+    "I can't find my assistant"
+  ],
+  'train': [
+    "My train has arrived",
+    "My train is delayed",
+    "My train arrived early"
+  ],
+  'platform': [
+    "I am at the wrong platform",
+    "Which platform should I go to?",
+    "Platform changed"
+  ],
+  'help': [
+    "I need immediate help",
+    "I need luggage help",
+    "I need assistance now"
+  ],
+  'late': [
+    "Assistant is late",
+    "My train is late",
+    "I will be late"
+  ],
+  'find': [
+    "I can't find my assistant",
+    "I can't find the platform",
+    "I can't find the exit"
+  ],
+  'meet': [
+    "Where should I meet the assistant?",
+    "Meeting point unclear",
+    "Can't reach meeting point"
+  ],
+  'luggage': [
+    "I need luggage help",
+    "I have heavy luggage",
+    "Luggage assistance required"
+  ],
+  'respond': [
+    "Assistant is not responding",
+    "No response from assistant",
+    "Cannot contact assistant"
+  ],
+  'delay': [
+    "My train is delayed",
+    "I will be delayed",
+    "Service is delayed"
+  ],
+  'early': [
+    "My train arrived early",
+    "I arrived early",
+    "Train running early"
+  ],
+  'wrong': [
+    "I am at the wrong platform",
+    "Wrong meeting point",
+    "Wrong train number"
+  ]
+};
+
+// Initialize Quick Help Buttons
+function initQuickHelpButtons() {
+  const container = document.getElementById('quickHelpButtons');
+  if (!container) return;
+  
+  container.innerHTML = quickHelpMessages.map(item => `
+    <button onclick="insertQuickMessage('${item.text.replace(/'/g, "\\'")}')" class="quick-help-chip">
+      <span style="margin-right:4px;">${item.icon}</span>${item.text}
+    </button>
+  `).join('');
+}
+
+// Insert quick message into input
+function insertQuickMessage(msg) {
+  const input = document.getElementById('chatInput');
+  if (input) {
+    input.value = msg;
+    input.focus();
+    hideChatSuggestions();
+  }
+}
+
+// Handle chat input changes for suggestions
+function handleChatInputChange() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim().toLowerCase();
+  
+  if (text.length < 2) {
+    hideChatSuggestions();
+    return;
+  }
+  
+  // Find matching suggestions
+  let suggestions = [];
+  for (const [keyword, msgs] of Object.entries(chatSuggestionKeywords)) {
+    if (text.includes(keyword)) {
+      suggestions = [...suggestions, ...msgs];
+    }
+  }
+  
+  // Remove duplicates and limit to 3
+  suggestions = [...new Set(suggestions)].slice(0, 3);
+  
+  if (suggestions.length > 0) {
+    showChatSuggestions(suggestions);
+  } else {
+    hideChatSuggestions();
+  }
+}
+
+// Handle keyboard navigation for suggestions
+function handleChatInputKeydown(event) {
+  if (event.key === 'Enter') {
+    hideChatSuggestions();
+    sendChatMessage();
+  } else if (event.key === 'Escape') {
+    hideChatSuggestions();
+  }
+}
+
+// Show suggestions dropdown
+function showChatSuggestions(suggestions) {
+  const container = document.getElementById('chatSuggestions');
+  if (!container) return;
+  
+  container.innerHTML = suggestions.map((s, i) => `
+    <div onclick="selectChatSuggestion('${s.replace(/'/g, "\\'")}')" class="suggestion-item">
+      <svg width="14" height="14" fill="none" stroke="#ef4444" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0; opacity:0.6;">
+        <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
+      </svg>
+      ${s}
+    </div>
+  `).join('');
+  
+  container.style.display = 'block';
+}
+
+// Hide suggestions dropdown
+function hideChatSuggestions() {
+  const container = document.getElementById('chatSuggestions');
+  if (container) {
+    container.style.display = 'none';
+  }
+}
+
+// Select a suggestion
+function selectChatSuggestion(msg) {
+  const input = document.getElementById('chatInput');
+  if (input) {
+    input.value = msg;
+    input.focus();
+  }
+  hideChatSuggestions();
+}
+
+// Initialize on modal open
+const originalTriggerEmergencyHelp = window.triggerEmergencyHelp;
+</script>
+
+<script>
+// Chat and Emergency functionality
+let chatSocket, chatBookingId, chatUserName = 'Passenger';
+
+function triggerEmergencyHelp(bookingId) {
+  document.getElementById('emergencyModal').style.display = 'flex';
+  window.currentEmergencyBookingId = bookingId;
+  chatBookingId = bookingId;
+  document.getElementById('passengerChatBookingId').textContent = '#' + bookingId;
+  initQuickHelpButtons();
+  setupChatSocket();
+}
+
+function closeEmergencyModal() {
+  document.getElementById('emergencyModal').style.display = 'none';
+  hideChatSuggestions();
+  if (chatSocket) chatSocket.disconnect();
+}
+
+function setupChatSocket() {
+  if (!window.io) {
+    document.addEventListener('socketio-ready', setupChatSocket, { once: true });
+    return;
+  }
+  if (chatSocket) chatSocket.disconnect();
+  chatSocket = io('http://localhost:3000');
+  chatSocket.emit('join', { role: 'passenger', bookingId: chatBookingId });
+  const chatBox = document.getElementById('chatBox');
+  chatBox.innerHTML = '';
+  document.getElementById('chatInput').value = '';
+  chatSocket.on('chat_history', msgs => {
+    chatBox.innerHTML = '';
+    msgs.forEach(m => appendChatMessage(m));
+    chatBox.scrollTop = chatBox.scrollHeight;
+  });
+  chatSocket.on('chat_message', msg => {
+    appendChatMessage(msg);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  });
+  chatSocket.on('typing', user => {
+    document.getElementById('typingIndicator').innerHTML = `
+      <div style="display:flex; align-items:center; gap:6px; padding:8px 12px; background:rgba(63,63,70,0.3); border-radius:12px;">
+        <span style="font-size:11px; color:#a1a1aa;">${user} is typing</span>
+        <div style="display:flex; gap:3px;">
+          <span style="width:5px; height:5px; background:#ef4444; border-radius:50%; animation:typingBounce 1s infinite;"></span>
+          <span style="width:5px; height:5px; background:#ef4444; border-radius:50%; animation:typingBounce 1s infinite 0.15s;"></span>
+          <span style="width:5px; height:5px; background:#ef4444; border-radius:50%; animation:typingBounce 1s infinite 0.3s;"></span>
+        </div>
+      </div>
+    `;
+  });
+  chatSocket.on('stop_typing', () => {
+    document.getElementById('typingIndicator').innerHTML = '';
+  });
+}
+
+function sendChatMessage() {
+  console.log('[Passenger] sendChatMessage called');
+  hideChatSuggestions(); // Hide suggestions when sending
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if (!msg) {
+    alert('Please enter a message before sending.');
+    return;
+  }
+  if (!chatSocket) {
+    alert('Chat connection not established. Please close and reopen the emergency chat.');
+    console.error('chatSocket not initialized');
+    return;
+  }
+  if (!chatBookingId) {
+    alert('Booking ID missing. Please close and reopen the emergency chat.');
+    console.error('chatBookingId missing');
+    return;
+  }
+  const messageObj = { bookingId: chatBookingId, user: chatUserName, text: msg, time: new Date().toISOString() };
+  console.log('Sending message:', messageObj);
+  try {
+    console.log('[Passenger] Emitting chat_message:', messageObj);
+    chatSocket.emit('chat_message', messageObj, (ack) => {
+      if (ack && ack.error) {
+        alert('Message failed to send: ' + ack.error);
+        console.error('Emit error:', ack.error);
+      } else {
+        console.log('Message sent successfully');
+      }
+    });
+  } catch (err) {
+    alert('Error sending message: ' + err.message);
+    console.error('Emit exception:', err);
+  }
+  input.value = '';
+  document.getElementById('typingIndicator').innerHTML = '';
+}
+
+function appendChatMessage(msg) {
+  const chatBox = document.getElementById('chatBox');
+  
+  // Hide welcome message on first real message
+  const welcome = document.getElementById('chatWelcome');
+  if (welcome) welcome.style.display = 'none';
+  
+  // Update connection status
+  const statusText = document.getElementById('chatStatusText');
+  if (statusText) statusText.textContent = 'Connected';
+  
+  const isSelf = msg.user === chatUserName;
+  const div = document.createElement('div');
+  div.className = 'chat-message-bubble';
+  div.style.cssText = `margin-bottom:12px; display:flex; flex-direction:column; align-items:${isSelf ? 'flex-end':'flex-start'};`;
+  div.innerHTML = `
+    <div style="
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      flex-direction: ${isSelf ? 'row-reverse' : 'row'};
+    ">
+      ${!isSelf ? `<div style="width:28px; height:28px; background:linear-gradient(135deg, #3f3f46 0%, #27272a 100%); border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; border:2px solid #52525b;">
+        <svg width="14" height="14" fill="none" stroke="#a1a1aa" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>` : ''}
+      <div style="
+        display:inline-block;
+        background: ${isSelf ? 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)' : 'linear-gradient(180deg, #3f3f46 0%, #2d2d32 100%)'};
+        color:#fff;
+        border-radius: ${isSelf ? '18px 18px 6px 18px' : '18px 18px 18px 6px'};
+        padding: 12px 16px;
+        max-width: 78%;
+        word-break: break-word;
+        box-shadow: ${isSelf ? '0 4px 15px rgba(239,68,68,0.3), inset 0 1px 0 rgba(255,255,255,0.1)' : '0 2px 10px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.05)'};
+        font-size: 14px;
+        line-height: 1.5;
+        ${isSelf ? 'border: 1px solid rgba(255,255,255,0.1);' : 'border: 1px solid rgba(255,255,255,0.05);'}
+      ">${msg.text}</div>
+    </div>
+    <div style="
+      font-size: 10px;
+      color: #52525b;
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0 ${isSelf ? '0' : '36px'};
+    ">
+      ${new Date(msg.time).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}
+      ${isSelf ? `<svg width="14" height="14" fill="none" stroke="#10b981" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>` : ''}
+    </div>
+  `;
+  chatBox.appendChild(div);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+// Train Live Status functionality
+function openTrainStatusModal(trainNumber) {
+  const modal = document.getElementById('trainStatusModal');
+  const infoDiv = document.getElementById('trainStatusInfo');
+  const mapDiv = document.getElementById('trainStatusMap');
+  modal.style.display = 'flex';
+  infoDiv.innerHTML = 'Loading live status...';
+  mapDiv.innerHTML = '';
+  fetch(`https://api.railradar.org/api/v1/trains/live-map?train_number=${encodeURIComponent(trainNumber)}`)
+    .then(r => r.json())
+    .then(data => {
+      if (!data || !data.train || !data.train.current_position) {
+        infoDiv.innerHTML = '<span style="color:#ef4444">Live status not available for this train.</span>';
+        return;
+      }
+      const pos = data.train.current_position;
+      const delay = pos.delay_minutes ? `${pos.delay_minutes} min delay` : 'On time';
+      infoDiv.innerHTML = `<b>Train:</b> ${data.train.train_number} - ${data.train.train_name || ''}<br><b>Current Location:</b> ${pos.station_name || 'Unknown'}<br><b>Status:</b> ${delay}`;
+      mapDiv.innerHTML = '<div id="trainMap" style="width:100%;height:100%;"></div>';
+      const map = L.map('trainMap').setView([pos.lat, pos.lng], 8);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(map);
+      L.marker([pos.lat, pos.lng]).addTo(map)
+        .bindPopup(`<b>${data.train.train_number}</b><br>${pos.station_name || ''}<br>${delay}`)
+        .openPopup();
+    })
+    .catch(() => {
+      infoDiv.innerHTML = '<span style="color:#ef4444">Could not fetch live status.</span>';
+    });
+}
+
+function closeTrainStatusModal() {
+  document.getElementById('trainStatusModal').style.display = 'none';
+  document.getElementById('trainStatusMap').innerHTML = '';
+}
+
+// Setup typing indicator and track train buttons
+document.addEventListener('DOMContentLoaded', function() {
+  const input = document.getElementById('chatInput');
+  if (input) {
+    input.addEventListener('input', function() {
+      if (chatSocket) chatSocket.emit('typing', { bookingId: chatBookingId, user: chatUserName });
+      clearTimeout(window._typingTimeout);
+      window._typingTimeout = setTimeout(() => {
+        if (chatSocket) chatSocket.emit('stop_typing', { bookingId: chatBookingId });
+      }, 1200);
+    });
+  }
+  
+  // Add Track Train button to each booking card
+  setTimeout(() => {
+    document.querySelectorAll('[data-train-number]').forEach(btn => {
+      btn.onclick = function() {
+        openTrainStatusModal(this.getAttribute('data-train-number'));
+      };
+    });
+  }, 1000);
+});
+</script>
+
+  <div class="toast" id="toast"></div>
+  </body>
+</html>
