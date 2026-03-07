@@ -1,5 +1,49 @@
 const express = require('express');
 const router = express.Router();
+// UPI QR payment booking creation (dynamic QR, with transaction ID, screenshot, temp ID)
+router.post('/upi', async (req, res) => {
+  try {
+    // Accept multipart/form-data for screenshot
+    const multer = require('multer');
+    const upload = multer({ dest: 'uploads/' });
+    upload.single('transactionProof')(req, res, async function (err) {
+      if (err) return res.status(400).json({ success: false, message: 'File upload error' });
+      const data = req.body;
+      // Validate: at least one of transactionId or screenshot must be present
+      const hasTxnId = data.transactionId && /^\w{6,}$/.test(data.transactionId);
+      const hasScreenshot = !!req.file;
+      if (!hasTxnId && !hasScreenshot) {
+        return res.status(400).json({ success: false, message: 'Please enter your UPI Transaction ID or upload a payment screenshot.' });
+      }
+      // Prevent duplicate by tempId
+      if (data.tempId) {
+        const existing = await require('../models/Booking').findOne({ tempId: data.tempId });
+        if (existing) return res.status(409).json({ success: false, message: 'Duplicate payment submission' });
+      }
+      // Compose booking data
+      const bookingData = {
+        ...data,
+        paymentMethod: 'UPI_QR',
+        paymentStatus: 'UPI_PENDING_VERIFICATION',
+        tempId: data.tempId,
+      };
+      if (hasTxnId) bookingData.transactionId = data.transactionId;
+      if (req.file) bookingData.upiProofFile = req.file.path;
+      // Create booking
+      try {
+        const Booking = require('../models/Booking');
+        const booking = new Booking(bookingData);
+        await booking.save();
+        res.json({ success: true, booking });
+      } catch (err) {
+        res.status(500).json({ success: false, message: 'Booking creation failed', error: err.message });
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Internal error', error: err.message });
+  }
+});
+// ...existing code...
 const Booking = require('../models/Booking');
 const Assistant = require('../models/Assistant');
 const ServiceTask = require('../models/ServiceTask');
@@ -104,8 +148,15 @@ function genOtp() {
 router.post('/', async (req, res) => {
   try {
     const data = req.body;
+    // Allow direct booking creation for Razorpay, UPI_QR, and COD
+    const allowedMethods = ['razorpay', 'upi_qr', 'cod'];
+    const method = typeof data.paymentMethod === 'string' ? data.paymentMethod.trim().toLowerCase() : '';
+    if (!allowedMethods.includes(method)) {
+      return res.status(403).json({ success: false, message: 'Direct booking creation is only allowed for Razorpay, UPI QR, or COD payments.' });
+    }
+    // Debug: Log incoming booking payload
+    console.log('[DEBUG][BOOKING] Incoming payload:', JSON.stringify(data, null, 2));
     const otp = genOtp();
-    
     // Try to get userId from JWT token if provided
     let userId = null;
     const authHeader = req.headers['authorization'];
@@ -118,7 +169,6 @@ router.post('/', async (req, res) => {
         // Token invalid or expired, continue without userId
       }
     }
-    
     // Validate service type if train and station are provided
     // Fallback mapper for backward compatibility
     let serviceType = data.serviceType || 'pickup';
@@ -128,7 +178,6 @@ router.post('/', async (req, res) => {
       'FULL_ASSIST': 'round_trip'
     };
     if (legacyMap[serviceType]) serviceType = legacyMap[serviceType];
-    
     // ==================== LUGGAGE VALIDATION (SERVER-SIDE) ====================
     // Supports BOTH legacy (single size/quantity) AND new multi-luggage cart
     let luggageItems = [];
@@ -176,6 +225,22 @@ router.post('/', async (req, res) => {
     }
     
     // Calculate price server-side (NEVER trust frontend price)
+
+    // Ensure payment fields are always set and normalized
+    if (!data.paymentMethod || typeof data.paymentMethod !== 'string' || !data.paymentMethod.trim()) {
+      data.paymentMethod = 'Unknown';
+    } else {
+      // Normalize payment method for COD
+      const pm = data.paymentMethod.trim().toLowerCase();
+      if (pm === 'cash on delivery' || pm === 'cod') {
+        data.paymentMethod = 'COD';
+      } else if (pm === 'razorpay') {
+        data.paymentMethod = 'Razorpay';
+      } // else leave as is
+    }
+    if (!data.paymentStatus || typeof data.paymentStatus !== 'string' || !data.paymentStatus.trim()) {
+      data.paymentStatus = 'Pending';
+    }
     const priceCalc = calculateTotalPrice({
       services: data.services || [],
       luggageSize: legacyLuggageSize,
@@ -339,7 +404,10 @@ router.post('/', async (req, res) => {
       matched: matchResult.success
     });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    // Enhanced debug logging for booking errors
+    console.error('[DEBUG][BOOKING] Error creating booking:', err && err.stack ? err.stack : err);
+    console.error('[DEBUG][BOOKING] Incoming payload (on error):', JSON.stringify(req.body, null, 2));
+    res.status(500).json({ success: false, error: err.message, stack: err && err.stack ? err.stack : undefined, payload: req.body });
   }
 });
 
@@ -855,6 +923,30 @@ router.post('/:id/cancel', authenticate, authorize('admin'), async (req, res) =>
     
     res.json({ success: true, booking });
   } catch (err) { res.status(500).json({ success: false, error: err.message }); }
+});
+
+// Assistant: Mark cash as collected for COD bookings
+router.post('/:id/mark-cash-paid', async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id);
+    if (!booking) {
+      return res.status(404).json({ success: false, message: 'Booking not found' });
+    }
+    // Check if it's a COD booking
+    const isCOD = ['COD', 'cod', 'Cash on Delivery', 'cash_on_delivery'].includes(booking.paymentMethod);
+    if (!isCOD) {
+      return res.status(400).json({ success: false, message: 'Not a Cash on Delivery booking' });
+    }
+    // Mark as paid and collected
+    booking.paymentStatus = 'Paid';
+    booking.cashCollected = true;
+    await booking.save();
+    console.log(`[Booking] Cash collected for booking ${booking._id}`);
+    res.json({ success: true, booking });
+  } catch (err) {
+    console.error('[Booking] mark-cash-paid error:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 /**

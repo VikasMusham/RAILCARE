@@ -327,6 +327,39 @@ router.get('/audit-logs', async (req, res) => {
 // ============================================
 // APPLICATION MANAGEMENT ROUTES
 // ============================================
+/**
+ * PATCH /api/admin/bookings/:id/verify-payment
+ * Admin verifies payment for a booking (QR/UPI)
+ */
+router.patch('/bookings/:id/verify-payment', async (req, res) => {
+  try {
+    const bookingId = req.params.id;
+    const { transactionId } = req.body;
+    const Booking = require('../models/Booking');
+    const booking = await Booking.findById(bookingId);
+    if (!booking) {
+      return res.status(404).json({ success: false, message: 'Booking not found' });
+    }
+    booking.paymentStatus = 'Paid';
+    if (transactionId) booking.transactionId = transactionId;
+    await booking.save();
+    // Optionally, log the verification
+    try {
+      const AuditLog = require('../models/AuditLog');
+      await AuditLog.create({
+        action: 'verify_payment',
+        actorId: req.user?.id || req.user?._id,
+        actorRole: 'admin',
+        targetType: 'booking',
+        targetId: String(booking._id),
+        meta: { transactionId: booking.transactionId }
+      });
+    } catch (e) {}
+    res.json({ success: true, message: 'Payment verified', booking });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error', error: err.message });
+  }
+});
 
 /**
  * GET /api/admin/applications
@@ -489,9 +522,59 @@ router.get('/bookings', async (req, res) => {
     if (status) q.status = status;
     if (station) q.station = station;
     if (passengerName) q.passengerName = { $regex: passengerName, $options: 'i' };
-    const bookings = await Booking.find(q)
+    const bookingsRaw = await Booking.find(q)
       .sort({ createdAt: -1 })
       .populate('assistantId');
+
+    // Normalize paymentMethod and paymentStatus for each booking
+    const bookings = bookingsRaw.map(b => {
+      // Normalize payment method for admin display
+      let normalizedPaymentMethod = b.paymentMethod;
+      if (!normalizedPaymentMethod || typeof normalizedPaymentMethod !== 'string' || !normalizedPaymentMethod.trim()) {
+        normalizedPaymentMethod = '—';
+      } else {
+        const pm = normalizedPaymentMethod.trim().toLowerCase();
+        if (pm === 'cash on delivery' || pm === 'cod' || pm === 'cod') {
+          normalizedPaymentMethod = 'Cash on Delivery';
+        } else if (pm === 'razorpay') {
+          normalizedPaymentMethod = 'Razorpay';
+        } else if (pm === 'upi' || pm === 'upi_qr') {
+          normalizedPaymentMethod = 'UPI_QR';
+        } else if (pm === 'card') {
+          normalizedPaymentMethod = 'Card';
+        } else if (pm === 'netbanking') {
+          normalizedPaymentMethod = 'NetBanking';
+        } else {
+          normalizedPaymentMethod = b.paymentMethod || '—';
+        }
+      }
+      // Normalize payment status for admin display
+      let normalizedPaymentStatus = b.paymentStatus;
+      if (!normalizedPaymentStatus || typeof normalizedPaymentStatus !== 'string' || !normalizedPaymentStatus.trim()) {
+        normalizedPaymentStatus = 'Pending';
+      } else {
+        const ps = normalizedPaymentStatus.trim().toLowerCase();
+        if (ps === 'paid') {
+          normalizedPaymentStatus = 'Paid';
+        } else if (ps === 'pending') {
+          normalizedPaymentStatus = 'Pending';
+        } else if (ps === 'refunded') {
+          normalizedPaymentStatus = 'Refunded';
+        } else if (ps === 'failed') {
+          normalizedPaymentStatus = 'Failed';
+        } else {
+          normalizedPaymentStatus = b.paymentStatus;
+        }
+      }
+      return {
+        ...b.toObject(),
+        paymentMethod: normalizedPaymentMethod,
+        paymentStatus: normalizedPaymentStatus,
+        transactionId: b.transactionId || '',
+        upiProofFile: b.upiProofFile || '',
+        cashCollected: b.cashCollected // Add cash collection status for admin portal
+      };
+    });
     res.json({
       success: true,
       count: bookings.length,

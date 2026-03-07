@@ -258,21 +258,28 @@ router.get('/available-assistants', async (req, res) => {
   try {
     const { station } = req.query;
     
-    const query = {
-      applicationStatus: 'Approved',
+    let query = {
       isEligibleForBookings: true,
       currentBookingId: null
     };
-    
     if (station) {
-      query.station = station;
+      query.$or = [
+        { station: new RegExp('^' + station + '$', 'i') },
+        { stationCode: new RegExp('^' + station + '$', 'i') }
+      ];
     }
-
-    const assistants = await Assistant.find(query)
-      .select('name phone station isOnline rating totalBookingsCompleted languages')
+    // First try with applicationStatus: 'Approved'
+    let assistants = await Assistant.find({ ...query, applicationStatus: 'Approved' })
+      .select('name phone station isOnline rating totalBookingsCompleted languages verified')
       .sort({ isOnline: -1, rating: -1 })
       .lean();
-
+    // If none, fallback to verified: true
+    if ((!assistants || assistants.length === 0) && station) {
+      assistants = await Assistant.find({ ...query, verified: true, $or: query.$or })
+        .select('name phone station isOnline rating totalBookingsCompleted languages verified')
+        .sort({ isOnline: -1, rating: -1 })
+        .lean();
+    }
     res.json({ success: true, assistants });
 
   } catch (err) {

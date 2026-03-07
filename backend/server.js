@@ -16,15 +16,26 @@ const feedbackRoutes = require('./routes/feedback');
 const trainRoutes = require('./routes/trains'); // Train search API
 const schedulingRoutes = require('./routes/scheduling'); // Scheduling & task management
 const { retrySearchingBookings } = require('./services/matchingService');
+const paymentRoutes = require('./routes/payment'); // Payment routes
+const adminPaymentRoutes = require('./routes/adminPayment'); // Admin payment status
 
 // Background Services (Enterprise Scheduling)
 const trainDelayTracker = require('./services/trainDelayTracker');
 const taskQueueProcessor = require('./services/taskQueueProcessor');
 
 const app = express();
-// Set Content Security Policy header to allow media-src 'self' and data:
+// Set Content Security Policy header to allow Razorpay, Google Fonts, and required scripts
 app.use((req, res, next) => {
-  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.socket.io; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic https://fonts.googleapis.com; img-src 'self' data:; media-src 'self' data:; connect-src 'self' https://unpkg.com https://cdn.socket.io; ");
+  res.setHeader('Content-Security-Policy', [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.socket.io https://checkout.razorpay.com",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com",
+    "font-src 'self' https://fonts.gstatic https://fonts.googleapis.com",
+    "img-src 'self' data: https://api.qrserver.com",
+    "media-src 'self' data:",
+    "connect-src 'self' https://unpkg.com https://cdn.socket.io https://checkout.razorpay.com https://api.razorpay.com https://lumberjack.razorpay.com",
+    "frame-src 'self' https://checkout.razorpay.com https://api.razorpay.com",
+  ].join('; '));
   next();
 });
 
@@ -100,6 +111,8 @@ app.use('/api/admin/dashboard', adminDashboardRoutes); // Super Dashboard
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/trains', trainRoutes); // Train search
 app.use('/api/scheduling', schedulingRoutes); // Task scheduling & management
+app.use('/api/payment', paymentRoutes); // Payment routes
+app.use('/api/admin/payment', adminPaymentRoutes); // Admin payment status
 
 // Serve frontend static files
 const frontendPath = path.join(__dirname, '..', 'frontend');

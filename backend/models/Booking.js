@@ -81,14 +81,19 @@ const BookingSchema = new mongoose.Schema({
   
   // Payment
   price: { type: Number, default: 0 },
-  paymentStatus: { type: String, enum: ['Pending', 'Paid', 'Refunded', 'Failed'], default: 'Pending' },
+  paymentStatus: { type: String, enum: ['Pending', 'pending_verification', 'Paid', 'Refunded', 'Failed'], default: 'Pending' },
   paymentMethod: { type: String, default: '' },
   transactionId: { type: String, default: '' },
+  upiProofFile: { type: String, default: '' }, // Path to uploaded UPI payment proof
+  paymentSubmittedAt: { type: Date, default: null }, // When payment proof was submitted
   
   // OTPs
   otp: { type: String },
   startOtp: { type: String },
   completionOtp: { type: String },
+
+  // Cash collection for COD
+  cashCollected: { type: Boolean, default: false },
   
   // Emergency
   isEmergency: { type: Boolean, default: false },

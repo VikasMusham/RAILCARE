@@ -1,5 +1,6 @@
   <!-- Only one button, after chat panel in DOM -->
   <script src="socketio-loader.js"></script>
+  <script src="admin-premium.js"></script>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -563,29 +564,494 @@
       border-top: 1px solid var(--border-color);
     }
 
-    /* Booking Items */
+    /* Booking Items - Premium Style */
     .booking-item {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr auto;
-      gap: var(--space-4);
-      padding: var(--space-4);
-      background: var(--bg-secondary);
-      border-radius: var(--radius-md);
-      margin-bottom: var(--space-3);
-      align-items: center;
+      display: block;
+      padding: 0;
+      background: var(--card-bg);
+      border-radius: 14px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.03);
+      overflow: hidden;
+      transition: all 0.2s ease;
     }
 
     .booking-item:hover {
-      background: var(--bg-tertiary);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(0, 0, 0, 0.06);
+      transform: translateY(-2px);
+    }
+
+    .booking-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 20px 24px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .booking-header-left {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
     }
 
     .booking-passenger {
-      font-weight: 600;
+      font-weight: 700;
+      font-size: 17px;
+      color: var(--text-primary);
+      letter-spacing: -0.3px;
     }
 
     .booking-meta {
-      font-size: var(--text-sm);
-      color: var(--text-secondary);
+      font-size: 12px;
+      color: var(--text-tertiary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .booking-meta svg {
+      width: 12px;
+      height: 12px;
+      opacity: 0.6;
+    }
+
+    /* Status Badges */
+    .booking-status-badge {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .booking-status-badge svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    .status-searching { background: #fff7e6; color: #f59e0b; }
+    .status-assigned { background: #e6f0ff; color: #3b82f6; }
+    .status-completed { background: #e6fff2; color: #22c55e; }
+    .status-cancelled { background: #ffe6e6; color: #ef4444; }
+    .status-in-progress { background: #e6fff7; color: #10b981; }
+
+    /* Booking Body */
+    .booking-body {
+      padding: 20px 24px;
+    }
+
+    /* Payment Section */
+    .booking-payment-section {
+      margin-bottom: 20px;
+      padding: 16px 20px;
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+    }
+
+    .booking-payment-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .payment-status-label {
+      font-size: 13px;
+      color: #64748b;
+    }
+
+    .payment-status-value {
+      font-weight: 600;
+      font-size: 13px;
+      color: #059669;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .payment-method-badge {
+      padding: 4px 10px;
+      background: #e0f2fe;
+      color: #0369a1;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* Payment Verification Box */
+    .payment-verification-box {
+      margin-top: 16px;
+      padding: 16px;
+      background: var(--card-bg);
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+    }
+
+    .verification-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .verification-label {
+      font-size: 12px;
+      color: #64748b;
+      font-weight: 500;
+    }
+
+    .transaction-id-badge {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #334155;
+      border: 1px solid #cbd5e1;
+    }
+
+    .no-proof-warning {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #ef4444;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .payment-proof-img {
+      max-width: 240px;
+      max-height: 180px;
+      border: 2px solid #10b981;
+      border-radius: 10px;
+      margin-top: 8px;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s ease;
+    }
+
+    .payment-proof-img:hover {
+      transform: scale(1.02);
+    }
+
+    .verification-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .verified-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #10b981;
+      font-weight: 600;
+      font-size: 14px;
+      margin-top: 12px;
+    }
+
+    /* Info Grid Sections */
+    .booking-info-grid {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .booking-info-row-2 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .booking-info-row-4 {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .booking-info-card {
+      padding: 14px 16px;
+      background: var(--bg-secondary);
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+    }
+
+    .info-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    .info-label svg {
+      width: 13px;
+      height: 13px;
+      opacity: 0.7;
+    }
+
+    .info-value {
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text-primary);
+    }
+
+    /* Service Type Section */
+    .service-type-card {
+      padding: 16px 20px;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: 12px;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .service-type-left {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .service-type-label {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .service-type-value {
+      font-weight: 700;
+      font-size: 15px;
+      color: #6366f1;
+    }
+
+    .service-direction {
+      text-align: right;
+    }
+
+    .direction-label {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .direction-value {
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .direction-value svg {
+      width: 14px;
+      height: 14px;
+      color: #6366f1;
+    }
+
+    /* Notes & Language Cards */
+    .booking-note-card {
+      padding: 12px 16px;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      font-size: 13px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .booking-note-card svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .note-card-blue {
+      background: rgba(59, 130, 246, 0.08);
+      border: 1px solid rgba(59, 130, 246, 0.15);
+      color: #3b82f6;
+    }
+
+    .note-card-green {
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.15);
+      color: #10b981;
+    }
+
+    /* Action Buttons */
+    .booking-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .booking-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+    }
+
+    .booking-btn svg {
+      width: 15px;
+      height: 15px;
+    }
+
+    .booking-btn-secondary {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+    }
+
+    .booking-btn-secondary:hover {
+      background: var(--bg-tertiary);
+      border-color: var(--text-tertiary);
+    }
+
+    .booking-btn-blue {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      color: white;
+      box-shadow: 0 2px 4px rgba(59, 130, 246, 0.25);
+    }
+
+    .booking-btn-blue:hover {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(59, 130, 246, 0.35);
+    }
+
+    .booking-btn-green {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      box-shadow: 0 2px 4px rgba(16, 185, 129, 0.25);
+    }
+
+    .booking-btn-green:hover {
+      background: linear-gradient(135deg, #059669 0%, #047857 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(16, 185, 129, 0.35);
+    }
+
+    .booking-btn-red {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: white;
+      box-shadow: 0 2px 4px rgba(239, 68, 68, 0.25);
+    }
+
+    .booking-btn-red:hover {
+      background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(239, 68, 68, 0.35);
+    }
+
+    /* Chat Badge - Premium with animation */
+    @keyframes chatBadgePulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+    }
+    .chat-badge {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: white;
+      border-radius: 50%;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 7px;
+      min-width: 18px;
+      text-align: center;
+      z-index: 10;
+      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+      animation: chatBadgePulse 2s infinite;
+      border: 2px solid white;
+    }
+
+    /* Distributed Task Section */
+    .distributed-task-section {
+      border: 2px solid rgba(139, 92, 246, 0.2);
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.04) 0%, rgba(99, 102, 241, 0.04) 100%);
+    }
+
+    .distributed-task-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .distributed-task-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+
+    .distributed-task-title {
+      font-weight: 700;
+      font-size: 14px;
+      color: #8b5cf6;
+    }
+
+    .distributed-task-subtitle {
+      font-size: 11px;
+      color: var(--text-tertiary);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .booking-header {
+        padding: 16px;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .booking-body {
+        padding: 16px;
+      }
+      .booking-info-row-4 {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .service-type-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+      .service-direction {
+        text-align: left;
+      }
     }
 
     /* Audit Log */
@@ -1147,18 +1613,91 @@
         <a href="admin-premium.html" class="nav-link active">Admin Panel</a>
         <a href="admin-dashboard.html" class="nav-link" style="color: var(--sapphire);">Super Dashboard</a>
       </div>
-        <!-- Emergency Alert Notification -->
-        <div id="emergencyAlert" style="display:none; position:fixed; right:32px; bottom:110px; z-index:100000; background:#ef4444; color:#fff; padding:18px 28px; border-radius:16px; box-shadow:0 4px 24px rgba(0,0,0,0.18); font-size:18px; font-weight:600; cursor:pointer; transition:all 0.2s;">
-          🚨 New Emergency Chat! Click to respond
+        <!-- Emergency Alert Notification - Premium Edition -->
+        <style>
+          @keyframes emergencyAlertPulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 8px 32px rgba(239,68,68,0.4); }
+            50% { transform: scale(1.02); box-shadow: 0 12px 40px rgba(239,68,68,0.6); }
+          }
+          @keyframes emergencyAlertSlideIn {
+            from { opacity: 0; transform: translateX(100px); }
+            to { opacity: 1; transform: translateX(0); }
+          }
+          @keyframes emergencyRing {
+            0%, 100% { transform: rotate(0deg); }
+            10%, 30%, 50%, 70% { transform: rotate(-10deg); }
+            20%, 40%, 60% { transform: rotate(10deg); }
+            80% { transform: rotate(0deg); }
+          }
+          @keyframes emergencyDotPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+          }
+          .emergency-alert-premium {
+            display: none;
+            position: fixed;
+            right: 24px;
+            bottom: 100px;
+            z-index: 100000;
+            background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+            color: #fff;
+            padding: 0;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(239,68,68,0.4), inset 0 1px 0 rgba(255,255,255,0.15);
+            cursor: pointer;
+            animation: emergencyAlertPulse 2s infinite, emergencyAlertSlideIn 0.4s ease-out;
+            overflow: hidden;
+            min-width: 320px;
+            border: 2px solid rgba(255,255,255,0.15);
+          }
+          .emergency-alert-premium:hover {
+            transform: scale(1.02) translateY(-2px);
+            box-shadow: 0 12px 40px rgba(239,68,68,0.5);
+          }
+        </style>
+        <div id="emergencyAlert" class="emergency-alert-premium">
+          <div style="display:flex; align-items:center; gap:16px; padding:18px 22px;">
+            <div style="position:relative;">
+              <div style="width:52px; height:52px; background:rgba(255,255,255,0.2); border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:28px; animation: emergencyRing 1.5s infinite;">
+                🚨
+              </div>
+              <div style="position:absolute; top:-4px; right:-4px; width:16px; height:16px; background:#fff; border-radius:50%; animation: emergencyDotPulse 1s infinite;"></div>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; opacity:0.85; margin-bottom:4px;">🔔 New Message</div>
+              <div style="font-size:17px; font-weight:700; letter-spacing:-0.3px;">Emergency Chat Alert!</div>
+              <div id="emergencyAlertSubtext" style="font-size:12px; opacity:0.85; margin-top:2px;">Passenger needs help - Click to respond</div>
+            </div>
+            <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
+              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="opacity:0.8;"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+          </div>
+          <div style="background:rgba(0,0,0,0.15); padding:10px 22px; font-size:11px; display:flex; align-items:center; gap:8px;">
+            <div style="width:8px; height:8px; background:#4ade80; border-radius:50%; animation: emergencyDotPulse 1.5s infinite;"></div>
+            <span>Click anywhere to open chat</span>
+          </div>
         </div>
           <script>
-          // Emergency Alert Notification for Admin
+          // Emergency Alert Notification for Admin - Premium
           let lastAlertBookingId = null;
           function showEmergencyAlert(bookingId, passengerName) {
             const alertDiv = document.getElementById('emergencyAlert');
             alertDiv.style.display = 'block';
             lastAlertBookingId = bookingId;
             alertDiv.setAttribute('data-passenger', passengerName || '');
+            // Update subtext with passenger info
+            const subtext = document.getElementById('emergencyAlertSubtext');
+            if (subtext && passengerName) {
+              subtext.textContent = passengerName + ' needs help - Click to respond';
+            } else if (subtext) {
+              subtext.textContent = 'Passenger needs help - Click to respond';
+            }
+            // Play notification sound (optional)
+            try {
+              const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2teleAYAj9LqvH8GAIvO6LmCBwCC...');
+              audio.volume = 0.3;
+              audio.play().catch(() => {});
+            } catch(e) {}
           }
           function hideEmergencyAlert() {
             document.getElementById('emergencyAlert').style.display = 'none';
@@ -1216,12 +1755,35 @@
               } else if (badge) {
                 badge.remove();
               }
+              // Also update individual booking card chat badges
+              updateBookingChatBadges();
             }
+            
+            // Update chat badges on individual booking cards
+            function updateBookingChatBadges() {
+              // Update all booking chat badges
+              for (const [bookingId, count] of Object.entries(window._adminUnreadChats || {})) {
+                const badgeEl = document.getElementById('chatBadge-' + bookingId);
+                if (badgeEl) {
+                  if (count > 0) {
+                    badgeEl.textContent = count > 99 ? '99+' : count;
+                    badgeEl.style.display = 'block';
+                  } else {
+                    badgeEl.style.display = 'none';
+                  }
+                }
+              }
+            }
+            // Make it globally available
+            window.updateBookingChatBadges = updateBookingChatBadges;
             // When admin opens a chat, clear unread for that booking
             window.addEventListener('open-admin-chat', function(e) {
               if (e.detail && e.detail.bookingId) {
                 delete window._adminUnreadChats[e.detail.bookingId];
                 updateEmergencyAlertBadge();
+                // Also clear the individual booking badge
+                const badgeEl = document.getElementById('chatBadge-' + e.detail.bookingId);
+                if (badgeEl) badgeEl.style.display = 'none';
               }
             });
           })();
@@ -1238,15 +1800,12 @@
           const panel = document.getElementById('emergencyChatPanel');
           if (panel) panel.style.display = 'block';
           adminCurrentBookingId = bookingId;
-          // Show bookingId and passenger name for debug
-          let infoDiv = document.getElementById('adminChatBookingIdInfo');
-          if (!infoDiv) {
-            infoDiv = document.createElement('div');
-            infoDiv.id = 'adminChatBookingIdInfo';
-            infoDiv.style = 'color:#10b981;font-size:13px;padding:4px 12px;';
-            panel.insertBefore(infoDiv, panel.firstChild.nextSibling);
+          // Update header info
+          const infoDiv = document.getElementById('adminChatBookingIdInfo');
+          if (infoDiv) {
+            const shortId = bookingId.length > 12 ? bookingId.substring(0,8) + '...' : bookingId;
+            infoDiv.innerHTML = `<span style="font-family:monospace; background:rgba(255,255,255,0.2); padding:2px 8px; border-radius:6px;">${shortId}</span>${passengerName ? ` • <strong>${passengerName}</strong>` : ''}`;
           }
-          infoDiv.textContent = 'Booking ID: ' + bookingId + (passengerName ? ' | Passenger: ' + passengerName : '');
           // Fire event to clear unread
           window.dispatchEvent(new CustomEvent('open-admin-chat', { detail: { bookingId } }));
           setupAdminChatSocket();
@@ -1273,11 +1832,15 @@
             console.log('[Admin Chat] Received chat_history:', msgs);
             chatBox.innerHTML = '';
             if (msgs.length === 0) {
-              const info = document.createElement('div');
-              info.id = 'adminNoMessages';
-              info.style = 'color:#888; text-align:center; margin:24px 0; font-size:15px;';
-              info.textContent = 'No messages yet.';
-              chatBox.appendChild(info);
+              chatBox.innerHTML = `
+                <div id="adminNoMessages" style="text-align:center; padding:40px 20px;">
+                  <div style="width:56px; height:56px; background:linear-gradient(135deg, rgba(239,68,68,0.1) 0%, rgba(239,68,68,0.05) 100%); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; border:2px solid rgba(239,68,68,0.15);">
+                    <svg width="28" height="28" fill="none" stroke="#ef4444" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  </div>
+                  <div style="font-size:15px; color:#6b7280; font-weight:500; margin-bottom:6px;">No messages yet</div>
+                  <div style="font-size:13px; color:#9ca3af; line-height:1.5;">Passenger's emergency messages<br>will appear here</div>
+                </div>
+              `;
             } else {
               msgs.forEach(m => appendAdminChatMessage(m));
               chatBox.scrollTop = chatBox.scrollHeight;
@@ -1300,10 +1863,19 @@
             }
           });
           adminChatSocket.on('typing', user => {
-            document.getElementById('adminTypingIndicator').textContent = user + ' is typing...';
+            document.getElementById('adminTypingIndicator').innerHTML = `
+              <div style="display:flex; align-items:center; gap:6px; padding:6px 12px; background:#f1f5f9; border-radius:12px;">
+                <span style="font-size:12px; color:#6b7280;">${user} is typing</span>
+                <div style="display:flex; gap:3px;">
+                  <span style="width:5px; height:5px; background:#ef4444; border-radius:50%; animation:adminTypingBounce 1s infinite;"></span>
+                  <span style="width:5px; height:5px; background:#ef4444; border-radius:50%; animation:adminTypingBounce 1s infinite 0.15s;"></span>
+                  <span style="width:5px; height:5px; background:#ef4444; border-radius:50%; animation:adminTypingBounce 1s infinite 0.3s;"></span>
+                </div>
+              </div>
+            `;
           });
           adminChatSocket.on('stop_typing', () => {
-            document.getElementById('adminTypingIndicator').textContent = '';
+            document.getElementById('adminTypingIndicator').innerHTML = '';
           });
         }
         function sendAdminChatMessage() {
@@ -1319,9 +1891,32 @@
           const chatBox = document.getElementById('adminChatList');
           const isSelf = msg.user === adminUserName;
           const div = document.createElement('div');
-          div.style = `margin-bottom:6px; text-align:${isSelf ? 'right':'left'};`;
-          div.innerHTML = `<span style="display:inline-block; background:${isSelf ? '#10b981':'#444'}; color:#fff; border-radius:8px; padding:6px 12px; max-width:70%; word-break:break-word;">${msg.text}</span><span style="font-size:10px; color:#aaa; margin-left:6px;">${new Date(msg.time).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</span>`;
+          div.className = 'admin-chat-message';
+          div.style.cssText = `margin-bottom:12px; display:flex; flex-direction:column; align-items:${isSelf ? 'flex-end':'flex-start'};`;
+          div.innerHTML = `
+            <div style="display:flex; align-items:flex-end; gap:8px; flex-direction:${isSelf ? 'row-reverse' : 'row'};">
+              ${!isSelf ? `<div style="width:28px; height:28px; background:linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:14px;">👤</div>` : ''}
+              <div style="
+                display:inline-block;
+                background: ${isSelf ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : '#fff'};
+                color: ${isSelf ? '#fff' : '#1f2937'};
+                border-radius: ${isSelf ? '18px 18px 6px 18px' : '18px 18px 18px 6px'};
+                padding: 12px 16px;
+                max-width: 75%;
+                word-break: break-word;
+                box-shadow: ${isSelf ? '0 4px 12px rgba(16,185,129,0.25)' : '0 2px 8px rgba(0,0,0,0.08)'};
+                font-size: 14px;
+                line-height: 1.5;
+                ${!isSelf ? 'border: 1px solid #e5e7eb;' : ''}
+              ">${msg.text}</div>
+            </div>
+            <div style="font-size:10px; color:#9ca3af; margin-top:4px; display:flex; align-items:center; gap:4px; padding:0 ${isSelf ? '0' : '36px'};">
+              ${new Date(msg.time).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}
+              ${isSelf ? '<svg width="14" height="14" fill="none" stroke="#10b981" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+            </div>
+          `;
           chatBox.appendChild(div);
+          chatBox.scrollTop = chatBox.scrollHeight;
         }
         document.addEventListener('DOMContentLoaded', function() {
           const input = document.getElementById('adminChatInput');
@@ -1469,7 +2064,6 @@
       <div class="header-actions">
         <button class="btn btn-secondary" onclick="exportCsv()">📥 Export Bookings</button>
         <button class="btn btn-secondary" onclick="exportFeedbackCsv()">📥 Export Feedback</button>
-        <button class="btn btn-danger" onclick="clearDemoData()">🗑️ Clear Demo</button>
       </div>
     </div>
 
@@ -1522,16 +2116,72 @@
         <button class="tab" data-tab="user-roles">👥 User Roles & Details</button>
       <span style="flex:1"></span>
       <!-- Emergency Test Button removed -->
-      <div id="emergencyChatPanel" style="display:none; position:absolute; right:0; top:56px; z-index:1002; width:340px; max-width:95vw; background:#fff; border-radius:18px; box-shadow:0 8px 32px rgba(0,0,0,0.22); overflow:hidden; border:2px solid #ef4444;">
-        <div style="background:#ef4444; color:#fff; padding:12px 16px; font-size:17px; font-weight:700; display:flex; align-items:center; justify-content:space-between;">
-          <span>🚨 Emergency Chat</span>
-          <button onclick="closeAdminChatPanel()" style="background:none; border:none; color:#fff; font-size:20px; cursor:pointer;">✕</button>
+      <!-- Emergency Chat Panel - Premium Edition -->
+      <style>
+        @keyframes adminChatSlideIn {
+          from { opacity: 0; transform: translateY(-10px) scale(0.95); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes adminTypingBounce {
+          0%, 60%, 100% { transform: translateY(0); }
+          30% { transform: translateY(-4px); }
+        }
+        @keyframes adminMessageIn {
+          from { opacity: 0; transform: scale(0.95) translateY(6px); }
+          to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .admin-chat-scrollbar::-webkit-scrollbar { width: 4px; }
+        .admin-chat-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .admin-chat-scrollbar::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 4px; }
+        .admin-chat-scrollbar::-webkit-scrollbar-thumb:hover { background: #a1a1aa; }
+        .admin-chat-panel {
+          display: none;
+          position: fixed;
+          right: 24px;
+          top: 80px;
+          z-index: 100001;
+          width: 400px;
+          max-width: 95vw;
+          background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
+          border-radius: 24px;
+          box-shadow: 0 25px 80px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05);
+          overflow: hidden;
+          animation: adminChatSlideIn 0.3s ease-out;
+        }
+        .admin-chat-message {
+          animation: adminMessageIn 0.25s ease-out;
+        }
+      </style>
+      <div id="emergencyChatPanel" class="admin-chat-panel">
+        <!-- Header -->
+        <div style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); color:#fff; padding:18px 20px; display:flex; align-items:center; gap:14px;">
+          <div style="position:relative;">
+            <div style="width:48px; height:48px; background:rgba(255,255,255,0.2); border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:24px;">🚨</div>
+            <div id="adminChatOnlineStatus" style="position:absolute; bottom:-2px; right:-2px; width:14px; height:14px; background:#4ade80; border-radius:50%; border:2px solid #ef4444;"></div>
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:18px; font-weight:700; letter-spacing:-0.3px;">Emergency Chat</div>
+            <div id="adminChatBookingIdInfo" style="font-size:11px; opacity:0.9; margin-top:2px;"></div>
+          </div>
+          <button onclick="closeAdminChatPanel()" style="background:rgba(255,255,255,0.15); border:none; color:#fff; width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; cursor:pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
         </div>
-        <div id="adminChatList" style="height:180px; overflow-y:auto; padding:10px 10px 0 10px; background:#f9fafb;"></div>
-        <div id="adminTypingIndicator" style="height:16px; color:#888; font-size:12px; padding-left:12px;"></div>
-        <div style="display:flex; border-top:1px solid #eee;">
-          <input id="adminChatInput" type="text" placeholder="Type a message..." style="flex:1; border:none; padding:10px; font-size:14px; outline:none; background:#fff;">
-          <button onclick="sendAdminChatMessage()" style="background:#10b981; color:#fff; border:none; padding:0 14px; font-size:15px; font-weight:600; cursor:pointer;">Send</button>
+        
+        <!-- Chat Messages -->
+        <div id="adminChatList" class="admin-chat-scrollbar" style="height:280px; overflow-y:auto; padding:16px; background:linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);"></div>
+        
+        <!-- Typing Indicator -->
+        <div id="adminTypingIndicator" style="min-height:28px; padding:0 16px; display:flex; align-items:center;"></div>
+        
+        <!-- Input Section -->
+        <div style="padding:12px 16px 16px; background:#fff; border-top:1px solid #e5e7eb;">
+          <div style="display:flex; gap:10px;">
+            <input id="adminChatInput" type="text" placeholder="Type your response..." style="flex:1; border-radius:12px; border:2px solid #e5e7eb; background:#f9fafb; color:#1f2937; padding:12px 16px; font-size:14px; outline:none; transition: all 0.2s;" onfocus="this.style.borderColor='#ef4444'; this.style.boxShadow='0 0 0 3px rgba(239,68,68,0.1)'; this.style.background='#fff';" onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'; this.style.background='#f9fafb';" onkeydown="if(event.key==='Enter') sendAdminChatMessage()">
+            <button onclick="sendAdminChatMessage()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color:#fff; border:none; border-radius:12px; padding:0 20px; font-size:14px; font-weight:600; cursor:pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(16,185,129,0.3); display:flex; align-items:center; justify-content:center;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 16px rgba(16,185,129,0.4)'" onmouseout="this.style.transform='none'; this.style.boxShadow='0 4px 12px rgba(16,185,129,0.3)'">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
         </div>
       </div>
       <!-- Emergency Test Button script removed -->
@@ -2549,6 +3199,11 @@
           if (b && b._id && !seen.has(b._id)) seen.set(b._id, b);
         });
         _currentBookings = Array.from(seen.values());
+        
+        // Debug: log UPI payment bookings
+        _currentBookings.filter(b => b.paymentMethod === 'UPI_QR' || b.paymentMethod === 'upi_qr').forEach(b => {
+          console.log('[Admin Debug] UPI Booking:', b._id, 'proofFile:', b.upiProofFile, 'txnId:', b.transactionId, 'status:', b.paymentStatus);
+        });
 
         if (_currentBookings.length === 0) {
           container.innerHTML = '<div class="empty-state"><p>No bookings found</p></div>';
@@ -2578,112 +3233,248 @@
 
           const assistantName = b.assistantId?.name || 'Not Assigned';
 
+          let paymentControls = '';
+          const isUpiPayment = b.paymentMethod === 'UPI' || b.paymentMethod === 'UPI_QR' || b.paymentMethod === 'upi_qr';
+          const needsVerification = b.paymentStatus === 'Pending' || b.paymentStatus === 'pending_verification' || b.paymentStatus === 'UPI_PENDING_VERIFICATION';
+          
+          if (isUpiPayment) {
+            paymentControls += `<div class="payment-verification-box">`;
+            
+            // Show transaction ID if available
+            if (b.transactionId) {
+              paymentControls += `<div class="verification-row"><span class="verification-label">Transaction ID</span><span class="transaction-id-badge">${b.transactionId}</span></div>`;
+            }
+            
+            // Show payment proof image if available
+            if (b.upiProofFile) {
+              paymentControls += `<div><span class="verification-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> Payment Proof</span><br><img src='${b.upiProofFile}' alt='UPI Proof' class='payment-proof-img' onclick='window.previewDoc && window.previewDoc("${b.upiProofFile}")'></div>`;
+            } else {
+              paymentControls += `<div class="no-proof-warning"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> No payment proof uploaded</div>`;
+            }
+            
+            // Show verify/reject buttons if payment needs verification
+            if (needsVerification) {
+              paymentControls += `<div class="verification-buttons">`;
+              paymentControls += `<button class='booking-btn booking-btn-green' onclick='window.verifyPayment("${b._id}")'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Verify Payment</button>`;
+              paymentControls += `<button class='booking-btn booking-btn-red' onclick='window.markPaymentNotDone("${b._id}")'><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Reject</button>`;
+              paymentControls += `</div>`;
+            } else if (b.paymentStatus === 'Paid') {
+              paymentControls += `<div class="verified-badge"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Payment Verified</div>`;
+            }
+            
+            paymentControls += `</div>`;
+          }
+
+          // Status badge class
+          const statusClassMap = {
+            'Pending': 'status-searching', 'Searching': 'status-searching',
+            'Assigned': 'status-assigned', 'Accepted': 'status-assigned',
+            'In Progress': 'status-in-progress', 'Completed': 'status-completed',
+            'Cancelled': 'status-cancelled', 'Rejected': 'status-cancelled', 'Emergency': 'status-cancelled'
+          };
+          const statusClass = statusClassMap[b.status] || '';
+
           return `
-            <div class="booking-item" style="display: block; padding: 16px; margin-bottom: 12px; border: 1px solid var(--border-color); border-radius: 12px;">
-              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-                <div>
-                  <div class="booking-passenger" style="font-size: 16px; font-weight: 600;">${b.passengerName || 'Unknown'}</div>
-                  <div class="booking-meta" style="font-size: 12px; color: var(--text-tertiary);">Created: ${createdDate}</div>
+            <div class="booking-item">
+              <!-- Header -->
+              <div class="booking-header">
+                <div class="booking-header-left">
+                  <div class="booking-passenger">${b.passengerName || 'Unknown'}</div>
+                  <div class="booking-meta">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    ${createdDate}
+                  </div>
                 </div>
-                <span style="padding: 4px 14px; border-radius: 16px; font-size: 13px; font-weight: 600; background: ${badge.bg}; color: ${badge.color}; letter-spacing: 1px;">${badge.text}</span>
+                <span class="booking-status-badge ${statusClass}">${badge.text}</span>
               </div>
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; background: var(--bg-secondary); border-radius: 8px; margin-bottom: 12px; font-size: 13px;">
-                <div>
-                  <span style="color: var(--text-tertiary); font-size: 11px;">📞 Phone</span>
-                  <div style="font-weight: 500;">${b.passengerPhone || b.phone || '—'}</div>
+
+              <!-- Body -->
+              <div class="booking-body">
+                <!-- Payment Section -->
+                <div class="booking-payment-section">
+                  <div class="booking-payment-row">
+                    <span class="payment-status-label">Payment Status:</span>
+                    <span class="payment-status-value">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                      ${b.paymentStatus || 'Pending'}
+                    </span>
+                    <span class="payment-method-badge">${b.paymentMethod || '—'}</span>
+                  </div>
+                  ${paymentControls}
                 </div>
-                <div>
-                  <span style="color: var(--text-tertiary); font-size: 11px;">📧 Email</span>
-                  <div style="font-weight: 500;">${b.passengerEmail || '—'}</div>
+
+                <!-- Contact Info Grid -->
+                <div class="booking-info-grid booking-info-row-2">
+                  <div class="booking-info-card">
+                    <div class="info-label">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                      Phone
+                    </div>
+                    <div class="info-value">${b.passengerPhone || b.phone || '—'}</div>
+                  </div>
+                  <div class="booking-info-card">
+                    <div class="info-label">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                      Email
+                    </div>
+                    <div class="info-value">${b.passengerEmail || '—'}</div>
+                  </div>
                 </div>
-              </div>
-              <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 12px; background: var(--bg-secondary); border-radius: 8px; margin-bottom: 12px; font-size: 13px;">
-                <div>
-                  <span style="color: var(--text-tertiary); font-size: 11px;">🚉 Station</span>
-                  <div style="font-weight: 500;">${b.station || '—'}</div>
+
+                <!-- Travel Info Grid -->
+                <div class="booking-info-grid booking-info-row-4">
+                  <div class="booking-info-card">
+                    <div class="info-label">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                      Station
+                    </div>
+                    <div class="info-value">${b.station || '—'}</div>
+                  </div>
+                  <div class="booking-info-card">
+                    <div class="info-label">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 18h6"/><path d="M12 3v15"/></svg>
+                      Train
+                    </div>
+                    <div class="info-value">${b.trainName || b.trainNumber || '—'}</div>
+                  </div>
+                  <div class="booking-info-card">
+                    <div class="info-label">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+                      Coach
+                    </div>
+                    <div class="info-value">${b.coach || '—'}</div>
+                  </div>
+                  <div class="booking-info-card">
+                    <div class="info-label">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 9V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v3"/><path d="M3 11v5a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5a2 2 0 0 0-4 0v2H7v-2a2 2 0 0 0-4 0Z"/><path d="M5 18v2"/><path d="M19 18v2"/></svg>
+                      Seat
+                    </div>
+                    <div class="info-value">${b.seat || '—'}</div>
+                  </div>
                 </div>
-                <div>
-                  <span style="color: var(--text-tertiary); font-size: 11px;">🚂 Train</span>
-                  <div style="font-weight: 500;">${b.trainName || b.trainNumber || '—'}</div>
-                </div>
-                <div>
-                  <span style="color: var(--text-tertiary); font-size: 11px;">🚃 Coach</span>
-                  <div style="font-weight: 500;">${b.coach || '—'}</div>
-                </div>
-                <div>
-                  <span style="color: var(--text-tertiary); font-size: 11px;">💺 Seat</span>
-                  <div style="font-weight: 500;">${b.seat || '—'}</div>
-                </div>
-              </div>
-              ${b.serviceType ? `
-              <div style="padding: 10px 12px; background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1)); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 8px; margin-bottom: 12px;">
-                <div style="display: flex; align-items: center; justify-content: space-between;">
-                  <div>
-                    <span style="font-size: 11px; color: var(--text-tertiary);">🎯 Service Type</span>
-                    <div style="font-weight: 600; font-size: 14px; color: var(--indigo);">
+
+                <!-- Service Type Section -->
+                ${b.serviceType ? `
+                <div class="service-type-card">
+                  <div class="service-type-left">
+                    <div class="service-type-label">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+                      Service Type
+                    </div>
+                    <div class="service-type-value">
                       ${b.serviceType === 'pickup' ? 'Boarding Assistance' : b.serviceType === 'drop' ? 'Arrival Assistance' : 'Round Trip'}
                     </div>
                   </div>
-                  <div style="text-align: right;">
-                    <span style="font-size: 11px; color: var(--text-tertiary);">Direction</span>
-                    <div style="font-weight: 500; font-size: 13px;">
-                      ${b.serviceType === 'pickup' ? 'Platform → Train' : b.serviceType === 'drop' ? 'Train → Platform' : 'Platform → Train → Platform'}
+                  <div class="service-direction">
+                    <div class="direction-label">Direction</div>
+                    <div class="direction-value">
+                      ${b.serviceType === 'pickup' ? 'Platform' : b.serviceType === 'drop' ? 'Train' : 'Platform'}
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                      ${b.serviceType === 'pickup' ? 'Train' : b.serviceType === 'drop' ? 'Platform' : 'Train → Platform'}
                     </div>
                   </div>
                 </div>
-              </div>
-              ` : ''}
-              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding: 12px; background: var(--bg-secondary); border-radius: 8px; margin-bottom: 12px; font-size: 13px;">
-                <div>
-                  <span style="color: var(--text-tertiary); font-size: 11px;">🛎️ Services</span>
-                  <div style="font-weight: 500;">${b.services?.join(', ') || '—'}</div>
-                </div>
-                <div>
-                  <span style="color: var(--text-tertiary); font-size: 11px;">👤 Assistant</span>
-                  <div style="font-weight: 500;">${assistantName}</div>
-                </div>
-                <div>
-                  <span style="color: var(--text-tertiary); font-size: 11px;">💰 Price</span>
-                  <div style="font-weight: 500;">₹${b.price || 0}</div>
-                </div>
-              </div>
-              ${renderLuggageDisplay(b)}
-              ${b.passengerNotes ? `
-              <div style="padding: 8px 12px; background: rgba(59, 130, 246, 0.1); border-radius: 6px; margin-bottom: 12px; font-size: 12px; color: var(--sapphire);">
-                <strong>📝 Notes:</strong> ${b.passengerNotes}
-              </div>
-              ` : ''}
-              ${b.language || (b.preferredLanguages && b.preferredLanguages.length > 0) ? `
-              <div style="padding: 8px 12px; background: rgba(16, 185, 129, 0.1); border-radius: 6px; margin-bottom: 12px; font-size: 12px; color: var(--emerald);">
-                <strong>🌐 Language:</strong> ${b.preferredLanguages?.join(', ') || b.language || '—'}
-              </div>
-              ` : ''}
-              ${b.serviceType === 'round_trip' ? `
-              <div id="taskAssignment-${b._id}" style="border: 2px solid rgba(139, 92, 246, 0.3); border-radius: 12px; padding: 16px; margin-bottom: 12px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.05), rgba(99, 102, 241, 0.05));">
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-                  <span style="font-size: 18px;">🔄</span>
-                  <div>
-                    <div style="font-weight: 700; font-size: 14px; color: var(--purple);">DISTRIBUTED TASK ASSIGNMENT</div>
-                    <div style="font-size: 11px; color: var(--text-tertiary);">Assign different assistants to pickup and drop tasks</div>
-                  </div>
-                </div>
-                <div id="tasksList-${b._id}" data-booking-id="${b._id}" class="round-trip-tasks" style="display: flex; flex-direction: column; gap: 10px;">
-                  <div style="text-align: center; padding: 12px; color: var(--text-tertiary); font-size: 12px;">
-                    <span class="loading" style="width: 16px; height: 16px; margin-right: 8px;"></span>
-                    Loading tasks...
-                  </div>
-                </div>
-              </div>
-              ` : ''}
-              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                ${(b.status !== 'Completed' && b.status !== 'Cancelled' && b.status !== 'Rejected') ? `<button class="btn btn-secondary btn-sm" onclick="showEditBooking('${b._id}')">Edit</button>` : ''}
-                <button class="btn btn-info btn-sm" style="background:#3b82f6;color:#fff; position:relative;" onclick="openAdminChatPanel('${b._id}', '${b.passengerName || ''}')">💬 Chat
-                  <span id="chatBadge-${b._id}" style="display:none; position:absolute; top:-8px; right:-8px; background:#ef4444; color:#fff; border-radius:50%; font-size:12px; font-weight:700; padding:2px 7px; z-index:10;">0</span>
-                </button>
-                ${(b.status !== 'Completed' && b.status !== 'Cancelled' && b.status !== 'Rejected') ? `
-                  ${b.serviceType !== 'round_trip' && !b.assistantId && (b.status === 'Pending' || b.status === 'Searching') ? `<button class="btn btn-success btn-sm" onclick="showAssignUI('${b._id}')">Assign</button>` : ''}
-                  <button class="btn btn-danger btn-sm" onclick="cancelBooking('${b._id}')">Cancel</button>
                 ` : ''}
+
+                <!-- Services Info Grid -->
+                <div class="booking-info-grid booking-info-row-4">
+                  <div class="booking-info-card">
+                    <div class="info-label">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                      Services
+                    </div>
+                    <div class="info-value">${b.services?.join(', ') || '—'}</div>
+                  </div>
+                  <div class="booking-info-card">
+                    <div class="info-label">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                      Assistant
+                    </div>
+                    <div class="info-value">${assistantName}</div>
+                  </div>
+                  <div class="booking-info-card">
+                    <div class="info-label">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                      Price
+                    </div>
+                    <div class="info-value">₹${b.price || 0}</div>
+                  </div>
+                  <div class="booking-info-card">
+                    <div class="info-label">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
+                      Cash Status
+                    </div>
+                    <div class="info-value">
+                      ${(b.paymentMethod === 'COD') ? (b.cashCollected ? '<span style="color:var(--emerald);font-weight:700;">Collected ✓</span>' : '<span style="color:var(--ruby);font-weight:700;">Not Collected</span>') : '—'}
+                    </div>
+                  </div>
+                </div>
+
+                ${renderLuggageDisplay(b)}
+
+                <!-- Notes -->
+                ${b.passengerNotes ? `
+                <div class="booking-note-card note-card-blue">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                  <span><strong>Notes:</strong> ${b.passengerNotes}</span>
+                </div>
+                ` : ''}
+
+                <!-- Language -->
+                ${b.language || (b.preferredLanguages && b.preferredLanguages.length > 0) ? `
+                <div class="booking-note-card note-card-green">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                  <span><strong>Language:</strong> ${b.preferredLanguages?.join(', ') || b.language || '—'}</span>
+                </div>
+                ` : ''}
+
+                <!-- Distributed Task Section for Round Trip -->
+                ${b.serviceType === 'round_trip' ? `
+                <div class="distributed-task-section" id="taskAssignment-${b._id}">
+                  <div class="distributed-task-header">
+                    <div class="distributed-task-icon">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                    </div>
+                    <div>
+                      <div class="distributed-task-title">DISTRIBUTED TASK ASSIGNMENT</div>
+                      <div class="distributed-task-subtitle">Assign different assistants to pickup and drop tasks</div>
+                    </div>
+                  </div>
+                  <div id="tasksList-${b._id}" data-booking-id="${b._id}" class="round-trip-tasks" style="display: flex; flex-direction: column; gap: 10px;">
+                    <div style="text-align: center; padding: 12px; color: var(--text-tertiary); font-size: 12px;">
+                      <span class="loading" style="width: 16px; height: 16px; margin-right: 8px;"></span>
+                      Loading tasks...
+                    </div>
+                  </div>
+                </div>
+                ` : ''}
+
+                <!-- Action Buttons -->
+                <div class="booking-actions">
+                  ${(b.status !== 'Completed' && b.status !== 'Cancelled' && b.status !== 'Rejected') ? `
+                  <button class="booking-btn booking-btn-secondary" onclick="showEditBooking('${b._id}')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    Edit
+                  </button>
+                  ` : ''}
+                  <button class="booking-btn booking-btn-blue" style="position:relative;" onclick="openAdminChatPanel('${b._id}', '${b.passengerName || ''}')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    Chat
+                    <span id="chatBadge-${b._id}" class="chat-badge" style="display:none;">0</span>
+                  </button>
+                  ${(b.status !== 'Completed' && b.status !== 'Cancelled' && b.status !== 'Rejected') ? `
+                    ${b.serviceType !== 'round_trip' && !b.assistantId && (b.status === 'Pending' || b.status === 'Searching') ? `
+                    <button class="booking-btn booking-btn-green" onclick="showAssistantsForAssign('${b.station}','${b._id}')">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                      Assign
+                    </button>
+                    ` : ''}
+                    <button class="booking-btn booking-btn-red" onclick="cancelBooking('${b._id}')">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                      Cancel
+                    </button>
+                  ` : ''}
+                </div>
               </div>
             </div>
           `;
@@ -2693,6 +3484,11 @@
         _currentBookings
           .filter(b => b && b._id && b.serviceType === 'round_trip')
           .forEach(b => loadBookingTasks(b._id));
+
+        // Update chat badges after rendering bookings
+        if (window.updateBookingChatBadges) {
+          setTimeout(() => window.updateBookingChatBadges(), 100);
+        }
 
       } catch (err) {
         container.innerHTML = `<div class="empty-state"><p style="color: var(--ruby);">Error: ${err.message}</p></div>`;
