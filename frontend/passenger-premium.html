@@ -2774,6 +2774,213 @@
     #avatarInput {
       display: none;
     }
+
+    /* ========================================
+       BOOKING PROGRESS STEPPER - Premium UI
+       ======================================== */
+    .booking-stepper {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      max-width: 600px;
+      margin: 0 auto 32px;
+      padding: 24px 16px;
+    }
+    
+    .stepper-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      flex: 1;
+      min-width: 100px;
+    }
+    
+    .stepper-step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 20px;
+      left: calc(50% + 24px);
+      width: calc(100% - 48px);
+      height: 3px;
+      background: #e5e7eb;
+      border-radius: 2px;
+      transition: background 0.4s ease;
+    }
+    
+    .stepper-step.completed:not(:last-child)::after {
+      background: linear-gradient(90deg, #10b981, #059669);
+    }
+    
+    .stepper-step.active:not(:last-child)::after {
+      background: linear-gradient(90deg, #3b82f6 50%, #e5e7eb 50%);
+    }
+    
+    .stepper-circle {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 600;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      z-index: 2;
+      border: 3px solid transparent;
+    }
+    
+    /* Pending state */
+    .stepper-step.pending .stepper-circle {
+      background: #f4f4f5;
+      color: #a1a1aa;
+      border-color: #e5e7eb;
+    }
+    
+    /* Active state */
+    .stepper-step.active .stepper-circle {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: #fff;
+      border-color: #3b82f6;
+      box-shadow: 0 4px 16px rgba(59, 130, 246, 0.35);
+      animation: stepperPulse 2s infinite;
+    }
+    
+    /* Completed state */
+    .stepper-step.completed .stepper-circle {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      border-color: #10b981;
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+    }
+    
+    @keyframes stepperPulse {
+      0%, 100% { box-shadow: 0 4px 16px rgba(59, 130, 246, 0.35); }
+      50% { box-shadow: 0 4px 24px rgba(59, 130, 246, 0.5); }
+    }
+    
+    .stepper-icon {
+      width: 22px;
+      height: 22px;
+    }
+    
+    .stepper-label {
+      margin-top: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #71717a;
+      text-align: center;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+    
+    .stepper-step.active .stepper-label {
+      color: #18181b;
+      font-weight: 700;
+      font-size: 14px;
+    }
+    
+    .stepper-step.completed .stepper-label {
+      color: #10b981;
+      font-weight: 600;
+    }
+    
+    .stepper-sublabel {
+      font-size: 11px;
+      color: #a1a1aa;
+      margin-top: 2px;
+    }
+    
+    .stepper-step.active .stepper-sublabel {
+      color: #6b7280;
+    }
+    
+    /* Responsive stepper */
+    @media (max-width: 600px) {
+      .booking-stepper {
+        padding: 16px 8px;
+      }
+      
+      .stepper-step {
+        min-width: 80px;
+      }
+      
+      .stepper-circle {
+        width: 38px;
+        height: 38px;
+        font-size: 16px;
+      }
+      
+      .stepper-icon {
+        width: 18px;
+        height: 18px;
+      }
+      
+      .stepper-step:not(:last-child)::after {
+        top: 17px;
+        left: calc(50% + 20px);
+        width: calc(100% - 40px);
+        height: 2px;
+      }
+      
+      .stepper-label {
+        font-size: 11px;
+      }
+      
+      .stepper-step.active .stepper-label {
+        font-size: 12px;
+      }
+      
+      .stepper-sublabel {
+        font-size: 10px;
+      }
+    }
+
+    /* Dynamic Progress Line for Step 1 */
+    .stepper-step[data-step="1"]::after {
+      background: #e5e7eb !important;
+    }
+    
+    .stepper-step[data-step="1"] .stepper-progress-line {
+      position: absolute;
+      top: 20px;
+      left: calc(50% + 24px);
+      width: calc(100% - 48px);
+      height: 3px;
+      background: linear-gradient(90deg, #3b82f6, #2563eb);
+      border-radius: 2px;
+      transform-origin: left;
+      transform: scaleX(var(--form-progress, 0));
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 1;
+    }
+    
+    @media (max-width: 600px) {
+      .stepper-step[data-step="1"] .stepper-progress-line {
+        top: 17px;
+        left: calc(50% + 20px);
+        width: calc(100% - 40px);
+        height: 2px;
+      }
+    }
+    
+    /* Progress percentage indicator */
+    .stepper-progress-percent {
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 10px;
+      font-weight: 600;
+      color: #3b82f6;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .stepper-step.active .stepper-progress-percent {
+      opacity: 1;
+    }
   </style>
 </head>
 <body>
@@ -2781,13 +2988,16 @@
   <nav class="navbar">
     <div class="navbar-inner">
       <a href="passenger-premium.html" class="logo">
-        <div class="logo-icon">🚆</div>
-        <span class="logo-text">RailMitra</span>
+        <img src="railmitra-logo.png" alt="RailMitra" style="height: 64px; width: auto;">
       </a>
       
       <div class="nav-links">
         <a href="#services" class="nav-link nav-passenger">Services</a>
         <a href="#book" class="nav-link nav-passenger">Book Now</a>
+        <a href="javascript:void(0)" class="nav-link nav-passenger" onclick="showFaqModal()">FAQ</a>
+        <a href="javascript:void(0)" class="nav-link nav-passenger" onclick="toggleSupportChatbot()">
+          Help
+        </a>
         <a href="assistant-premium.html" class="nav-link nav-assistant" style="display: none;">My Dashboard</a>
         <a href="admin-premium.html" class="nav-link nav-admin" style="display: none;">Admin Panel</a>
         <a href="passenger-premium.html" class="nav-link nav-staff" style="display: none;">Passenger Portal</a>
@@ -2922,6 +3132,222 @@
           <p style="font-size: 13px; margin-top: 8px;">Your booking history will appear here</p>
         </div>
         <div id="bookingsList" style="display: none;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cancel Booking Modal -->
+  <div id="cancelBookingModal" style="position:fixed;z-index:10001;left:0;top:0;width:100vw;height:100vh;background:rgba(24,24,27,0.85);display:none;align-items:center;justify-content:center;">
+    <div class="settings-content" style="max-width: 500px; width: 95%;background:#fff;border-radius:18px;box-shadow:0 8px 40px rgba(0,0,0,0.22);overflow:hidden;">
+      <div class="settings-header" style="background: linear-gradient(135deg, #ef4444, #dc2626); padding: 20px;">
+        <h3 style="color: white; margin: 0; display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 24px;">⚠️</span> Cancel Booking
+        </h3>
+        <button class="settings-close" onclick="closeCancelModal()" style="color: white; background: rgba(255,255,255,0.2); border-radius: 50%;">✕</button>
+      </div>
+      <div class="settings-body" style="padding: 24px;">
+        <!-- Cancellation Notice for Pre-Assignment -->
+        <div id="cancelNoticePreAssign" style="display: none; margin-bottom: 20px; padding: 16px; background: linear-gradient(135deg, #ecfdf5, #d1fae5); border-radius: 12px; border: 1px solid #10b981;">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+            <span style="font-size: 20px;">✅</span>
+            <strong style="color: #047857;">Full Refund Available</strong>
+          </div>
+          <p style="margin: 0; font-size: 14px; color: #065f46;">Since no assistant has been assigned yet, you will receive a <strong>full refund</strong> of ₹<span id="cancelFullAmount">0</span> to your original payment method within 1-2 business days.</p>
+        </div>
+        
+        <!-- Cancellation Notice for Post-Assignment -->
+        <div id="cancelNoticePostAssign" style="display: none; margin-bottom: 20px; padding: 16px; background: linear-gradient(135deg, #fef3c7, #fde68a); border-radius: 12px; border: 1px solid #f59e0b;">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+            <span style="font-size: 20px;">⚠️</span>
+            <strong style="color: #b45309;">Cancellation Fee Applies</strong>
+          </div>
+          <p style="margin: 0; font-size: 14px; color: #92400e; line-height: 1.6;">
+            An assistant has already been assigned to your booking. A <strong>₹20 cancellation fee</strong> will be deducted.<br><br>
+            Original Amount: ₹<span id="cancelOriginalAmount">0</span><br>
+            Cancellation Fee: ₹20<br>
+            <strong>Refund Amount: ₹<span id="cancelRefundAmount">0</span></strong>
+          </p>
+        </div>
+        
+        <!-- Reason Selection -->
+        <div style="margin-bottom: 20px;">
+          <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #18181b;">Why are you cancelling?</label>
+          <select id="cancelReasonSelect" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 14px; background: #fff; cursor: pointer;" onchange="toggleCancelReasonOther()">
+            <option value="">Select a reason...</option>
+            <option value="change_of_plans">Change of travel plans</option>
+            <option value="booked_by_mistake">Booked by mistake</option>
+            <option value="found_alternative">Found alternative assistance</option>
+            <option value="train_cancelled">Train cancelled/delayed</option>
+            <option value="price_too_high">Price too high</option>
+            <option value="assistant_delay">Assistant taking too long</option>
+            <option value="emergency">Personal emergency</option>
+            <option value="other">Other reason</option>
+          </select>
+        </div>
+        
+        <!-- Custom Reason Text -->
+        <div id="cancelReasonOtherDiv" style="display: none; margin-bottom: 20px;">
+          <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #18181b;">Please specify your reason</label>
+          <textarea id="cancelReasonOther" rows="3" placeholder="Type your reason here..." style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 14px; resize: vertical;"></textarea>
+        </div>
+        
+        <!-- Hidden fields -->
+        <input type="hidden" id="cancelBookingId">
+        <input type="hidden" id="cancelBookingAmount">
+        <input type="hidden" id="cancelIsPostAssignment">
+        
+        <!-- Actions -->
+        <div style="display: flex; gap: 12px; margin-top: 24px;">
+          <button onclick="closeCancelModal()" style="flex: 1; padding: 14px; background: #f4f4f5; color: #18181b; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;">Keep Booking</button>
+          <button onclick="confirmCancelBooking()" style="flex: 1; padding: 14px; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;">Cancel Booking</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQ Modal -->
+  <div id="faqModal" style="position:fixed;z-index:10001;left:0;top:0;width:100vw;height:100vh;background:rgba(24,24,27,0.85);display:none;align-items:center;justify-content:center;">
+    <div style="max-width: 650px; width: 95%; max-height: 90vh; background: var(--bg-primary); border-radius: 18px; box-shadow: 0 8px 40px rgba(0,0,0,0.22); overflow: hidden; display: flex; flex-direction: column;">
+      <!-- Header -->
+      <div style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); padding: 20px; flex-shrink: 0;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h3 style="color: white; margin: 0; display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 24px;">❓</span> Frequently Asked Questions
+          </h3>
+          <button onclick="closeFaqModal()" style="color: white; background: rgba(255,255,255,0.2); border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;">✕</button>
+        </div>
+      </div>
+      
+      <!-- FAQ Content -->
+      <div style="padding: 20px; overflow-y: auto; flex: 1;">
+        <!-- FAQ Item 1 -->
+        <div class="faq-item" style="margin-bottom: 12px; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden;">
+          <div class="faq-question" onclick="toggleFaq(this)" style="padding: 16px; background: var(--bg-secondary); cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 600; color: var(--text-primary);">What is RailMitra?</span>
+            <span class="faq-icon" style="color: var(--primary); font-size: 20px; transition: transform 0.3s;">+</span>
+          </div>
+          <div class="faq-answer" style="display: none; padding: 16px; background: var(--bg-primary); border-top: 1px solid var(--border-color); line-height: 1.6; color: var(--text-secondary);">
+            RailMitra is a platform that connects passengers with verified railway station assistants. Our assistants help with luggage handling, seat escort, wheelchair assistance, and language support at railway stations across India.
+          </div>
+        </div>
+
+        <!-- FAQ Item 2 -->
+        <div class="faq-item" style="margin-bottom: 12px; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden;">
+          <div class="faq-question" onclick="toggleFaq(this)" style="padding: 16px; background: var(--bg-secondary); cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 600; color: var(--text-primary);">How do I book an assistant?</span>
+            <span class="faq-icon" style="color: var(--primary); font-size: 20px; transition: transform 0.3s;">+</span>
+          </div>
+          <div class="faq-answer" style="display: none; padding: 16px; background: var(--bg-primary); border-top: 1px solid var(--border-color); line-height: 1.6; color: var(--text-secondary);">
+            <ol style="margin: 0; padding-left: 20px;">
+              <li>Select your station and enter travel details</li>
+              <li>Choose the services you need (Luggage, Seat Escort, etc.)</li>
+              <li>Add passenger information</li>
+              <li>Complete payment via UPI or Cash on Delivery</li>
+              <li>An assistant will be assigned to you automatically</li>
+            </ol>
+          </div>
+        </div>
+
+        <!-- FAQ Item 3 -->
+        <div class="faq-item" style="margin-bottom: 12px; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden;">
+          <div class="faq-question" onclick="toggleFaq(this)" style="padding: 16px; background: var(--bg-secondary); cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 600; color: var(--text-primary);">What services are available?</span>
+            <span class="faq-icon" style="color: var(--primary); font-size: 20px; transition: transform 0.3s;">+</span>
+          </div>
+          <div class="faq-answer" style="display: none; padding: 16px; background: var(--bg-primary); border-top: 1px solid var(--border-color); line-height: 1.6; color: var(--text-secondary);">
+            <ul style="margin: 0; padding-left: 20px;">
+              <li><strong>Luggage Assistance:</strong> Help with carrying and managing your bags</li>
+              <li><strong>Seat Escort:</strong> Guide to your seat/coach and boarding help</li>
+              <li><strong>Wheelchair Assistance:</strong> Support for mobility-impaired passengers</li>
+              <li><strong>Language Support:</strong> Communication help in regional languages</li>
+              <li><strong>Round Trip:</strong> Assistance at both boarding and arrival stations</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- FAQ Item 4 -->
+        <div class="faq-item" style="margin-bottom: 12px; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden;">
+          <div class="faq-question" onclick="toggleFaq(this)" style="padding: 16px; background: var(--bg-secondary); cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 600; color: var(--text-primary);">How much does it cost?</span>
+            <span class="faq-icon" style="color: var(--primary); font-size: 20px; transition: transform 0.3s;">+</span>
+          </div>
+          <div class="faq-answer" style="display: none; padding: 16px; background: var(--bg-primary); border-top: 1px solid var(--border-color); line-height: 1.6; color: var(--text-secondary);">
+            Pricing depends on the services selected and number of luggage items. Base prices start from ₹49 for basic assistance. You can see the exact price breakdown in the booking summary before payment. We offer both online payment (UPI) and Cash on Delivery options.
+          </div>
+        </div>
+
+        <!-- FAQ Item 5 -->
+        <div class="faq-item" style="margin-bottom: 12px; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden;">
+          <div class="faq-question" onclick="toggleFaq(this)" style="padding: 16px; background: var(--bg-secondary); cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 600; color: var(--text-primary);">What is the cancellation policy?</span>
+            <span class="faq-icon" style="color: var(--primary); font-size: 20px; transition: transform 0.3s;">+</span>
+          </div>
+          <div class="faq-answer" style="display: none; padding: 16px; background: var(--bg-primary); border-top: 1px solid var(--border-color); line-height: 1.6; color: var(--text-secondary);">
+            <ul style="margin: 0; padding-left: 20px;">
+              <li><strong>Before assistant assigned:</strong> Full refund with no charges</li>
+              <li><strong>After assistant assigned:</strong> ₹20 cancellation fee is deducted</li>
+            </ul>
+            <p style="margin-top: 10px; margin-bottom: 0;">Refunds for online payments are processed within 1-2 business days.</p>
+          </div>
+        </div>
+
+        <!-- FAQ Item 6 -->
+        <div class="faq-item" style="margin-bottom: 12px; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden;">
+          <div class="faq-question" onclick="toggleFaq(this)" style="padding: 16px; background: var(--bg-secondary); cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 600; color: var(--text-primary);">How do I track my assistant?</span>
+            <span class="faq-icon" style="color: var(--primary); font-size: 20px; transition: transform 0.3s;">+</span>
+          </div>
+          <div class="faq-answer" style="display: none; padding: 16px; background: var(--bg-primary); border-top: 1px solid var(--border-color); line-height: 1.6; color: var(--text-secondary);">
+            Once an assistant is assigned, you can track your booking in "My Bookings". You'll see your assistant's name, phone number, and real-time status updates. You can also use the "Track Booking" button for detailed progress.
+          </div>
+        </div>
+
+        <!-- FAQ Item 7 -->
+        <div class="faq-item" style="margin-bottom: 12px; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden;">
+          <div class="faq-question" onclick="toggleFaq(this)" style="padding: 16px; background: var(--bg-secondary); cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 600; color: var(--text-primary);">What are Start OTP and Completion OTP?</span>
+            <span class="faq-icon" style="color: var(--primary); font-size: 20px; transition: transform 0.3s;">+</span>
+          </div>
+          <div class="faq-answer" style="display: none; padding: 16px; background: var(--bg-primary); border-top: 1px solid var(--border-color); line-height: 1.6; color: var(--text-secondary);">
+            <ul style="margin: 0; padding-left: 20px;">
+              <li><strong>Start OTP:</strong> Share this with your assistant when they arrive to begin the service</li>
+              <li><strong>Completion OTP:</strong> Share this after the service is complete to confirm satisfaction</li>
+            </ul>
+            <p style="margin-top: 10px; margin-bottom: 0;">These OTPs ensure secure verification between you and the assistant.</p>
+          </div>
+        </div>
+
+        <!-- FAQ Item 8 -->
+        <div class="faq-item" style="margin-bottom: 12px; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden;">
+          <div class="faq-question" onclick="toggleFaq(this)" style="padding: 16px; background: var(--bg-secondary); cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 600; color: var(--text-primary);">What if I face an emergency?</span>
+            <span class="faq-icon" style="color: var(--primary); font-size: 20px; transition: transform 0.3s;">+</span>
+          </div>
+          <div class="faq-answer" style="display: none; padding: 16px; background: var(--bg-primary); border-top: 1px solid var(--border-color); line-height: 1.6; color: var(--text-secondary);">
+            Use the <strong style="color: #ef4444;">🚨 Emergency Help</strong> button available in active bookings. This will immediately alert your assistant and our support team. You can also contact your assistant directly using the phone number shown in your booking details.
+          </div>
+        </div>
+
+        <!-- FAQ Item 9 -->
+        <div class="faq-item" style="margin-bottom: 0; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden;">
+          <div class="faq-question" onclick="toggleFaq(this)" style="padding: 16px; background: var(--bg-secondary); cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 600; color: var(--text-primary);">How do I contact support?</span>
+            <span class="faq-icon" style="color: var(--primary); font-size: 20px; transition: transform 0.3s;">+</span>
+          </div>
+          <div class="faq-answer" style="display: none; padding: 16px; background: var(--bg-primary); border-top: 1px solid var(--border-color); line-height: 1.6; color: var(--text-secondary);">
+            You can reach our support team through:
+            <ul style="margin: 10px 0 0; padding-left: 20px;">
+              <li>Email: support@railmitra.com</li>
+              <li>Phone: 1800-XXX-XXXX (Toll Free)</li>
+              <li>In-app feedback after completing a booking</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Footer -->
+      <div style="padding: 16px 20px; background: var(--bg-secondary); border-top: 1px solid var(--border-color); text-align: center; flex-shrink: 0;">
+        <p style="margin: 0; color: var(--text-tertiary); font-size: 13px;">Still have questions? Contact us at <a href="mailto:support@railmitra.com" style="color: var(--primary);">support@railmitra.com</a></p>
       </div>
     </div>
   </div>
@@ -3099,52 +3525,41 @@
             Multilingual assistant for communication. Hindi, English, Telugu, and more.
           </p>
           <div class="service-price">₹30 <span>/ booking</span></div>
-          <div class="language-type-section" id="languageTypeSection" style="display:none;margin-top:16px;">
-            <div style="margin-top:16px;">
-              <label for="preferredLanguageHelp" style="font-weight:500;margin-bottom:4px;display:block;">Preferred Language</label>
-              <select id="preferredLanguageHelp" name="preferredLanguageHelp" style="width:100%;padding:8px;border-radius:6px;border:1px solid #ccc;">
-                <option value="Telugu">Telugu</option>
-                <option value="English">English</option>
-                <option value="Hindi">Hindi</option>
-                <option value="Bengali">Bengali</option>
-                <option value="Tamil">Tamil</option>
-                <option value="Kannada">Kannada</option>
-              </select>
-            </div>
-          </div>
           <script>
-          // Clean, single implementation for Language Help logic
+          // Language Help checkbox logic
           document.addEventListener('DOMContentLoaded', function() {
             const langCheckbox = document.getElementById('svc-language');
-            const langTypeSection = document.getElementById('languageTypeSection');
             let selectedLanguage = null;
 
-            // Show/hide language options when checkbox toggled
+            // Show/hide language dropdown in booking form when checkbox toggled
             function updateLangSection() {
-              langTypeSection.style.display = langCheckbox.checked ? 'block' : 'none';
-              if (!langCheckbox.checked) {
-                // Clear selection if unchecked
-                document.querySelectorAll('.language-type-card.selected').forEach(c => c.classList.remove('selected'));
-                selectedLanguage = null;
-                window.selectedLanguage = null;
+              const langWrapper = document.getElementById('languageHelpWrapper');
+              if (langWrapper) {
+                if (langCheckbox.checked) {
+                  langWrapper.style.display = 'block';
+                } else {
+                  langWrapper.style.display = 'none';
+                  selectedLanguage = null;
+                  window.selectedLanguage = null;
+                  const langSelect = document.getElementById('language');
+                  if (langSelect) langSelect.value = '';
+                }
               }
-              // Optionally, show/hide other service cards if needed
-              // document.querySelectorAll('.service-card:not([data-service="Language"])').forEach(card => {
-              //   card.style.display = langCheckbox.checked ? 'none' : '';
-              // });
               updateSelectedServicesDisplay();
             }
             langCheckbox.addEventListener('change', updateLangSection);
             updateLangSection();
 
-            // Only dropdown selection for language
-            const langDropdown = document.getElementById('preferredLanguageHelp');
-            langDropdown.addEventListener('change', function() {
-              if (!langCheckbox.checked) return;
-              selectedLanguage = langDropdown.value;
-              window.selectedLanguage = selectedLanguage;
-              updateSelectedServicesDisplay();
-            });
+            // Sync booking form language dropdown to selectedLanguage
+            const formLangDropdown = document.getElementById('language');
+            if (formLangDropdown) {
+              formLangDropdown.addEventListener('change', function() {
+                if (!langCheckbox.checked) return;
+                selectedLanguage = formLangDropdown.value;
+                window.selectedLanguage = selectedLanguage;
+                updateSelectedServicesDisplay();
+              });
+            }
 
             // Update selected services display
             function updateSelectedServicesDisplay() {
@@ -3172,6 +3587,41 @@
         <h2 class="form-title">Book Assistance</h2>
         <p class="form-subtitle">Fill in your details to request a verified assistant</p>
         
+        <!-- Booking Progress Stepper - Step 1 Active -->
+        <div class="booking-stepper" id="bookingStepper">
+          <div class="stepper-step active" data-step="1">
+            <div class="stepper-circle">
+              <svg class="stepper-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+            </div>
+            <div class="stepper-progress-line"></div>
+            <span class="stepper-label">Booking Details</span>
+            <span class="stepper-sublabel">Fill your info</span>
+            <span class="stepper-progress-percent" id="stepperProgressPercent">0%</span>
+          </div>
+          <div class="stepper-step pending" data-step="2">
+            <div class="stepper-circle">
+              <svg class="stepper-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+              </svg>
+            </div>
+            <span class="stepper-label">Payment</span>
+            <span class="stepper-sublabel">Pay securely</span>
+          </div>
+          <div class="stepper-step pending" data-step="3">
+            <div class="stepper-circle">
+              <svg class="stepper-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <span class="stepper-label">Confirmation</span>
+            <span class="stepper-sublabel">Booking done</span>
+          </div>
+        </div>
+        
+        <!-- Step 1: Booking Details Form Content -->
+        <div id="step1Content">
         <form id="bookingForm" onsubmit="submitBooking(event)">
           <div class="form-grid">
             <!-- Phone Number (visible only if not logged in) -->
@@ -3318,8 +3768,8 @@
             </div>
             
             <div class="form-group">
-              <!-- Preferred Language field removed from booking assistance form -->
-              <div class="form-group" id="languageHelpWrapper" style="margin-bottom:16px;">
+              <!-- Language wrapper - hidden by default, shown when Language Help is selected -->
+              <div class="form-group" id="languageHelpWrapper" style="display:none;margin-bottom:16px;">
                 <label class="form-label" id="preferredLanguageLabel" style="display:block;cursor:pointer;font-weight:600;margin-bottom:8px;">Preferred Language</label>
                 <select class="form-select" id="language" style="display:block;width:100%;max-width:220px;">
                   <option value="">Select a language</option>
@@ -3330,13 +3780,6 @@
                   <option value="Tamil">Tamil</option>
                   <option value="Kannada">Kannada</option>
                 </select>
-              <!-- Add hidden class so it is hidden by default -->
-              <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                  var langHelp = document.getElementById('languageHelpWrapper');
-                  if (langHelp) langHelp.classList.add('hidden');
-                });
-              </script>
               </div>
             </div>
             
@@ -3394,6 +3837,15 @@
             </button>
           </div>
         </form>
+        </div>
+        <!-- END Step 1 Content -->
+        
+        <!-- Step 2: Payment Content (Hidden initially) -->
+        <div id="step2Content" style="display:none;"></div>
+        
+        <!-- Step 3: Confirmation Content (Hidden initially) -->
+        <div id="step3Content" style="display:none;"></div>
+        
       </div>
     </div>
   </section>
@@ -3401,6 +3853,37 @@
   <!-- Progress Tracker Section (Hidden by default) -->
   <section class="progress-section" id="track">
     <div class="progress-container">
+      <!-- Booking Progress Stepper - Step 3 Active (Confirmation) -->
+      <div class="booking-stepper" id="confirmationStepper" style="margin-bottom:24px;">
+        <div class="stepper-step completed" data-step="1">
+          <div class="stepper-circle">
+            <svg class="stepper-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+            </svg>
+          </div>
+          <span class="stepper-label">Booking Details</span>
+          <span class="stepper-sublabel">Completed</span>
+        </div>
+        <div class="stepper-step completed" data-step="2">
+          <div class="stepper-circle">
+            <svg class="stepper-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+            </svg>
+          </div>
+          <span class="stepper-label">Payment</span>
+          <span class="stepper-sublabel">Completed</span>
+        </div>
+        <div class="stepper-step active" data-step="3">
+          <div class="stepper-circle">
+            <svg class="stepper-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <span class="stepper-label">Confirmation</span>
+          <span class="stepper-sublabel">Booking done</span>
+        </div>
+      </div>
+      
       <div class="progress-card">
         <div class="progress-header">
           <div>
@@ -4048,6 +4531,22 @@
         
         document.getElementById('bookingsLoading').style.display = 'none';
         
+        // Handle invalid token - redirect to login
+        if (!data.success && (data.message === 'Invalid token' || data.message === 'No token provided' || res.status === 401)) {
+          console.log('[viewMyBookings] Invalid token, redirecting to login');
+          // Clear invalid token
+          localStorage.removeItem('railcare_token');
+          sessionStorage.removeItem('railcare_token');
+          localStorage.removeItem('railcare_logged_in');
+          document.getElementById('bookingsEmpty').style.display = 'block';
+          document.getElementById('bookingsEmpty').innerHTML = `
+            <div style="font-size: 48px; margin-bottom: 12px;">🔒</div>
+            <p>Session expired. Please log in again.</p>
+            <button onclick="closeBookingsModal(); window.location.href='login-premium.html'" style="margin-top:16px;padding:12px 24px;background:#18181b;color:#fff;border:none;border-radius:50px;font-weight:600;cursor:pointer;">Log In</button>
+          `;
+          return;
+        }
+        
         if (!data.success || !data.bookings || data.bookings.length === 0) {
           console.log('[viewMyBookings] No bookings found or error');
           document.getElementById('bookingsEmpty').style.display = 'block';
@@ -4119,6 +4618,9 @@
           const isRoundTrip = b.serviceType === 'round_trip';
           // Feedback button logic
           const canGiveFeedback = b.status === 'Completed' && !b.hasFeedback;
+          // Cancel button logic
+          const canCancel = ['Pending', 'Searching', 'Assigned', 'Accepted', 'Start Pending', 'In Progress'].includes(b.status);
+          const isPostAssignment = ['Assigned', 'Accepted', 'Start Pending', 'In Progress'].includes(b.status);
 
           // Dynamic action text logic
           function getActionText(booking) {
@@ -4250,47 +4752,79 @@
                 <div style="margin-bottom: 10px; font-size: 13px; color: var(--text-secondary);">
                   <strong>Your Action:</strong> ${actionText}
                 </div>
-                <button onclick="trackBooking('${b._id}')" style="
-                  padding: 8px 20px;
-                  background: var(--text-primary);
-                  color: var(--bg-primary);
-                  border: none;
-                  border-radius: 8px;
-                  font-size: 13px;
-                  font-weight: 600;
-                  cursor: pointer;
-                ">Track Booking</button>
-                ${showEmergency ? `<button onclick="triggerEmergencyHelp('${b._id}')" style="margin-left: 12px; padding: 8px 20px; background: #ef4444; color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;">🚨 Emergency Help</button>` : ''}
+                <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                  <button onclick="trackBooking('${b._id}')" style="
+                    padding: 8px 20px;
+                    background: var(--text-primary);
+                    color: var(--bg-primary);
+                    border: none;
+                    border-radius: 8px;
+                    font-size: 13px;
+                    font-weight: 600;
+                    cursor: pointer;
+                  ">Track Booking</button>
+                  ${showEmergency ? `<button onclick="triggerEmergencyHelp('${b._id}')" style="padding: 8px 20px; background: #ef4444; color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;">🚨 Emergency Help</button>` : ''}
+                  ${canCancel ? `<button onclick="showCancelModal('${b._id}', ${b.price || 0}, ${isPostAssignment})" style="padding: 8px 20px; background: #fff; color: #ef4444; border: 2px solid #ef4444; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;">Cancel Booking</button>` : ''}
+                </div>
               </div>
               ` : ''}
               
               ${(b.status === 'Cancelled' || b.status === 'Rejected') && 
                 (b.paymentMethod === 'UPI' || b.paymentMethod === 'UPI_QR' || b.paymentMethod === 'upi_qr') && 
-                (b.paymentStatus === 'Paid' || b.paymentStatus === 'pending_verification') ? `
+                (b.paymentStatus === 'Paid' || b.paymentStatus === 'pending_verification' || b.paymentStatus === 'Refund_Initiated' || b.paymentStatus === 'Refund_Processing' || b.paymentStatus === 'Refunded') ? `
               <div style="
                 margin-top: 16px;
                 padding: 14px;
-                background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
-                border: 1px solid #10b981;
+                background: ${b.paymentStatus === 'Refunded' ? 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)' : 
+                             b.paymentStatus === 'Refund_Processing' ? 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)' :
+                             b.paymentStatus === 'Refund_Initiated' ? 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)' : 
+                             'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)'};
+                border: 1px solid ${b.paymentStatus === 'Refunded' ? '#10b981' : 
+                                    b.paymentStatus === 'Refund_Processing' ? '#3b82f6' :
+                                    b.paymentStatus === 'Refund_Initiated' ? '#f59e0b' : '#f59e0b'};
                 border-radius: 12px;
               ">
                 <div style="display: flex; align-items: flex-start; gap: 12px;">
                   <div style="
                     width: 32px; height: 32px; 
-                    background: #10b981; 
+                    background: ${b.paymentStatus === 'Refunded' ? '#10b981' : 
+                                  b.paymentStatus === 'Refund_Processing' ? '#3b82f6' :
+                                  b.paymentStatus === 'Refund_Initiated' ? '#f59e0b' : '#f59e0b'}; 
                     border-radius: 8px;
                     display: flex; align-items: center; justify-content: center;
                     flex-shrink: 0;
                   ">
+                    ${b.paymentStatus === 'Refunded' ? `
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M20 6L9 17l-5-5"/>
+                    </svg>
+                    ` : `
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
                     </svg>
+                    `}
                   </div>
                   <div>
-                    <div style="font-weight: 600; color: #047857; margin-bottom: 4px;">Refund Initiated</div>
-                    <div style="font-size: 13px; color: #065f46; line-height: 1.5;">
-                      Your payment of <strong>₹${b.price || '—'}</strong> will be refunded to your original payment method within <strong>1-2 business days</strong>.
+                    <div style="font-weight: 600; color: ${b.paymentStatus === 'Refunded' ? '#047857' : 
+                                                          b.paymentStatus === 'Refund_Processing' ? '#1d4ed8' :
+                                                          b.paymentStatus === 'Refund_Initiated' ? '#b45309' : '#b45309'}; margin-bottom: 4px;">
+                      ${b.paymentStatus === 'Refunded' ? '✅ Refund Completed' : 
+                        b.paymentStatus === 'Refund_Processing' ? '⏳ Refund Processing' :
+                        b.paymentStatus === 'Refund_Initiated' ? '🔄 Refund Initiated' : '💰 Refund Pending'}
                     </div>
+                    <div style="font-size: 13px; color: ${b.paymentStatus === 'Refunded' ? '#065f46' : 
+                                                         b.paymentStatus === 'Refund_Processing' ? '#1e40af' :
+                                                         b.paymentStatus === 'Refund_Initiated' ? '#92400e' : '#92400e'}; line-height: 1.5;">
+                      ${b.paymentStatus === 'Refunded' 
+                        ? `Your refund of <strong>₹${b.refundAmount || (b.price - (b.cancellationFee || 0))}</strong> has been processed successfully!`
+                        : b.paymentStatus === 'Refund_Processing'
+                        ? `Your refund of <strong>₹${b.refundAmount || (b.price - (b.cancellationFee || 0))}</strong> is being processed. It will be credited soon.`
+                        : b.paymentStatus === 'Refund_Initiated'
+                        ? `Refund of <strong>₹${b.refundAmount || (b.price - (b.cancellationFee || 0))}</strong> has been initiated by admin.${b.cancellationFee > 0 ? ` (₹${b.cancellationFee} cancellation fee deducted)` : ''}`
+                        : `Refund of <strong>₹${b.refundAmount || (b.price - (b.cancellationFee || 0))}</strong> is pending. Admin will process it shortly.${b.cancellationFee > 0 ? ` (₹${b.cancellationFee} cancellation fee applies)` : ''}`}
+                      ${b.paymentStatus !== 'Refunded' ? `<br><span style="font-size: 12px;">Estimated time: 1-2 business days</span>` : ''}
+                    </div>
+                    ${b.cancellationReason ? `<div style="margin-top: 8px; font-size: 12px; color: #6b7280;">Reason: ${b.cancellationReason.replace(/_/g, ' ')}</div>` : ''}
                   </div>
                 </div>
               </div>
@@ -4326,6 +4860,158 @@
     function closeBookingsModal() {
       document.getElementById('bookingsModal').classList.remove('show');
     }
+    
+    // ==================== CANCEL BOOKING FUNCTIONS ====================
+    
+    function showCancelModal(bookingId, amount, isPostAssignment) {
+      console.log('[showCancelModal] Called with:', bookingId, amount, isPostAssignment);
+      const modal = document.getElementById('cancelBookingModal');
+      if (!modal) {
+        console.error('[showCancelModal] Modal not found!');
+        return;
+      }
+      
+      // Store values in hidden fields
+      document.getElementById('cancelBookingId').value = bookingId;
+      document.getElementById('cancelBookingAmount').value = amount;
+      document.getElementById('cancelIsPostAssignment').value = isPostAssignment;
+      
+      // Show appropriate notice
+      const preAssignEl = document.getElementById('cancelNoticePreAssign');
+      const postAssignEl = document.getElementById('cancelNoticePostAssign');
+      
+      if (isPostAssignment) {
+        preAssignEl.style.display = 'none';
+        postAssignEl.style.display = 'block';
+        document.getElementById('cancelOriginalAmount').textContent = amount;
+        document.getElementById('cancelRefundAmount').textContent = Math.max(0, amount - 20);
+      } else {
+        preAssignEl.style.display = 'block';
+        postAssignEl.style.display = 'none';
+        document.getElementById('cancelFullAmount').textContent = amount;
+      }
+      
+      // Reset form
+      document.getElementById('cancelReasonSelect').value = '';
+      document.getElementById('cancelReasonOther').value = '';
+      document.getElementById('cancelReasonOtherDiv').style.display = 'none';
+      
+      // Show modal
+      modal.style.display = 'flex';
+    }
+    // Make globally accessible
+    window.showCancelModal = showCancelModal;
+    
+    function closeCancelModal() {
+      const modal = document.getElementById('cancelBookingModal');
+      if (modal) modal.style.display = 'none';
+    }
+    window.closeCancelModal = closeCancelModal;
+    
+    // FAQ Modal Functions
+    function showFaqModal() {
+      const modal = document.getElementById('faqModal');
+      if (modal) modal.style.display = 'flex';
+    }
+    window.showFaqModal = showFaqModal;
+    
+    function closeFaqModal() {
+      const modal = document.getElementById('faqModal');
+      if (modal) modal.style.display = 'none';
+    }
+    window.closeFaqModal = closeFaqModal;
+    
+    // Close FAQ modal on click outside
+    document.getElementById('faqModal')?.addEventListener('click', function(e) {
+      if (e.target === this) closeFaqModal();
+    });
+    
+    function toggleFaq(element) {
+      const answer = element.nextElementSibling;
+      const icon = element.querySelector('.faq-icon');
+      const isOpen = answer.style.display === 'block';
+      
+      // Close all other FAQs
+      document.querySelectorAll('.faq-answer').forEach(a => a.style.display = 'none');
+      document.querySelectorAll('.faq-icon').forEach(i => {
+        i.textContent = '+';
+        i.style.transform = 'rotate(0deg)';
+      });
+      
+      // Toggle current FAQ
+      if (!isOpen) {
+        answer.style.display = 'block';
+        icon.textContent = '−';
+        icon.style.transform = 'rotate(180deg)';
+      }
+    }
+    window.toggleFaq = toggleFaq;
+    
+    function toggleCancelReasonOther() {
+      const select = document.getElementById('cancelReasonSelect');
+      const otherDiv = document.getElementById('cancelReasonOtherDiv');
+      otherDiv.style.display = select.value === 'other' ? 'block' : 'none';
+    }
+    window.toggleCancelReasonOther = toggleCancelReasonOther;
+    
+    async function confirmCancelBooking() {
+      const bookingId = document.getElementById('cancelBookingId').value;
+      const amount = parseFloat(document.getElementById('cancelBookingAmount').value) || 0;
+      const isPostAssignment = document.getElementById('cancelIsPostAssignment').value === 'true';
+      const reasonSelect = document.getElementById('cancelReasonSelect').value;
+      const reasonOther = document.getElementById('cancelReasonOther').value.trim();
+      
+      if (!reasonSelect) {
+        alert('Please select a reason for cancellation');
+        return;
+      }
+      
+      if (reasonSelect === 'other' && !reasonOther) {
+        alert('Please specify your reason for cancellation');
+        return;
+      }
+      
+      const reason = reasonSelect === 'other' ? reasonOther : reasonSelect;
+      const refundAmount = isPostAssignment ? Math.max(0, amount - 20) : amount;
+      
+      try {
+        const authFetch = window.RailCareAuth?.authFetch || fetch;
+        const res = await authFetch('/api/bookings/cancel-request', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            bookingId,
+            reason,
+            isPostAssignment,
+            refundAmount
+          })
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          closeCancelModal();
+          
+          // Show success message based on assignment status
+          if (isPostAssignment) {
+            showToast(`Cancellation submitted. ₹${refundAmount} will be refunded (₹20 cancellation fee deducted).`, 'info');
+          } else {
+            showToast(`Booking cancelled. Full refund of ₹${amount} will be processed within 1-2 business days.`, 'success');
+          }
+          
+          // Refresh bookings list
+          setTimeout(() => viewMyBookings(), 500);
+        } else {
+          alert('Failed to cancel: ' + (data.message || 'Unknown error'));
+        }
+      } catch (err) {
+        console.error('[confirmCancelBooking] Error:', err);
+        alert('Error cancelling booking: ' + err.message);
+      }
+    }
+    window.confirmCancelBooking = confirmCancelBooking;
+    
+    // ==================================================================
     
     // Load round-trip task assignments for passenger visibility
     async function loadRoundTripTasks(bookingId) {
@@ -4585,7 +5271,7 @@
         }
         // Special handling for Language Help
         if (service === 'Language') {
-          document.getElementById('languageHelpWrapper').classList.remove('hidden');
+          document.getElementById('languageHelpWrapper').style.display = 'block';
           document.getElementById('preferredLanguageLabel').style.display = '';
           document.getElementById('language').style.display = 'block';
           document.getElementById('language').disabled = false;
@@ -4600,7 +5286,7 @@
         }
         // Special handling for Language Help
         if (service === 'Language') {
-          document.getElementById('languageHelpWrapper').classList.add('hidden');
+          document.getElementById('languageHelpWrapper').style.display = 'none';
           document.getElementById('preferredLanguageLabel').style.display = 'none';
           document.getElementById('language').style.display = 'none';
           document.getElementById('language').disabled = true;
@@ -5878,6 +6564,9 @@
       // SMART FLOW: Reset everything and fetch stations, then show service type selector
       resetSmartBookingFlow();
       fetchAndCacheStations(train.trainNumber);
+      
+      // Update form progress bar
+      if (typeof updateFormProgress === 'function') updateFormProgress();
     }
 
     // ==================== SMART BOOKING FLOW LOGIC ====================
@@ -6035,6 +6724,7 @@
       
       if (!serviceType || cachedStations.length === 0) {
         updateBookingButtonState();
+        if (typeof updateFormProgress === 'function') updateFormProgress();
         return;
       }
       
@@ -6057,6 +6747,7 @@
       }
       
       updateBookingButtonState();
+      if (typeof updateFormProgress === 'function') updateFormProgress();
     }
     
     /**
@@ -6178,6 +6869,7 @@
         selectedPickupStation = null;
         infoEl?.classList.remove('visible', 'valid');
         updateBookingButtonState();
+        if (typeof updateFormProgress === 'function') updateFormProgress();
         return;
       }
       
@@ -6194,6 +6886,7 @@
       }
       
       updateBookingButtonState();
+      if (typeof updateFormProgress === 'function') updateFormProgress();
     }
     
     /**
@@ -6208,6 +6901,7 @@
         selectedDropStation = null;
         infoEl?.classList.remove('visible', 'valid');
         updateBookingButtonState();
+        if (typeof updateFormProgress === 'function') updateFormProgress();
         return;
       }
       
@@ -6224,6 +6918,7 @@
       }
       
       updateBookingButtonState();
+      if (typeof updateFormProgress === 'function') updateFormProgress();
     }
     
     /**
@@ -6631,6 +7326,147 @@ async function createBookingAndPay(formData) {
   showUPIPaymentOptions(null, paymentAmount, formData.passenger || formData.passengerName || {});
 }
 
+// Update the booking stepper to show current step
+function updateBookingStepper(currentStep) {
+  const stepper = document.getElementById('bookingStepper');
+  if (!stepper) return;
+  
+  const steps = stepper.querySelectorAll('.stepper-step');
+  steps.forEach((step, index) => {
+    const stepNum = index + 1;
+    const circle = step.querySelector('.stepper-circle');
+    const sublabel = step.querySelector('.stepper-sublabel');
+    
+    // Remove all state classes
+    step.classList.remove('active', 'completed', 'pending');
+    
+    if (stepNum < currentStep) {
+      // Completed step
+      step.classList.add('completed');
+      circle.innerHTML = `<svg class="stepper-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+      </svg>`;
+      sublabel.textContent = 'Completed';
+    } else if (stepNum === currentStep) {
+      // Active step
+      step.classList.add('active');
+      // Restore original icon based on step
+      if (stepNum === 1) {
+        circle.innerHTML = `<svg class="stepper-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>`;
+        sublabel.textContent = 'Fill your info';
+      } else if (stepNum === 2) {
+        circle.innerHTML = `<svg class="stepper-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+        </svg>`;
+        sublabel.textContent = 'Pay securely';
+      } else if (stepNum === 3) {
+        circle.innerHTML = `<svg class="stepper-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>`;
+        sublabel.textContent = 'Booking done';
+      }
+    } else {
+      // Pending step
+      step.classList.add('pending');
+      // Restore original icon based on step
+      if (stepNum === 2) {
+        circle.innerHTML = `<svg class="stepper-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+        </svg>`;
+        sublabel.textContent = 'Pay securely';
+      } else if (stepNum === 3) {
+        circle.innerHTML = `<svg class="stepper-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>`;
+        sublabel.textContent = 'Booking done';
+      }
+    }
+  });
+}
+
+// Form Progress Tracking - Update progress bar as user fills form fields
+function updateFormProgress() {
+  const fields = {
+    passengerName: document.getElementById('passengerName')?.value?.trim(),
+    trainName: document.getElementById('selectedTrainId')?.value || document.getElementById('trainName')?.value?.trim(),
+    serviceType: document.querySelector('input[name="serviceType"]:checked')?.value,
+    station: getSelectedStation(),
+    coach: document.getElementById('coach')?.value?.trim(),
+    seat: document.getElementById('seat')?.value?.trim()
+  };
+  
+  // Calculate filled fields (only count required ones with higher weight)
+  const weights = {
+    passengerName: 25,  // Required
+    trainName: 25,      // Required
+    serviceType: 20,    // Required
+    station: 20,        // Required
+    coach: 5,           // Optional
+    seat: 5             // Optional
+  };
+  
+  let progress = 0;
+  for (const [field, value] of Object.entries(fields)) {
+    if (value) {
+      progress += weights[field];
+    }
+  }
+  
+  // Update CSS variable for progress bar
+  const step1 = document.querySelector('.stepper-step[data-step="1"]');
+  if (step1) {
+    step1.style.setProperty('--form-progress', progress / 100);
+  }
+  
+  // Update percentage text
+  const percentEl = document.getElementById('stepperProgressPercent');
+  if (percentEl) {
+    percentEl.textContent = `${progress}%`;
+  }
+}
+
+// Get currently selected station based on active service type
+function getSelectedStation() {
+  const serviceType = document.querySelector('input[name="serviceType"]:checked')?.value;
+  if (serviceType === 'pickup') {
+    return document.getElementById('pickupOnlySelect')?.value;
+  } else if (serviceType === 'drop') {
+    return document.getElementById('dropOnlySelect')?.value;
+  }
+  return null;
+}
+
+// Attach form progress listeners
+document.addEventListener('DOMContentLoaded', function() {
+  // Text inputs
+  const textInputs = ['passengerName', 'trainName', 'coach', 'seat'];
+  textInputs.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('input', updateFormProgress);
+      el.addEventListener('change', updateFormProgress);
+    }
+  });
+  
+  // Service type radio buttons
+  document.querySelectorAll('input[name="serviceType"]').forEach(radio => {
+    radio.addEventListener('change', updateFormProgress);
+  });
+  
+  // Station selectors
+  ['pickupOnlySelect', 'dropOnlySelect'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('change', updateFormProgress);
+    }
+  });
+  
+  // Initial calculation
+  setTimeout(updateFormProgress, 500);
+});
+
 function showUPIPaymentOptions(bookingId, amount, passengerDetails) {
   // Device detection - use both user agent AND screen width for reliability
   function isMobile() {
@@ -6652,11 +7488,11 @@ function showUPIPaymentOptions(bookingId, amount, passengerDetails) {
   
   const main = document.querySelector('main') || document.body;
   const payDiv = document.createElement('div');
-  payDiv.style = 'max-width:480px;margin:48px auto;padding:32px;background:#fff;border-radius:24px;box-shadow:0 4px 24px rgba(0,0,0,0.08);text-align:center;';
+  payDiv.style = 'max-width:520px;margin:32px auto;padding:32px;background:#fff;border-radius:24px;box-shadow:0 4px 24px rgba(0,0,0,0.08);';
   
-  // Insert payment UI HTML with mobile/desktop detection - matching dashboard colors
+  // Insert payment UI HTML (stepper is already shown at top of booking section)
   payDiv.innerHTML = `
-    <div style="margin-bottom:28px;">
+    <div style="text-align:center;margin-bottom:28px;">
       <div style="width:56px;height:56px;background:#18181b;border-radius:50%;margin:0 auto 18px;display:flex;align-items:center;justify-content:center;">
         <svg width="26" height="26" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
@@ -6667,7 +7503,7 @@ function showUPIPaymentOptions(bookingId, amount, passengerDetails) {
     </div>
     
     <!-- UPI App Button Section (shown on mobile only - won't work on desktop) -->
-    <div id="mobile-upi-section" style="display:${isMobileDevice ? 'block' : 'none'};margin:24px 0;">
+    <div id="mobile-upi-section" style="display:${isMobileDevice ? 'block' : 'none'};margin:24px 0;text-align:center;">
       <button id="pay-upi-app-btn" style="
         width:100%;
         max-width:300px;
@@ -6785,20 +7621,43 @@ function showUPIPaymentOptions(bookingId, amount, passengerDetails) {
         font-weight:500;
         cursor:pointer;
         transition:color 0.2s;
-      " onmouseover="this.style.color='#18181b'" onmouseout="this.style.color='#a1a1aa'">Cancel</button>
+      " onmouseover="this.style.color='#18181b'" onmouseout="this.style.color='#a1a1aa'">← Back to Details</button>
     </div>
   `;
-  main.innerHTML = '';
-  main.appendChild(payDiv);
+  
+  // Render payment inside step2Content instead of replacing main
+  const step1Content = document.getElementById('step1Content');
+  const step2Content = document.getElementById('step2Content');
+  
+  if (step1Content && step2Content) {
+    step1Content.style.display = 'none';
+    step2Content.innerHTML = payDiv.outerHTML;
+    step2Content.style.display = 'block';
+    updateBookingStepper(2); // Update stepper to step 2
+    // Scroll to top of booking section
+    document.getElementById('book').scrollIntoView({ behavior: 'smooth' });
+  } else {
+    // Fallback for old behavior
+    main.innerHTML = '';
+    main.appendChild(payDiv);
+  }
   
   // Assign event handlers after DOM is updated
   setTimeout(() => {
-    // Cancel button handler
+    // Cancel/Back button handler - go back to step 1
     const cancelBtn = document.getElementById('cancel-payment');
     if (cancelBtn) {
       cancelBtn.onclick = () => {
-        localStorage.removeItem('railmitra_pending_booking');
-        window.location.href = 'passenger-premium.html';
+        const step1Content = document.getElementById('step1Content');
+        const step2Content = document.getElementById('step2Content');
+        if (step1Content && step2Content) {
+          step2Content.style.display = 'none';
+          step1Content.style.display = 'block';
+          updateBookingStepper(1); // Go back to step 1
+          document.getElementById('book').scrollIntoView({ behavior: 'smooth' });
+        } else {
+          window.location.href = 'passenger-premium.html';
+        }
       };
     }
     
@@ -6964,8 +7823,13 @@ function showUPIPaymentOptions(bookingId, amount, passengerDetails) {
   }, 0);
 }
 
-// On page load, always show payment page if pending booking exists and booking is not completed
+// On page load, initialize stepper and handle pending bookings
 document.addEventListener('DOMContentLoaded', function() {
+  // Initialize stepper to step 1 by default
+  if (typeof updateBookingStepper === 'function') {
+    updateBookingStepper(1);
+  }
+  
   const pending = localStorage.getItem('railmitra_pending_booking');
   const urlParams = new URLSearchParams(window.location.search);
   const bookingId = urlParams.get('booking');
@@ -6994,22 +7858,50 @@ function showBookingConfirmation(bookingId, passengerDetails, paymentMethod) {
   
   // Remove pending booking state on success
   localStorage.removeItem('railmitra_pending_booking');
-  const main = document.querySelector('main') || document.body;
-  main.innerHTML = `
-    <div style="background:#fff;border-radius:24px;box-shadow:0 4px 24px rgba(0,0,0,0.08);padding:48px 32px 36px 32px;max-width:480px;margin:48px auto;text-align:center;border:1px solid #e4e4e7;">
-      <div style="width:56px;height:56px;background:#18181b;border-radius:50%;margin:0 auto 20px;display:flex;align-items:center;justify-content:center;">
-        <svg width="28" height="28" fill="none" stroke="#10b981" stroke-width="2.5" viewBox="0 0 24 24">
+  
+  // Try to render in step3Content (within booking form), fallback to main
+  const step2Content = document.getElementById('step2Content');
+  const step3Content = document.getElementById('step3Content');
+  const confirmationHTML = `
+    <div style="padding:32px 0;text-align:center;">
+      <div style="width:72px;height:72px;background:linear-gradient(135deg, #10b981 0%, #059669 100%);border-radius:50%;margin:0 auto 24px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(16,185,129,0.3);">
+        <svg width="36" height="36" fill="none" stroke="#fff" stroke-width="2.5" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
         </svg>
       </div>
-      <h2 style="font-size:1.75rem;font-weight:700;margin-bottom:16px;color:#18181b;letter-spacing:-0.02em;">Booking Confirmed!</h2>
-      <p style="font-size:1.05rem;color:#52525b;margin-bottom:10px;">Your booking <b style="color:#18181b">#${bookingId}</b> is confirmed.</p>
-      <p style="font-size:1.05rem;color:#52525b;margin-bottom:10px;">Service Type: <b style="color:#18181b">${formattedServiceType}</b></p>
-      <p style="font-size:1.05rem;color:#52525b;margin-bottom:10px;">Payment Method: <b style="color:#18181b">${paymentMethod}</b></p>
-      <p style="font-size:1rem;color:#71717a;margin-bottom:24px;">Thank you, <b style="color:#18181b">${escapeHtml(passengerDetails.name || 'Passenger')}</b>!</p>
-      <a href="passenger-premium.html?booking=${bookingId}" style="display:inline-block;padding:14px 36px;background:#18181b;color:#fff;border:none;border-radius:50px;font-size:16px;font-weight:600;text-decoration:none;transition:background 0.2s;" onmouseover="this.style.background='#27272a'" onmouseout="this.style.background='#18181b'">Track Booking</a>
+      <h2 style="font-size:1.5rem;font-weight:700;margin-bottom:12px;color:#18181b;letter-spacing:-0.02em;">Booking Confirmed!</h2>
+      <p style="font-size:1rem;color:#52525b;margin-bottom:8px;">Booking ID: <b style="color:#18181b;font-family:monospace;">#${bookingId}</b></p>
+      <p style="font-size:0.95rem;color:#52525b;margin-bottom:8px;">Service: <b style="color:#18181b">${formattedServiceType}</b></p>
+      <p style="font-size:0.95rem;color:#52525b;margin-bottom:8px;">Payment: <b style="color:#18181b">${paymentMethod}</b></p>
+      <p style="font-size:0.9rem;color:#71717a;margin-bottom:24px;">Thank you, <b style="color:#18181b">${escapeHtml(passengerDetails.name || 'Passenger')}</b>!</p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+        <a href="passenger-premium.html?booking=${bookingId}" style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;background:#18181b;color:#fff;border:none;border-radius:50px;font-size:15px;font-weight:600;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.background='#27272a';this.style.transform='translateY(-2px)'" onmouseout="this.style.background='#18181b';this.style.transform='translateY(0)'">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+          Track Booking
+        </a>
+        <a href="passenger-premium.html" style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;background:#f4f4f5;color:#18181b;border:1px solid #e4e4e7;border-radius:50px;font-size:15px;font-weight:600;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.background='#e4e4e7';this.style.transform='translateY(-2px)'" onmouseout="this.style.background='#f4f4f5';this.style.transform='translateY(0)'">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          Go Home
+        </a>
+      </div>
     </div>
   `;
+  
+  if (step3Content) {
+    // Render within the booking form stepper
+    if (step2Content) step2Content.style.display = 'none';
+    step3Content.innerHTML = confirmationHTML;
+    step3Content.style.display = 'block';
+    updateBookingStepper(3);
+  } else {
+    // Fallback: render in main
+    const main = document.querySelector('main') || document.body;
+    main.innerHTML = `
+      <div style="background:#fff;border-radius:24px;box-shadow:0 4px 24px rgba(0,0,0,0.08);padding:48px 32px 36px 32px;max-width:480px;margin:48px auto;border:1px solid #e4e4e7;">
+        ${confirmationHTML}
+      </div>
+    `;
+  }
 }
 </script>
 
@@ -7561,6 +8453,2658 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
+  <!-- Voice Assistant Floating Button -->
+  <button class="voice-assistant-btn" id="voiceAssistantBtn" onclick="openVoiceAssistant()">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+      <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+      <line x1="12" y1="19" x2="12" y2="23"/>
+      <line x1="8" y1="23" x2="16" y2="23"/>
+    </svg>
+    <span class="voice-btn-label">Voice Booking</span>
+  </button>
+
+  <!-- Voice Assistant Modal -->
+  <div class="voice-assistant-modal" id="voiceAssistantModal">
+    <div class="voice-assistant-container">
+      <!-- Header -->
+      <div class="voice-assistant-header">
+        <div class="voice-header-left">
+          <div class="voice-ai-avatar">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="voice-assistant-title">RailMitra AI Assistant</h3>
+            <span class="voice-status" id="voiceStatus">Ready to help</span>
+          </div>
+        </div>
+        <button class="voice-close-btn" onclick="closeVoiceAssistant()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Language Switcher -->
+      <div class="voice-lang-switcher" id="voiceLangSwitcher">
+        <button class="voice-lang-btn active" data-lang="en" onclick="switchVoiceLang('en')">EN</button>
+        <button class="voice-lang-btn" data-lang="hi" onclick="switchVoiceLang('hi')">हिं</button>
+        <button class="voice-lang-btn" data-lang="te" onclick="switchVoiceLang('te')">తె</button>
+        <button class="voice-lang-btn" data-lang="ta" onclick="switchVoiceLang('ta')">த</button>
+        <button class="voice-lang-btn" data-lang="ml" onclick="switchVoiceLang('ml')">മ</button>
+      </div>
+
+      <!-- Chat Messages -->
+      <div class="voice-chat-area" id="voiceChatArea">
+        <!-- Messages will be added here -->
+      </div>
+
+      <!-- Voice Input Area -->
+      <div class="voice-input-area">
+        <div class="voice-mic-container" id="voiceMicContainer">
+          <button class="voice-mic-btn" id="voiceMicBtn" onclick="toggleVoiceRecognition()">
+            <div class="mic-pulse-ring" id="micPulseRing"></div>
+            <svg class="mic-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+              <line x1="12" y1="19" x2="12" y2="23"/>
+              <line x1="8" y1="23" x2="16" y2="23"/>
+            </svg>
+          </button>
+          <span class="voice-mic-hint" id="voiceMicHint">Tap to speak</span>
+        </div>
+        <div class="voice-text-input">
+          <input type="text" id="voiceTextInput" placeholder="Or type your message..." onkeypress="handleVoiceTextInput(event)">
+          <button class="voice-send-btn" onclick="sendTextMessage()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Booking Summary (hidden initially) -->
+      <div class="voice-booking-summary" id="voiceBookingSummary" style="display:none;">
+        <h4>📋 Booking Summary</h4>
+        <div class="summary-grid" id="summaryGrid"></div>
+        <div class="summary-actions">
+          <button class="summary-confirm-btn" onclick="confirmVoiceBooking()">✓ Confirm Booking</button>
+          <button class="summary-cancel-btn" onclick="cancelVoiceSummary()">✕ Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Voice Assistant Styles -->
+  <style>
+    /* Floating Button */
+    .voice-assistant-btn {
+      position: fixed;
+      bottom: 100px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 20px;
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 8px 32px rgba(59, 130, 246, 0.4);
+      transition: all 0.3s ease;
+      animation: floatButton 3s ease-in-out infinite;
+    }
+    .voice-assistant-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 12px 40px rgba(59, 130, 246, 0.5);
+    }
+    .voice-btn-label {
+      font-weight: 600;
+      font-size: 14px;
+    }
+    @keyframes floatButton {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    /* Modal */
+    .voice-assistant-modal {
+      position: fixed;
+      bottom: 180px;
+      right: 24px;
+      z-index: 10000;
+      width: 400px;
+      max-width: calc(100vw - 48px);
+      max-height: calc(100vh - 220px);
+      background: var(--bg-primary);
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+    }
+    .voice-assistant-container {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      overflow: hidden;
+      min-height: 0;
+    }
+    .voice-assistant-modal.open {
+      display: flex;
+      animation: slideUp 0.3s ease;
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Header */
+    .voice-assistant-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      color: white;
+    }
+    .voice-header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .voice-ai-avatar {
+      width: 44px;
+      height: 44px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .voice-assistant-title {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .voice-status {
+      font-size: 12px;
+      opacity: 0.9;
+    }
+    .voice-close-btn {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: white;
+      transition: background 0.2s;
+    }
+    .voice-close-btn:hover {
+      background: rgba(255,255,255,0.3);
+    }
+
+    /* Language Switcher */
+    .voice-lang-switcher {
+      display: flex;
+      gap: 4px;
+      padding: 8px 16px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-color);
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .voice-lang-btn {
+      padding: 4px 12px;
+      border: 1.5px solid var(--border-color);
+      border-radius: 16px;
+      background: var(--bg-primary);
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      min-width: 36px;
+      text-align: center;
+    }
+    .voice-lang-btn:hover {
+      border-color: #3b82f6;
+      color: #3b82f6;
+    }
+    .voice-lang-btn.active {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      color: white;
+      border-color: transparent;
+    }
+
+    /* Chat Area */
+    .voice-chat-area {
+      flex: 1;
+      padding: 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 120px;
+      background: var(--bg-secondary);
+    }
+    .voice-message {
+      max-width: 85%;
+      padding: 12px 16px;
+      border-radius: 16px;
+      font-size: 14px;
+      line-height: 1.5;
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .voice-message.assistant {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      color: white;
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+    .voice-message.user {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+      border: 1px solid var(--border-color);
+    }
+    .voice-message.thinking {
+      background: var(--bg-primary);
+      color: var(--text-secondary);
+      align-self: flex-start;
+    }
+    .typing-dots {
+      display: flex;
+      gap: 4px;
+    }
+    .typing-dots span {
+      width: 8px;
+      height: 8px;
+      background: #3b82f6;
+      border-radius: 50%;
+      animation: bounce 1.4s ease-in-out infinite;
+    }
+    .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce {
+      0%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-8px); }
+    }
+
+    /* Voice Input */
+    .voice-input-area {
+      padding: 16px;
+      border-top: 1px solid var(--border-color);
+      background: var(--bg-primary);
+    }
+    .voice-mic-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .voice-mic-btn {
+      position: relative;
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      transition: all 0.3s ease;
+    }
+    .voice-mic-btn:hover {
+      transform: scale(1.05);
+    }
+    .voice-mic-btn.listening {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+      50% { box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); }
+    }
+    .mic-pulse-ring {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.5);
+      opacity: 0;
+    }
+    .voice-mic-btn.listening .mic-pulse-ring {
+      animation: ringPulse 1.5s ease-out infinite;
+    }
+    @keyframes ringPulse {
+      0% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(1.5); opacity: 0; }
+    }
+    .voice-mic-hint {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--text-tertiary);
+    }
+    .voice-text-input {
+      display: flex;
+      gap: 8px;
+    }
+    .voice-text-input input {
+      flex: 1;
+      padding: 12px 16px;
+      border: 1px solid var(--border-color);
+      border-radius: 25px;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      font-size: 14px;
+      outline: none;
+    }
+    .voice-text-input input:focus {
+      border-color: #3b82f6;
+    }
+    .voice-send-btn {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      transition: transform 0.2s;
+    }
+    .voice-send-btn:hover {
+      transform: scale(1.1);
+    }
+
+    /* Booking Summary */
+    .voice-booking-summary {
+      padding: 16px;
+      background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+      border-top: 2px solid #10b981;
+      overflow-y: auto;
+      max-height: 260px;
+      flex-shrink: 0;
+    }
+    .voice-booking-summary h4 {
+      margin: 0 0 12px;
+      color: #047857;
+      font-size: 15px;
+    }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .summary-item {
+      background: white;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+    .summary-item label {
+      display: block;
+      font-size: 10px;
+      color: #6b7280;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+    .summary-item span {
+      font-weight: 600;
+      color: #111827;
+    }
+    .summary-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .summary-confirm-btn {
+      flex: 1;
+      padding: 12px;
+      background: #10b981;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .summary-confirm-btn:hover {
+      background: #059669;
+    }
+    .summary-cancel-btn {
+      padding: 12px 16px;
+      background: #f3f4f6;
+      color: #374151;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Dark mode support */
+    [data-theme="dark"] .voice-booking-summary {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.1) 100%);
+    }
+    [data-theme="dark"] .summary-item {
+      background: var(--bg-secondary);
+    }
+    [data-theme="dark"] .summary-item span {
+      color: var(--text-primary);
+    }
+
+    /* Mobile responsive */
+    @media (max-width: 480px) {
+      .voice-assistant-btn {
+        bottom: 80px;
+        right: 16px;
+        padding: 12px 16px;
+      }
+      .voice-btn-label {
+        display: none;
+      }
+      .voice-assistant-modal {
+        bottom: 140px;
+        right: 16px;
+        left: 16px;
+        width: auto;
+      }
+    }
+
+    /* ============ Support Chatbot ============ */
+    .support-chatbot-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.25);
+      z-index: 99998;
+    }
+    .support-chatbot-overlay.open { display: block; }
+
+    .support-chatbot {
+      display: none;
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 400px;
+      max-height: calc(100vh - 60px);
+      background: var(--bg-card, #fff);
+      border-radius: 20px;
+      box-shadow: 0 12px 48px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.06);
+      z-index: 99999;
+      flex-direction: column;
+      overflow: hidden;
+      animation: chatbotSlideUp 0.3s ease;
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+    }
+    .support-chatbot.open { display: flex; }
+
+    @keyframes chatbotSlideUp {
+      from { opacity: 0; transform: translateY(20px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .chatbot-header {
+      background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+      color: #fff;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    .chatbot-header-icon {
+      width: 40px; height: 40px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .chatbot-header-info { flex: 1; }
+    .chatbot-header-title { font-weight: 700; font-size: 15px; }
+    .chatbot-header-subtitle { font-size: 12px; opacity: 0.85; margin-top: 1px; }
+    .chatbot-header-close {
+      background: rgba(255,255,255,0.15);
+      border: none; color: #fff; cursor: pointer;
+      width: 32px; height: 32px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s;
+    }
+    .chatbot-header-close:hover { background: rgba(255,255,255,0.3); }
+
+    .chatbot-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 0;
+      max-height: 420px;
+      scroll-behavior: smooth;
+    }
+
+    /* Chat bubbles */
+    .cb-msg {
+      max-width: 88%;
+      padding: 10px 14px;
+      border-radius: 16px;
+      font-size: 13.5px;
+      line-height: 1.5;
+      animation: cbFade 0.25s ease;
+      word-break: break-word;
+    }
+    @keyframes cbFade {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .cb-msg.bot {
+      align-self: flex-start;
+      background: var(--bg-secondary, #f1f5f9);
+      color: var(--text-primary, #1e293b);
+      border-bottom-left-radius: 4px;
+    }
+    .cb-msg.user {
+      align-self: flex-end;
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+
+    /* Quick option buttons */
+    .cb-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 4px 0;
+    }
+    .cb-opt-btn {
+      background: var(--bg-card, #fff);
+      border: 1.5px solid var(--border-color, #dbeafe);
+      color: var(--text-primary, #2563eb);
+      padding: 7px 14px;
+      border-radius: 20px;
+      font-size: 12.5px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .cb-opt-btn:hover {
+      background: #2563eb;
+      color: #fff;
+      border-color: #2563eb;
+      transform: translateY(-1px);
+    }
+
+    /* Typing indicator */
+    .cb-typing {
+      display: flex; gap: 4px; align-self: flex-start; padding: 10px 16px;
+      background: var(--bg-secondary, #f1f5f9); border-radius: 16px;
+    }
+    .cb-typing span {
+      width: 7px; height: 7px; border-radius: 50%; background: #94a3b8;
+      animation: cbDot 1.2s infinite;
+    }
+    .cb-typing span:nth-child(2) { animation-delay: 0.15s; }
+    .cb-typing span:nth-child(3) { animation-delay: 0.3s; }
+    @keyframes cbDot {
+      0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+      30% { opacity: 1; transform: translateY(-4px); }
+    }
+
+    /* Escalation banner */
+    .cb-escalation-banner {
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
+      border: 1px solid #f59e0b;
+      border-radius: 12px;
+      padding: 12px 14px;
+      text-align: center;
+      font-size: 13px;
+      color: #92400e;
+    }
+    .cb-escalation-banner strong { display: block; margin-bottom: 4px; }
+    .cb-connect-admin-btn {
+      margin-top: 8px;
+      background: linear-gradient(135deg, #dc2626, #ef4444);
+      color: #fff;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 20px;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .cb-connect-admin-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(220,38,38,0.35);
+    }
+
+    /* Footer / input */
+    .chatbot-footer {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border-top: 1px solid var(--border-color, #e2e8f0);
+      flex-shrink: 0;
+      background: var(--bg-card, #fff);
+    }
+    .chatbot-footer input {
+      flex: 1;
+      border: 1.5px solid var(--border-color, #e2e8f0);
+      border-radius: 24px;
+      padding: 9px 16px;
+      font-size: 13px;
+      outline: none;
+      background: var(--bg-primary, #fff);
+      color: var(--text-primary, #1e293b);
+      transition: border-color 0.2s;
+    }
+    .chatbot-footer input:focus { border-color: #3b82f6; }
+    .chatbot-footer input::placeholder { color: #94a3b8; }
+    .chatbot-send-btn {
+      width: 38px; height: 38px;
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      border: none; border-radius: 50%; color: #fff;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: transform 0.2s, box-shadow 0.2s; flex-shrink: 0;
+    }
+    .chatbot-send-btn:hover { transform: scale(1.08); box-shadow: 0 4px 12px rgba(37,99,235,0.35); }
+
+    /* Back to menu link */
+    .cb-back-link {
+      font-size: 12px;
+      color: #2563eb;
+      cursor: pointer;
+      text-decoration: underline;
+      margin-top: 2px;
+      display: inline-block;
+    }
+    .cb-back-link:hover { color: #1e40af; }
+
+    /* Solved / resolved */
+    .cb-resolved {
+      background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+      border-radius: 12px;
+      padding: 12px 14px;
+      text-align: center;
+      font-size: 13px;
+      color: #065f46;
+      border: 1px solid #34d399;
+    }
+
+    /* Ticket cards in chatbot */
+    .cb-ticket-card {
+      background: var(--bg-card, #fff);
+      border: 1px solid var(--border-color, #e2e8f0);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin: 6px 0;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .cb-ticket-card:hover { border-color: #3b82f6; box-shadow: 0 2px 8px rgba(59,130,246,0.15); }
+    .cb-ticket-header {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;
+    }
+    .cb-ticket-id { font-weight: 700; font-size: 13px; color: var(--text-primary, #1e293b); }
+    .cb-ticket-badge {
+      font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px; text-transform: uppercase;
+    }
+    .cb-ticket-badge.open { background: rgba(239,68,68,0.1); color: #ef4444; }
+    .cb-ticket-badge.in-progress { background: rgba(245,158,11,0.1); color: #f59e0b; }
+    .cb-ticket-badge.resolved { background: rgba(16,185,129,0.1); color: #10b981; }
+    .cb-ticket-badge.closed { background: rgba(107,114,128,0.1); color: #6b7280; }
+    .cb-ticket-category { font-size: 12px; color: #6b7280; margin-bottom: 4px; }
+    .cb-ticket-date { font-size: 11px; color: #94a3b8; }
+    .cb-ticket-detail {
+      background: var(--bg-card, #fff);
+      border: 1px solid var(--border-color, #e2e8f0);
+      border-radius: 12px;
+      padding: 14px;
+      margin: 6px 0;
+    }
+    .cb-ticket-detail .td-row { display: flex; gap: 6px; margin-bottom: 6px; font-size: 12.5px; }
+    .cb-ticket-detail .td-label { color: #6b7280; min-width: 70px; }
+    .cb-ticket-detail .td-value { color: var(--text-primary, #1e293b); font-weight: 500; }
+    .cb-admin-response {
+      background: linear-gradient(135deg, #eff6ff, #dbeafe);
+      border: 1px solid #93c5fd;
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-top: 8px;
+      font-size: 12.5px;
+    }
+    .cb-admin-response .ar-label { font-weight: 700; color: #1d4ed8; font-size: 11px; margin-bottom: 4px; }
+    .cb-admin-response .ar-text { color: #1e40af; }
+    .cb-no-tickets {
+      text-align: center; padding: 20px 10px; color: #6b7280; font-size: 13px;
+    }
+    .cb-no-tickets svg { display: block; margin: 0 auto 8px; opacity: 0.4; }
+
+    @media (max-width: 500px) {
+      .support-chatbot {
+        bottom: 0; right: 0; left: 0;
+        width: 100%; max-height: 85vh;
+        border-radius: 20px 20px 0 0;
+      }
+    }
+  </style>
+
+  <!-- Voice Assistant JavaScript -->
+  <script>
+    // Voice Assistant State
+    const voiceAssistant = {
+      isListening: false,
+      recognition: null,
+      synthesis: window.speechSynthesis,
+      currentStep: 0,
+      bookingData: {},
+      currentLang: 'en',
+      langCodes: { en: 'en-IN', hi: 'hi-IN', te: 'te-IN', ta: 'ta-IN', ml: 'ml-IN' },
+      langNames: { en: 'English', hi: 'Hindi', te: 'Telugu', ta: 'Tamil', ml: 'Malayalam' },
+      translations: {
+        en: {
+          greeting: (name) => `Welcome to RailMitra Assistant. Hello ${name}! How may I help you today? Say "Book assistance" to start booking, or "My bookings" to view your bookings.`,
+          bookStart: "Great! Let's book your station assistance step by step.",
+          stepOf: (n, t) => `Step ${n} of ${t}:`,
+          gotIt: '✓',
+          confirmSummary: "Here's your complete booking summary. Please review all details. Say 'Confirm' to proceed or 'Cancel' to start over.",
+          fillWait: "⏳ Filling your booking form... please wait.",
+          fillDone: "✅ All details filled! Review the form and click 'Create Booking' to complete.",
+          fillError: "⚠️ There was an issue filling the form. Some fields may need manual input.",
+          openBookings: "Opening your bookings...",
+          restart: "No problem! Let's start fresh. Say 'Book assistance' to begin.",
+          cancelBooking: "Booking cancelled. Say 'Book assistance' to start again, or say 'Restart' anytime.",
+          defaultHelp: "I can help you with:\n• Say 'Book assistance' to start a new booking\n• Say 'My bookings' to view your bookings\n• Say 'Restart' to start over",
+          confirmAsk: "Please say 'Yes' or 'Confirm' to proceed with booking, or 'No' to cancel and start over.",
+          langSwitched: (lang) => `Language switched to ${lang}. You can now speak in ${lang}.`,
+          steps: {
+            fullName: { question: 'What is your full name?', label: 'Full Name' },
+            trainNumber: { question: 'Please tell me your train number. For example, 22404 or 12650.', label: 'Train Number' },
+            assistanceType: { question: 'What type of assistance do you need? Say "Boarding" if you want help boarding the train, or "Arrival" if you need help after arriving.', label: 'Assistance Type' },
+            station: { question: 'Which station will you board or exit from? For example, Warangal or Secunderabad.', label: 'Station' },
+            coach: { question: 'What is your coach number? For example, S5, B2, A1, or 3A.', label: 'Coach' },
+            seat: { question: 'What is your seat number?', label: 'Seat' },
+            services: { question: 'Which services do you need? You can say one or more: Luggage assistance, Seat escort, or Language help.', label: 'Services' },
+            luggageType: { question: 'What size luggage? Say Small (₹30), Medium (₹60), or Large (₹100).', label: 'Luggage Size' },
+            language: { question: 'Which language do you need help with? Hindi, Telugu, English, Bengali, Tamil, or Kannada.', label: 'Language' },
+            insurance: { question: 'Would you like to add insurance for ₹0.45? Say Yes or No.', label: 'Insurance' }
+          },
+          validation: {
+            fullName: "Please say your full name. For example, 'Vikas Kumar'.",
+            trainNumber: "That doesn't look like a valid train number. Please say a 4 or 5 digit number like 22404 or 12650.",
+            assistanceType: "Please say 'Boarding' or 'Arrival'.",
+            station: "Please say a valid station name like 'Warangal' or 'Secunderabad'.",
+            coach: "Please say a valid coach number like S5, B2, A1, or 3A.",
+            seat: "Please provide a valid seat number between 1 and 999.",
+            services: "Please choose from: Luggage, Seat escort, or Language help.",
+            luggageType: "Please say Small, Medium, or Large.",
+            language: "Please choose a language: Hindi, Telugu, English, Bengali, Tamil, or Kannada.",
+            insurance: "Please say 'Yes' or 'No'."
+          }
+        },
+        hi: {
+          greeting: (name) => `RailMitra असिस्टेंट में आपका स्वागत है। नमस्ते ${name}! "बुक करो" बोलें बुकिंग शुरू करने के लिए, या "मेरी बुकिंग" बोलें।`,
+          bookStart: "चलिए आपकी स्टेशन सहायता बुक करते हैं।",
+          stepOf: (n, t) => `चरण ${n}/${t}:`,
+          gotIt: '✓',
+          confirmSummary: "यह आपकी बुकिंग का सारांश है। 'हां' बोलें पुष्टि के लिए या 'नहीं' बोलें रद्द करने के लिए।",
+          fillWait: "⏳ आपका फॉर्म भरा जा रहा है...",
+          fillDone: "✅ सभी जानकारी भर दी गई! 'Create Booking' बटन दबाएं।",
+          fillError: "⚠️ फॉर्म भरने में समस्या हुई।",
+          openBookings: "आपकी बुकिंग खोल रहे हैं...",
+          restart: "कोई बात नहीं! 'बुक करो' बोलें फिर से शुरू करने के लिए।",
+          cancelBooking: "बुकिंग रद्द। 'बुक करो' बोलें फिर से शुरू करने के लिए।",
+          defaultHelp: "मैं आपकी मदद कर सकता हूं:\n• 'बुक करो' — नई बुकिंग\n• 'मेरी बुकिंग' — बुकिंग देखें\n• 'फिर से' — शुरू से",
+          confirmAsk: "'हां' बोलें पुष्टि के लिए, या 'नहीं' बोलें रद्द करने के लिए।",
+          langSwitched: (lang) => `भाषा ${lang} में बदल दी गई।`,
+          steps: {
+            fullName: { question: 'आपका पूरा नाम क्या है?', label: 'पूरा नाम' },
+            trainNumber: { question: 'आपकी ट्रेन का नंबर बताइए। जैसे 22404 या 12650।', label: 'ट्रेन नंबर' },
+            assistanceType: { question: 'किस प्रकार की सहायता चाहिए? ट्रेन में चढ़ने के लिए "बोर्डिंग" बोलें, या उतरने के लिए "अराइवल" बोलें।', label: 'सहायता प्रकार' },
+            station: { question: 'आप किस स्टेशन पर चढ़ेंगे या उतरेंगे?', label: 'स्टेशन' },
+            coach: { question: 'आपका कोच नंबर क्या है? जैसे S5, B2, A1।', label: 'कोच' },
+            seat: { question: 'आपकी सीट नंबर क्या है?', label: 'सीट' },
+            services: { question: 'कौन सी सेवाएं चाहिए? सामान सहायता, सीट एस्कॉर्ट, या भाषा सहायता?', label: 'सेवाएं' },
+            luggageType: { question: 'सामान का आकार? छोटा (₹30), मध्यम (₹60), या बड़ा (₹100)?', label: 'सामान आकार' },
+            language: { question: 'किस भाषा में सहायता चाहिए? हिंदी, तेलुगु, अंग्रेजी, बांग्ला, तमिल, या कन्नड़?', label: 'भाषा' },
+            insurance: { question: 'क्या आप ₹0.45 में बीमा जोड़ना चाहेंगे? हां या नहीं बोलें।', label: 'बीमा' }
+          },
+          validation: {
+            fullName: "कृपया अपना पूरा नाम बताइए।",
+            trainNumber: "कृपया 4-5 अंकों का ट्रेन नंबर बताइए।",
+            assistanceType: "'बोर्डिंग' या 'अराइवल' बोलें।",
+            station: "कृपया सही स्टेशन का नाम बताइए।",
+            coach: "सही कोच नंबर बताइए जैसे S5, B2।",
+            seat: "1 से 999 के बीच सीट नंबर बताइए।",
+            services: "सामान, सीट एस्कॉर्ट, या भाषा सहायता में से चुनें।",
+            luggageType: "छोटा, मध्यम, या बड़ा बोलें।",
+            language: "हिंदी, तेलुगु, अंग्रेजी, बांग्ला, तमिल, या कन्नड़ चुनें।",
+            insurance: "'हां' या 'नहीं' बोलें।"
+          }
+        },
+        te: {
+          greeting: (name) => `RailMitra అసిస్టెంట్‌కి స్వాగతం. నమస్కారం ${name}! "బుక్ చేయండి" అని చెప్పండి బుకింగ్ కోసం, లేదా "నా బుకింగ్స్" అని చెప్పండి.`,
+          bookStart: "మీ స్టేషన్ సహాయం బుక్ చేద్దాం.",
+          stepOf: (n, t) => `దశ ${n}/${t}:`,
+          gotIt: '✓',
+          confirmSummary: "మీ బుకింగ్ సారాంశం ఇక్కడ ఉంది. 'అవును' అని చెప్పండి లేదా 'వద్దు' అని చెప్పండి.",
+          fillWait: "⏳ మీ ఫారమ్ నింపబడుతోంది...",
+          fillDone: "✅ అన్ని వివరాలు నింపబడ్డాయి! 'Create Booking' బటన్ నొక్కండి.",
+          fillError: "⚠️ ఫారమ్ నింపడంలో సమస్య.",
+          openBookings: "మీ బుకింగ్‌లు తెరుస్తున్నాము...",
+          restart: "ఫరవాలేదు! 'బుక్ చేయండి' అని చెప్పండి మళ్ళీ మొదలు పెట్టడానికి.",
+          cancelBooking: "బుకింగ్ రద్దు. 'బుక్ చేయండి' అని చెప్పండి మళ్ళీ.",
+          defaultHelp: "నేను సహాయం చేయగలను:\n• 'బుక్ చేయండి' — కొత్త బుకింగ్\n• 'నా బుకింగ్స్' — బుకింగ్‌లు చూడండి\n• 'మళ్ళీ' — మొదటి నుండి",
+          confirmAsk: "'అవును' లేదా 'వద్దు' అని చెప్పండి.",
+          langSwitched: (lang) => `భాష ${lang}కి మార్చబడింది.`,
+          steps: {
+            fullName: { question: 'మీ పూర్తి పేరు చెప్పండి.', label: 'పూర్తి పేరు' },
+            trainNumber: { question: 'మీ రైలు నంబర్ చెప్పండి. ఉదా: 22404 లేదా 12650.', label: 'రైలు నంబర్' },
+            assistanceType: { question: 'ఏ రకమైన సహాయం కావాలి? రైలు ఎక్కడానికి "బోర్డింగ్",  దిగడానికి "అరైవల్" అని చెప్పండి.', label: 'సహాయ రకం' },
+            station: { question: 'మీరు ఏ స్టేషన్‌లో ఎక్కుతారు లేదా దిగుతారు?', label: 'స్టేషన్' },
+            coach: { question: 'మీ కోచ్ నంబర్ ఏమిటి? ఉదా: S5, B2.', label: 'కోచ్' },
+            seat: { question: 'మీ సీట్ నంబర్ ఏమిటి?', label: 'సీట్' },
+            services: { question: 'ఏ సేవలు కావాలి? లగేజ్, సీట్ ఎస్కార్ట్, లేదా భాషా సహాయం?', label: 'సేవలు' },
+            luggageType: { question: 'లగేజ్ సైజ్? చిన్నది (₹30), మధ్యస్థం (₹60), లేదా పెద్దది (₹100)?', label: 'లగేజ్ సైజ్' },
+            language: { question: 'ఏ భాషలో సహాయం కావాలి? హిందీ, తెలుగు, ఇంగ్లీష్, బెంగాలీ, తమిళ్, లేదా కన్నడ?', label: 'భాష' },
+            insurance: { question: '₹0.45కి బీమా జోడించాలా? అవును లేదా వద్దు చెప్పండి.', label: 'బీమా' }
+          },
+          validation: {
+            fullName: "దయచేసి మీ పూర్తి పేరు చెప్పండి.",
+            trainNumber: "4-5 అంకెల రైలు నంబర్ చెప్పండి.",
+            assistanceType: "'బోర్డింగ్' లేదా 'అరైవల్' చెప్పండి.",
+            station: "సరైన స్టేషన్ పేరు చెప్పండి.",
+            coach: "సరైన కోచ్ నంబర్ చెప్పండి.",
+            seat: "1-999 మధ్య సీట్ నంబర్ చెప్పండి.",
+            services: "లగేజ్, సీట్ ఎస్కార్ట్, లేదా భాషా సహాయం నుండి ఎంచుకోండి.",
+            luggageType: "చిన్నది, మధ్యస్థం, లేదా పెద్దది చెప్పండి.",
+            language: "హిందీ, తెలుగు, ఇంగ్లీష్, బెంగాలీ, తమిళ్, లేదా కన్నడ ఎంచుకోండి.",
+            insurance: "'అవును' లేదా 'వద్దు' చెప్పండి."
+          }
+        },
+        ta: {
+          greeting: (name) => `RailMitra உதவியாளருக்கு வரவேற்கிறோம். வணக்கம் ${name}! "புக் செய்" என்று சொல்லுங்கள் புக்கிங் தொடங்க, அல்லது "என் புக்கிங்" என்று சொல்லுங்கள்.`,
+          bookStart: "உங்கள் நிலைய உதவியை புக் செய்வோம்.",
+          stepOf: (n, t) => `படி ${n}/${t}:`,
+          gotIt: '✓',
+          confirmSummary: "உங்கள் புக்கிங் சுருக்கம் இதோ. 'ஆம்' அல்லது 'இல்லை' சொல்லுங்கள்.",
+          fillWait: "⏳ படிவம் நிரப்பப்படுகிறது...",
+          fillDone: "✅ அனைத்து விவரங்களும் நிரப்பப்பட்டன!",
+          fillError: "⚠️ படிவம் நிரப்புவதில் சிக்கல்.",
+          openBookings: "உங்கள் புக்கிங்களைத் திறக்கிறோம்...",
+          restart: "பரவாயில்லை! 'புக் செய்' என்று சொல்லுங்கள்.",
+          cancelBooking: "புக்கிங் ரத்து. 'புக் செய்' என்று சொல்லுங்கள்.",
+          defaultHelp: "நான் உதவ முடியும்:\n• 'புக் செய்' — புதிய புக்கிங்\n• 'என் புக்கிங்' — புக்கிங் பார்க்க\n• 'மீண்டும்' — ஆரம்பத்திலிருந்து",
+          confirmAsk: "'ஆம்' அல்லது 'இல்லை' சொல்லுங்கள்.",
+          langSwitched: (lang) => `மொழி ${lang} ஆக மாற்றப்பட்டது.`,
+          steps: {
+            fullName: { question: 'உங்கள் முழுப்பெயர் என்ன?', label: 'முழுப்பெயர்' },
+            trainNumber: { question: 'உங்கள் ரயில் எண் சொல்லுங்கள். உதா: 22404.', label: 'ரயில் எண்' },
+            assistanceType: { question: 'என்ன உதவி தேவை? ரயில் ஏற "போர்டிங்", இறங்க "அரைவல்" சொல்லுங்கள்.', label: 'உதவி வகை' },
+            station: { question: 'எந்த நிலையத்தில் ஏறுவீர்கள் அல்லது இறங்குவீர்கள்?', label: 'நிலையம்' },
+            coach: { question: 'உங்கள் கோச் எண் என்ன? உதா: S5, B2.', label: 'கோச்' },
+            seat: { question: 'உங்கள் இருக்கை எண் என்ன?', label: 'இருக்கை' },
+            services: { question: 'என்ன சேவைகள் தேவை? லக்கேஜ், சீட் எஸ்கார்ட், அல்லது மொழி உதவி?', label: 'சேவைகள்' },
+            luggageType: { question: 'லக்கேஜ் அளவு? சிறியது (₹30), நடுத்தரம் (₹60), அல்லது பெரியது (₹100)?', label: 'லக்கேஜ் அளவு' },
+            language: { question: 'எந்த மொழியில் உதவி தேவை?', label: 'மொழி' },
+            insurance: { question: '₹0.45க்கு காப்பீடு சேர்க்கவா? ஆம் அல்லது இல்லை சொல்லுங்கள்.', label: 'காப்பீடு' }
+          },
+          validation: {
+            fullName: "உங்கள் முழுப்பெயர் சொல்லுங்கள்.",
+            trainNumber: "4-5 இலக்க ரயில் எண் சொல்லுங்கள்.",
+            assistanceType: "'போர்டிங்' அல்லது 'அரைவல்' சொல்லுங்கள்.",
+            station: "சரியான நிலையம் பெயர் சொல்லுங்கள்.",
+            coach: "சரியான கோச் எண் சொல்லுங்கள்.",
+            seat: "1-999 இருக்கை எண் சொல்லுங்கள்.",
+            services: "லக்கேஜ், சீட் எஸ்கார்ட், அல்லது மொழி உதவி.",
+            luggageType: "சிறியது, நடுத்தரம், அல்லது பெரியது.",
+            language: "மொழி தேர்வு செய்யுங்கள்.",
+            insurance: "'ஆம்' அல்லது 'இல்லை' சொல்லுங்கள்."
+          }
+        },
+        ml: {
+          greeting: (name) => `RailMitra അസിസ്റ്റന്റിലേക്ക് സ്വാഗതം. നമസ്കാരം ${name}! "ബുക്ക് ചെയ്യൂ" എന്ന് പറയൂ ബുക്കിംഗ് ആരംഭിക്കാൻ, അല്ലെങ്കിൽ "എന്റെ ബുക്കിംഗ്" എന്ന് പറയൂ.`,
+          bookStart: "നിങ്ങളുടെ സ്റ്റേഷൻ സഹായം ബുക്ക് ചെയ്യാം.",
+          stepOf: (n, t) => `ഘട്ടം ${n}/${t}:`,
+          gotIt: '✓',
+          confirmSummary: "നിങ്ങളുടെ ബുക്കിംഗ് സംഗ്രഹം ഇതാ. 'അതെ' അല്ലെങ്കിൽ 'വേണ്ട' എന്ന് പറയൂ.",
+          fillWait: "⏳ ഫോം പൂരിപ്പിക്കുന്നു...",
+          fillDone: "✅ എല്ലാ വിശദാംശങ്ങളും പൂരിപ്പിച്ചു!",
+          fillError: "⚠️ ഫോം പൂരിപ്പിക്കുന്നതിൽ പ്രശ്നം.",
+          openBookings: "നിങ്ങളുടെ ബുക്കിംഗുകൾ തുറക്കുന്നു...",
+          restart: "സാരമില്ല! 'ബുക്ക് ചെയ്യൂ' എന്ന് പറയൂ.",
+          cancelBooking: "ബുക്കിംഗ് റദ്ദാക്കി. 'ബുക്ക് ചെയ്യൂ' എന്ന് പറയൂ.",
+          defaultHelp: "എനിക്ക് സഹായിക്കാം:\n• 'ബുക്ക് ചെയ്യൂ' — പുതിയ ബുക്കിംഗ്\n• 'എന്റെ ബുക്കിംഗ്' — ബുക്കിംഗ് കാണുക\n• 'വീണ്ടും' — ആദ്യം മുതൽ",
+          confirmAsk: "'അതെ' അല്ലെങ്കിൽ 'വേണ്ട' എന്ന് പറയൂ.",
+          langSwitched: (lang) => `ഭാഷ ${lang} ആയി മാറ്റി.`,
+          steps: {
+            fullName: { question: 'നിങ്ങളുടെ മുഴുവൻ പേര് പറയൂ.', label: 'മുഴുവൻ പേര്' },
+            trainNumber: { question: 'നിങ്ങളുടെ ട്രെയിൻ നമ്പർ പറയൂ. ഉദാ: 22404.', label: 'ട്രെയിൻ നമ്പർ' },
+            assistanceType: { question: 'എന്ത് സഹായം വേണം? ട്രെയിനിൽ കയറാൻ "ബോർഡിംഗ്", ഇറങ്ങാൻ "അറൈവൽ" പറയൂ.', label: 'സഹായ തരം' },
+            station: { question: 'ഏത് സ്റ്റേഷനിൽ കയറും അല്ലെങ്കിൽ ഇറങ്ങും?', label: 'സ്റ്റേഷൻ' },
+            coach: { question: 'നിങ്ങളുടെ കോച്ച് നമ്പർ? ഉദാ: S5, B2.', label: 'കോച്ച്' },
+            seat: { question: 'നിങ്ങളുടെ സീറ്റ് നമ്പർ?', label: 'സീറ്റ്' },
+            services: { question: 'എന്ത് സേവനങ്ങൾ വേണം? ലഗേജ്, സീറ്റ് എസ്കോർട്ട്, അല്ലെങ്കിൽ ഭാഷാ സഹായം?', label: 'സേവനങ്ങൾ' },
+            luggageType: { question: 'ലഗേജ് വലിപ്പം? ചെറുത് (₹30), ഇടത്തരം (₹60), അല്ലെങ്കിൽ വലുത് (₹100)?', label: 'ലഗേജ് വലിപ്പം' },
+            language: { question: 'ഏത് ഭാഷയിൽ സഹായം വേണം?', label: 'ഭാഷ' },
+            insurance: { question: '₹0.45-ന് ഇൻഷുറൻസ് ചേർക്കണോ? അതെ അല്ലെങ്കിൽ വേണ്ട പറയൂ.', label: 'ഇൻഷുറൻസ്' }
+          },
+          validation: {
+            fullName: "മുഴുവൻ പേര് പറയൂ.",
+            trainNumber: "4-5 അക്ക ട്രെയിൻ നമ്പർ പറയൂ.",
+            assistanceType: "'ബോർഡിംഗ്' അല്ലെങ്കിൽ 'അറൈവൽ' പറയൂ.",
+            station: "ശരിയായ സ്റ്റേഷൻ പേര് പറയൂ.",
+            coach: "ശരിയായ കോച്ച് നമ്പർ പറയൂ.",
+            seat: "1-999 സീറ്റ് നമ്പർ പറയൂ.",
+            services: "ലഗേജ്, സീറ്റ് എസ്കോർട്ട്, അല്ലെങ്കിൽ ഭാഷാ സഹായം.",
+            luggageType: "ചെറുത്, ഇടത്തരം, അല്ലെങ്കിൽ വലുത്.",
+            language: "ഭാഷ തിരഞ്ഞെടുക്കൂ.",
+            insurance: "'അതെ' അല്ലെങ്കിൽ 'വേണ്ട' പറയൂ."
+          }
+        }
+      },
+      steps: [
+        { field: 'fullName' },
+        { field: 'trainNumber' },
+        { field: 'assistanceType' },
+        { field: 'station' },
+        { field: 'coach' },
+        { field: 'seat' },
+        { field: 'services' },
+        { field: 'luggageType', conditional: (data) => data.services && data.services.includes('Luggage') },
+        { field: 'language', conditional: (data) => data.services && data.services.includes('Language') },
+        { field: 'insurance' }
+      ]
+    };
+    
+    // Get translation helper
+    function t(key) {
+      return voiceAssistant.translations[voiceAssistant.currentLang]?.[key] || voiceAssistant.translations.en[key];
+    }
+    function tStep(field) {
+      const lang = voiceAssistant.currentLang;
+      return voiceAssistant.translations[lang]?.steps?.[field] || voiceAssistant.translations.en.steps[field];
+    }
+    function tValid(field) {
+      const lang = voiceAssistant.currentLang;
+      return voiceAssistant.translations[lang]?.validation?.[field] || voiceAssistant.translations.en.validation[field];
+    }
+    
+    // Switch voice language
+    function switchVoiceLang(lang) {
+      voiceAssistant.currentLang = lang;
+      // Update UI buttons
+      document.querySelectorAll('.voice-lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+      });
+      // Update recognition language
+      const langCode = voiceAssistant.langCodes[lang];
+      if (voiceAssistant.recognition) {
+        voiceAssistant.recognition.lang = langCode;
+      }
+      // Pre-verify voice availability and log
+      const voice = findVoiceForLang(langCode);
+      const langName = voiceAssistant.langNames[lang];
+      if (voice) {
+        console.log('Using voice:', voice.name, '(' + voice.lang + ')', voice.localService ? 'local' : 'online');
+      } else if (lang !== 'en') {
+        addAssistantMessage('⚠️ ' + langName + ' voice not found on your device. For best pronunciation, use Google Chrome — it has built-in ' + langName + ' voices.');
+      }
+      // Notify user in the newly selected language
+      const msg = t('langSwitched')(langName);
+      addAssistantMessage('🌐 ' + msg);
+      speak(msg);
+    }
+    window.switchVoiceLang = switchVoiceLang;
+
+    // Cache available TTS voices
+    let cachedVoices = [];
+    let voicesReady = false;
+    function loadVoices() {
+      cachedVoices = speechSynthesis.getVoices();
+      voicesReady = cachedVoices.length > 0;
+      if (voicesReady) {
+        console.log('TTS voices loaded:', cachedVoices.length, 'voices available');
+        // Log Indian language voices for debugging
+        const indianVoices = cachedVoices.filter(v => /^(hi|te|ta|ml|bn|kn|mr|gu)/.test(v.lang));
+        if (indianVoices.length) console.log('Indian voices:', indianVoices.map(v => v.name + ' (' + v.lang + ')'));
+      }
+    }
+    loadVoices();
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+      speechSynthesis.onvoiceschanged = loadVoices;
+    }
+    // Chrome sometimes needs a nudge
+    setTimeout(loadVoices, 100);
+    setTimeout(loadVoices, 500);
+
+    // Find best voice for a language code
+    // Priority: Google online voices > other online voices > local voices
+    function findVoiceForLang(langCode) {
+      // Always re-fetch in case voices loaded late
+      if (!cachedVoices.length) cachedVoices = speechSynthesis.getVoices();
+      if (!cachedVoices.length) return null;
+      
+      const baseLang = langCode.split('-')[0]; // e.g. 'hi' from 'hi-IN'
+      
+      // Filter all voices that match this language
+      const matchingVoices = cachedVoices.filter(v => 
+        v.lang === langCode || 
+        v.lang.startsWith(baseLang + '-') || 
+        v.lang === baseLang
+      );
+      
+      if (!matchingVoices.length) return null;
+      
+      // Priority 1: Google online voice (best pronunciation for Indian languages)
+      let voice = matchingVoices.find(v => v.name.toLowerCase().includes('google'));
+      if (voice) return voice;
+      
+      // Priority 2: Any online/network voice (not local)
+      voice = matchingVoices.find(v => !v.localService);
+      if (voice) return voice;
+      
+      // Priority 3: Microsoft Online Natural voices (Windows 11 has good ones)
+      voice = matchingVoices.find(v => v.name.toLowerCase().includes('online') || v.name.toLowerCase().includes('natural'));
+      if (voice) return voice;
+      
+      // Priority 4: Any exact lang match
+      voice = matchingVoices.find(v => v.lang === langCode);
+      if (voice) return voice;
+      
+      // Priority 5: First available
+      return matchingVoices[0];
+    }
+
+    // Initialize Speech Recognition
+    function initSpeechRecognition() {
+      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        console.warn('Speech Recognition not supported');
+        addAssistantMessage("⚠️ Voice recognition is not supported in your browser. Please use Google Chrome for voice features, or type your responses below.");
+        return false;
+      }
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      voiceAssistant.recognition = new SpeechRecognition();
+      voiceAssistant.recognition.continuous = false;
+      voiceAssistant.recognition.interimResults = true;
+      voiceAssistant.recognition.lang = voiceAssistant.langCodes[voiceAssistant.currentLang] || 'en-IN';
+      voiceAssistant.recognition.maxAlternatives = 1;
+
+      voiceAssistant.recognition.onstart = () => {
+        console.log('Speech recognition started');
+        updateVoiceStatus('🎙️ Listening...');
+      };
+
+      voiceAssistant.recognition.onaudiostart = () => {
+        console.log('Audio capture started');
+      };
+
+      voiceAssistant.recognition.onresult = (event) => {
+        let finalTranscript = '';
+        let interimTranscript = '';
+        
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript;
+          } else {
+            interimTranscript += transcript;
+          }
+        }
+        
+        // Show interim results in status
+        if (interimTranscript) {
+          updateVoiceStatus('Hearing: "' + interimTranscript + '"');
+        }
+        
+        if (finalTranscript) {
+          addUserMessage(finalTranscript);
+          processUserInput(finalTranscript);
+        }
+      };
+
+      voiceAssistant.recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        
+        switch (event.error) {
+          case 'not-allowed':
+          case 'service-not-allowed':
+            addAssistantMessage("🔒 Microphone access denied. Please allow microphone permission in your browser and try again. You can also type your response below.");
+            updateVoiceStatus('Mic blocked');
+            break;
+          case 'no-speech':
+            updateVoiceStatus('No speech detected — tap mic again');
+            break;
+          case 'audio-capture':
+            addAssistantMessage("🎤 No microphone found. Please connect a microphone or type your response below.");
+            updateVoiceStatus('No mic found');
+            break;
+          case 'network':
+            addAssistantMessage("🌐 Network error. Voice recognition requires an internet connection. Please type your response instead.");
+            updateVoiceStatus('Network error');
+            break;
+          case 'aborted':
+            // User or system aborted — no message needed
+            break;
+          default:
+            updateVoiceStatus('Error: ' + event.error);
+        }
+        stopListening();
+      };
+
+      voiceAssistant.recognition.onend = () => {
+        stopListening();
+      };
+
+      return true;
+    }
+
+    // Open Voice Assistant
+    function openVoiceAssistant() {
+      const modal = document.getElementById('voiceAssistantModal');
+      modal.classList.add('open');
+      
+      // Reset state
+      voiceAssistant.currentStep = -1;
+      voiceAssistant.bookingData = {};
+      document.getElementById('voiceChatArea').innerHTML = '';
+      document.getElementById('voiceBookingSummary').style.display = 'none';
+      
+      // Initialize recognition
+      initSpeechRecognition();
+      
+      // Greet user
+      const userName = document.getElementById('passengerName')?.value || 
+                       document.getElementById('navUserName')?.textContent || 'Guest';
+      const greeting = t('greeting')(userName);
+      
+      setTimeout(() => {
+        addAssistantMessage(greeting);
+        speak(greeting);
+      }, 500);
+    }
+
+    // Close Voice Assistant
+    function closeVoiceAssistant() {
+      const modal = document.getElementById('voiceAssistantModal');
+      modal.classList.remove('open');
+      stopListening();
+      voiceAssistant.synthesis.cancel();
+    }
+
+    // Toggle Voice Recognition
+    function toggleVoiceRecognition() {
+      if (voiceAssistant.isListening) {
+        stopListening();
+      } else {
+        startListening();
+      }
+    }
+
+    // Start Listening
+    function startListening() {
+      if (!voiceAssistant.recognition) {
+        if (!initSpeechRecognition()) {
+          addAssistantMessage("Sorry, voice recognition is not supported in your browser. Please type your response.");
+          return;
+        }
+      }
+      
+      // Request microphone permission first
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ audio: true })
+          .then((stream) => {
+            // Permission granted — stop the test stream
+            stream.getTracks().forEach(track => track.stop());
+            actuallyStartListening();
+          })
+          .catch((err) => {
+            console.error('Mic permission denied:', err);
+            addAssistantMessage("🔒 Microphone access was denied. Please click the lock icon in your browser's address bar, allow microphone access, and try again. You can also type below.");
+            updateVoiceStatus('Mic permission denied');
+          });
+      } else {
+        // Fallback — try directly
+        actuallyStartListening();
+      }
+    }
+    
+    function actuallyStartListening() {
+      try {
+        // Re-init recognition for each listen to avoid stale state
+        initSpeechRecognition();
+        voiceAssistant.recognition.start();
+        voiceAssistant.isListening = true;
+        document.getElementById('voiceMicBtn').classList.add('listening');
+        document.getElementById('voiceMicHint').textContent = 'Listening...';
+        updateVoiceStatus('🎙️ Listening...');
+      } catch (e) {
+        console.error('Start listening error:', e);
+        if (e.message && e.message.includes('already started')) {
+          voiceAssistant.recognition.stop();
+          setTimeout(() => actuallyStartListening(), 300);
+        } else {
+          addAssistantMessage("⚠️ Could not start voice recognition. Please try again or type your response.");
+        }
+      }
+    }
+
+    // Stop Listening
+    function stopListening() {
+      if (voiceAssistant.recognition) {
+        try {
+          voiceAssistant.recognition.stop();
+        } catch (e) {}
+      }
+      voiceAssistant.isListening = false;
+      document.getElementById('voiceMicBtn').classList.remove('listening');
+      document.getElementById('voiceMicHint').textContent = 'Tap to speak';
+      updateVoiceStatus('Ready to help');
+    }
+
+    // Speak using SpeechSynthesis
+    function speak(text) {
+      voiceAssistant.synthesis.cancel();
+      
+      // Clean text for better TTS — remove emojis and special chars that confuse TTS
+      const cleanText = text.replace(/[\u2705\u274c\u26a0\ufe0f\u23f3\u2713\u2717\u2022\ud83c-\udbff\udc00-\udfff\ud83d-\udbff\udc00-\udfff\ud83e-\udbff\udc00-\udfff]/gu, '').replace(/[🌐🎙️🔒🚂🚉✓✗⏳✅❌⚠️•]/g, '').trim();
+      if (!cleanText) return;
+      
+      const langCode = voiceAssistant.langCodes[voiceAssistant.currentLang] || 'en-IN';
+      
+      function doSpeak() {
+        const utterance = new SpeechSynthesisUtterance(cleanText);
+        utterance.lang = langCode;
+        
+        // Find and set the best voice
+        const matchedVoice = findVoiceForLang(langCode);
+        if (matchedVoice) {
+          utterance.voice = matchedVoice;
+          // Force the lang to match the voice's lang for consistency
+          utterance.lang = matchedVoice.lang;
+        }
+        
+        // Adjust rate based on language for clarity
+        const isEnglish = voiceAssistant.currentLang === 'en';
+        utterance.rate = isEnglish ? 0.95 : 0.85;
+        utterance.pitch = 1;
+        utterance.volume = 1;
+        
+        // Chrome bug workaround: synthesis stops after ~15s. Resume it.
+        utterance.onstart = () => {
+          window._speechResumeTimer = setInterval(() => {
+            if (voiceAssistant.synthesis.speaking) voiceAssistant.synthesis.resume();
+          }, 10000);
+        };
+        utterance.onend = () => clearInterval(window._speechResumeTimer);
+        utterance.onerror = () => clearInterval(window._speechResumeTimer);
+        
+        voiceAssistant.synthesis.speak(utterance);
+      }
+      
+      // If voices haven't loaded yet, wait briefly then speak
+      if (!voicesReady) {
+        cachedVoices = speechSynthesis.getVoices();
+        voicesReady = cachedVoices.length > 0;
+      }
+      if (!voicesReady) {
+        // Voices still loading — wait up to 300ms
+        setTimeout(() => {
+          cachedVoices = speechSynthesis.getVoices();
+          voicesReady = cachedVoices.length > 0;
+          doSpeak();
+        }, 300);
+      } else {
+        doSpeak();
+      }
+    }
+
+    // Add Assistant Message
+    function addAssistantMessage(text) {
+      const chatArea = document.getElementById('voiceChatArea');
+      const msg = document.createElement('div');
+      msg.className = 'voice-message assistant';
+      msg.textContent = text;
+      chatArea.appendChild(msg);
+      chatArea.scrollTop = chatArea.scrollHeight;
+    }
+
+    // Add User Message
+    function addUserMessage(text) {
+      const chatArea = document.getElementById('voiceChatArea');
+      const msg = document.createElement('div');
+      msg.className = 'voice-message user';
+      msg.textContent = text;
+      chatArea.appendChild(msg);
+      chatArea.scrollTop = chatArea.scrollHeight;
+    }
+
+    // Add Thinking Animation
+    function addThinkingMessage() {
+      const chatArea = document.getElementById('voiceChatArea');
+      const msg = document.createElement('div');
+      msg.className = 'voice-message thinking';
+      msg.id = 'thinkingMessage';
+      msg.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
+      chatArea.appendChild(msg);
+      chatArea.scrollTop = chatArea.scrollHeight;
+    }
+
+    // Remove Thinking Animation
+    function removeThinkingMessage() {
+      const thinking = document.getElementById('thinkingMessage');
+      if (thinking) thinking.remove();
+    }
+
+    // Update Voice Status
+    function updateVoiceStatus(status) {
+      document.getElementById('voiceStatus').textContent = status;
+    }
+
+    // Input Validation for each step
+    function validateInput(field, input) {
+      const trimmed = input.trim();
+      const lower = trimmed.toLowerCase();
+      
+      switch (field) {
+        case 'fullName': {
+          const nameClean = trimmed.replace(/[^a-zA-Z\s.]/g, '').trim();
+          if (nameClean.length >= 2 && /[a-zA-Z]/.test(nameClean)) {
+            return { valid: true, value: nameClean.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') };
+          }
+          return { valid: false, message: "Please say your full name. For example, 'Vikas Kumar' or 'Rahul Sharma'." };
+        }
+        
+        case 'trainNumber': {
+          const trainNumMatch = trimmed.match(/\b(\d{4,5})\b/);
+          if (trainNumMatch) {
+            return { valid: true, value: trainNumMatch[1] };
+          }
+          const lettersOnly = trimmed.replace(/[^a-zA-Z\s]/g, '').trim();
+          const letterRatio = lettersOnly.length / trimmed.length;
+          if (lettersOnly.length >= 4 && letterRatio >= 0.75) {
+            return { valid: true, value: trimmed };
+          }
+          return { valid: false, message: "That doesn't look like a valid train number. Please say a 4 or 5 digit number like 22404 or 12650, or a full train name like 'Karnataka Express'." };
+        }
+        
+        case 'assistanceType': {
+          if (lower.includes('board') || lower.includes('pickup') || lower.includes('pick up') || lower.includes('enter') || lower.includes('get on') || lower.includes('departure')) {
+            return { valid: true, value: 'Boarding', display: 'Boarding Assistance (Platform → Train)' };
+          }
+          if (lower.includes('arrival') || lower.includes('arriv') || lower.includes('exit') || lower.includes('drop') || lower.includes('get off') || lower.includes('alight') || lower.includes('deboard')) {
+            return { valid: true, value: 'Arrival', display: 'Arrival Assistance (Train → Platform)' };
+          }
+          return { valid: false, message: "Please say 'Boarding' if you need help getting on the train, or 'Arrival' if you need help after reaching your destination." };
+        }
+        
+        case 'station': {
+          const cleaned = trimmed.replace(/[^a-zA-Z\s]/g, '').trim();
+          if (cleaned.length >= 2) {
+            return { valid: true, value: trimmed };
+          }
+          return { valid: false, message: "I couldn't understand the station name. Please say a valid station name like 'Warangal' or 'Secunderabad'." };
+        }
+        
+        case 'coach': {
+          const coachPattern = /^[a-zA-Z]{1,3}\s*\d{0,2}$|^\d{1,2}\s*[a-zA-Z]{1,2}$/;
+          if (coachPattern.test(trimmed) && trimmed.length >= 1 && trimmed.length <= 6) {
+            return { valid: true, value: trimmed.toUpperCase().replace(/\s/g, '') };
+          }
+          return { valid: false, message: "That doesn't look like a valid coach number. Please say something like S5, B2, A1, or 3A." };
+        }
+        
+        case 'seat': {
+          const seatNum = trimmed.replace(/[^0-9]/g, '');
+          if (seatNum && parseInt(seatNum) >= 1 && parseInt(seatNum) <= 999) {
+            return { valid: true, value: seatNum };
+          }
+          return { valid: false, message: "Please provide a valid seat number between 1 and 999. For example, say '25' or '42'." };
+        }
+        
+        case 'services': {
+          const selected = [];
+          if (lower.includes('luggage') || lower.includes('bag') || lower.includes('carry') || lower.includes('heavy') || lower.includes('suitcase') || lower.includes('porter')) {
+            selected.push('Luggage');
+          }
+          if (lower.includes('seat') || lower.includes('escort') || lower.includes('find') || lower.includes('guide') || lower.includes('navigate')) {
+            selected.push('SeatEscort');
+          }
+          if (lower.includes('language') || lower.includes('speak') || lower.includes('translate') || lower.includes('translation') || lower.includes('hindi') || lower.includes('telugu') || lower.includes('bengali') || lower.includes('tamil') || lower.includes('kannada')) {
+            selected.push('Language');
+          }
+          // "all" or "everything"
+          if (lower.includes('all') || lower.includes('everything') || lower.includes('all three')) {
+            return { valid: true, value: ['Luggage', 'SeatEscort', 'Language'] };
+          }
+          if (selected.length > 0) {
+            return { valid: true, value: selected };
+          }
+          return { valid: false, message: "I didn't recognize any service. Please choose from:\n• 'Luggage' — porter help for your bags\n• 'Seat escort' — guided to your seat\n• 'Language help' — translation assistance\nYou can pick multiple, like 'Luggage and Seat escort'." };
+        }
+        
+        case 'luggageType': {
+          if (lower.includes('small') || lower.includes('backpack') || lower.includes('cabin') || lower.includes('light')) {
+            return { valid: true, value: 'small', display: 'Small (Up to 5kg — ₹30)' };
+          }
+          if (lower.includes('medium') || lower.includes('suitcase') || lower.includes('standard') || lower.includes('regular')) {
+            return { valid: true, value: 'medium', display: 'Medium (Up to 10kg — ₹60)' };
+          }
+          if (lower.includes('large') || lower.includes('heavy') || lower.includes('big') || lower.includes('trunk')) {
+            return { valid: true, value: 'large', display: 'Large (Above 10kg — ₹100)' };
+          }
+          return { valid: false, message: "Please choose a luggage size:\n• 'Small' — Backpack up to 5kg (₹30)\n• 'Medium' — Suitcase up to 10kg (₹60)\n• 'Large' — Heavy luggage above 10kg (₹100)" };
+        }
+        
+        case 'language': {
+          const languages = ['hindi', 'telugu', 'english', 'bengali', 'tamil', 'kannada'];
+          const found = languages.find(l => lower.includes(l));
+          if (found) {
+            const capitalized = found.charAt(0).toUpperCase() + found.slice(1);
+            return { valid: true, value: capitalized };
+          }
+          return { valid: false, message: "Please choose a language: Hindi, Telugu, English, Bengali, Tamil, or Kannada." };
+        }
+        
+        case 'insurance': {
+          if (lower.includes('yes') || lower.includes('ok') || lower.includes('sure') || lower.includes('add') || lower === 'y') {
+            return { valid: true, value: true, display: 'Yes (₹0.45)' };
+          }
+          if (lower.includes('no') || lower.includes('skip') || lower.includes('nah') || lower.includes('don') || lower === 'n') {
+            return { valid: true, value: false, display: 'No' };
+          }
+          return { valid: false, message: "Please say 'Yes' to add insurance for ₹0.45, or 'No' to skip." };
+        }
+        
+        default:
+          return { valid: true, value: trimmed };
+      }
+    }
+    
+    // Get next applicable step (skip conditional steps that don't apply)
+    function getNextStepIndex(currentIdx) {
+      let nextIdx = currentIdx + 1;
+      while (nextIdx < voiceAssistant.steps.length) {
+        const step = voiceAssistant.steps[nextIdx];
+        if (step.conditional && !step.conditional(voiceAssistant.bookingData)) {
+          nextIdx++;
+          continue;
+        }
+        return nextIdx;
+      }
+      return nextIdx; // Past all steps = done
+    }
+
+    // Process User Input
+    function processUserInput(input) {
+      const lowerInput = input.toLowerCase().trim();
+      
+      addThinkingMessage();
+      
+      setTimeout(() => {
+        removeThinkingMessage();
+        
+        // Handle restart anytime
+        if (lowerInput.includes('restart') || lowerInput.includes('start over') || lowerInput.includes('reset') || lowerInput.includes('फिर से') || lowerInput.includes('మళ్ళీ') || lowerInput.includes('மீண்டும்') || lowerInput.includes('വീണ്ടും')) {
+          voiceAssistant.currentStep = -1;
+          voiceAssistant.bookingData = {};
+          document.getElementById('voiceBookingSummary').style.display = 'none';
+          const restartMsg = t('restart');
+          addAssistantMessage(restartMsg);
+          speak(restartMsg);
+          return;
+        }
+        
+        // Handle "my bookings" / "show bookings"
+        if (lowerInput.includes('my booking') || lowerInput.includes('show booking') || lowerInput.includes('view booking') || lowerInput.includes('check booking') || lowerInput.includes('booking status') || lowerInput.includes('my order') || lowerInput.includes('booking history') || lowerInput.includes('मेरी बुकिंग') || lowerInput.includes('నా బుకింగ') || lowerInput.includes('என் புக்கிங்') || lowerInput.includes('എന്റെ ബുക്കിംഗ്')) {
+          addAssistantMessage(t('openBookings'));
+          speak(t('openBookings'));
+          setTimeout(() => {
+            closeVoiceAssistant();
+            if (typeof viewMyBookings === 'function') {
+              viewMyBookings();
+            }
+          }, 1000);
+          return;
+        }
+        
+        // Handle confirmation when summary is showing
+        if (document.getElementById('voiceBookingSummary').style.display !== 'none') {
+          if (lowerInput.includes('yes') || lowerInput.includes('confirm') || lowerInput.includes('ok') || lowerInput.includes('proceed') || lowerInput.includes('done') || lowerInput.includes('हां') || lowerInput.includes('हाँ') || lowerInput.includes('అవును') || lowerInput.includes('ஆம்') || lowerInput.includes('അതെ')) {
+            confirmVoiceBooking();
+            return;
+          }
+          if (lowerInput.includes('no') || lowerInput.includes('cancel') || lowerInput.includes('change') || lowerInput.includes('edit') || lowerInput.includes('नहीं') || lowerInput.includes('వద్దు') || lowerInput.includes('இல்லை') || lowerInput.includes('വേണ്ട')) {
+            cancelVoiceSummary();
+            return;
+          }
+          const askAgain = t('confirmAsk');
+          addAssistantMessage(askAgain);
+          speak(askAgain);
+          return;
+        }
+        
+        // Check for booking intent
+        if (voiceAssistant.currentStep <= 0 && (lowerInput.includes('book') || lowerInput.includes('assistance') || lowerInput.includes('help me') || lowerInput.includes('start') || lowerInput.includes('बुक') || lowerInput.includes('బుక్') || lowerInput.includes('புக்') || lowerInput.includes('ബുക്ക്'))) {
+          voiceAssistant.currentStep = 0;
+          const stepInfo = tStep(voiceAssistant.steps[0].field);
+          addAssistantMessage(t('bookStart'));
+          speak(t('bookStart'));
+          setTimeout(() => {
+            addAssistantMessage(t('stepOf')(1, getTotalSteps()) + ' ' + stepInfo.question);
+            speak(stepInfo.question);
+          }, 800);
+          return;
+        }
+        
+        // Not in booking flow yet
+        if (voiceAssistant.currentStep < 0) {
+          const defaultResponse = t('defaultHelp');
+          addAssistantMessage(defaultResponse);
+          speak(defaultResponse.replace(/[•\n]/g, '. '));
+          return;
+        }
+        
+        // Handle booking steps
+        if (voiceAssistant.currentStep >= 0 && voiceAssistant.currentStep < voiceAssistant.steps.length) {
+          const step = voiceAssistant.steps[voiceAssistant.currentStep];
+          
+          // Validate the input
+          const validation = validateInput(step.field, input);
+          
+          if (!validation.valid) {
+            addAssistantMessage('❌ ' + tValid(step.field));
+            speak(tValid(step.field).replace(/[•\n]/g, '. '));
+            return;
+          }
+          
+          // Store validated value
+          voiceAssistant.bookingData[step.field] = validation.value;
+          
+          // Confirm what was captured
+          const stepTranslation = tStep(step.field);
+          const displayVal = validation.display || (Array.isArray(validation.value) ? validation.value.map(s => getServiceName(s)).join(', ') : validation.value);
+          addAssistantMessage(t('gotIt') + ' ' + stepTranslation.label + ': ' + displayVal);
+          
+          // Find next applicable step
+          const nextIdx = getNextStepIndex(voiceAssistant.currentStep);
+          voiceAssistant.currentStep = nextIdx;
+          
+          if (nextIdx < voiceAssistant.steps.length) {
+            const nextStep = voiceAssistant.steps[nextIdx];
+            const nextStepInfo = tStep(nextStep.field);
+            const stepNum = getStepNumber(nextIdx);
+            const totalSteps = getTotalSteps();
+            setTimeout(() => {
+              addAssistantMessage(t('stepOf')(stepNum, totalSteps) + ' ' + nextStepInfo.question);
+              speak(nextStepInfo.question);
+            }, 600);
+          } else {
+            // All steps complete — show summary
+            setTimeout(() => showBookingSummary(), 600);
+          }
+          return;
+        }
+        
+        // Default
+        const defaultResponse = t('defaultHelp');
+        addAssistantMessage(defaultResponse);
+        speak(defaultResponse.replace(/[•\n]/g, '. '));
+        
+      }, 800);
+    }
+    
+    // Helper: service code to display name
+    function getServiceName(code) {
+      const names = { 'Luggage': 'Luggage Assistance', 'SeatEscort': 'Seat Escort', 'Language': 'Language Help' };
+      return names[code] || code;
+    }
+    
+    // Helper: count applicable steps
+    function getTotalSteps() {
+      let count = 0;
+      for (const step of voiceAssistant.steps) {
+        if (!step.conditional || step.conditional(voiceAssistant.bookingData)) count++;
+      }
+      return count;
+    }
+    
+    // Helper: get current step number among applicable steps
+    function getStepNumber(idx) {
+      let num = 0;
+      for (let i = 0; i <= idx; i++) {
+        const step = voiceAssistant.steps[i];
+        if (!step.conditional || step.conditional(voiceAssistant.bookingData)) num++;
+      }
+      return num;
+    }
+
+    // Show Booking Summary
+    function showBookingSummary() {
+      const summary = document.getElementById('voiceBookingSummary');
+      const grid = document.getElementById('summaryGrid');
+      const data = voiceAssistant.bookingData;
+      const userName = data.fullName || document.getElementById('passengerName')?.value || 'Guest';
+      
+      const servicesList = (data.services || []).map(s => getServiceName(s)).join(', ') || '—';
+      const luggageSizes = { small: 'Small (≤5kg — ₹30)', medium: 'Medium (≤10kg — ₹60)', large: 'Large (>10kg — ₹100)' };
+      
+      let summaryHTML = `
+        <div class="summary-item"><label>Passenger</label><span>${userName}</span></div>
+        <div class="summary-item"><label>Train</label><span>${data.trainNumber || '—'}</span></div>
+        <div class="summary-item"><label>Assistance</label><span>${data.assistanceType === 'Boarding' ? '🚂 Boarding' : '🚉 Arrival'}</span></div>
+        <div class="summary-item"><label>Station</label><span>${data.station || '—'}</span></div>
+        <div class="summary-item"><label>Coach</label><span>${data.coach || '—'}</span></div>
+        <div class="summary-item"><label>Seat</label><span>${data.seat || '—'}</span></div>
+        <div class="summary-item"><label>Services</label><span>${servicesList}</span></div>
+      `;
+      
+      if (data.services && data.services.includes('Luggage') && data.luggageType) {
+        summaryHTML += `<div class="summary-item"><label>Luggage</label><span>${luggageSizes[data.luggageType] || data.luggageType}</span></div>`;
+      }
+      if (data.services && data.services.includes('Language') && data.language) {
+        summaryHTML += `<div class="summary-item"><label>Language</label><span>${data.language}</span></div>`;
+      }
+      summaryHTML += `<div class="summary-item"><label>Insurance</label><span>${data.insurance ? '✓ Yes (₹0.45)' : '✗ No'}</span></div>`;
+      
+      grid.innerHTML = summaryHTML;
+      summary.style.display = 'block';
+      
+      // Scroll the summary into view
+      setTimeout(() => {
+        summary.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }, 100);
+      
+      const confirmMessage = t('confirmSummary');
+      addAssistantMessage(confirmMessage);
+      speak(confirmMessage);
+    }
+
+    // Confirm Voice Booking - Fill form and submit
+    function confirmVoiceBooking() {
+      const data = voiceAssistant.bookingData;
+      
+      addAssistantMessage(t('fillWait'));
+      
+      // 0. Fill passenger name
+      const nameInput = document.getElementById('passengerName');
+      if (nameInput && data.fullName) nameInput.value = data.fullName;
+      
+      // 1. Search train via API and select it (triggers station load)
+      async function fillForm() {
+        try {
+          // Step 1: Search and select train
+          if (data.trainNumber) {
+            const trainInput = document.getElementById('trainName');
+            trainInput.value = data.trainNumber;
+            
+            // Fetch train results via API
+            const res = await fetch(`/api/trains?search=${encodeURIComponent(data.trainNumber)}&limit=7`);
+            const result = await res.json();
+            const trains = result.trains || result;
+            
+            if (trains && trains.length > 0) {
+              // Store in global currentTrainResults so selectTrain works
+              if (typeof currentTrainResults !== 'undefined') {
+                currentTrainResults = trains;
+              }
+              // Call selectTrain to trigger the full chain (sets hidden fields, fetches stations)
+              if (typeof selectTrain === 'function') {
+                selectTrain(0);
+              }
+            } else {
+              // Fallback: just set values manually
+              document.getElementById('selectedTrainNumber').value = data.trainNumber;
+              trainInput.value = data.trainNumber;
+            }
+            
+            // Wait for stations to load
+            await new Promise(resolve => setTimeout(resolve, 1500));
+          }
+          
+          // Step 2: Select assistance type (radio)
+          if (data.assistanceType) {
+            const radioValue = data.assistanceType === 'Boarding' ? 'pickup' : 'drop';
+            const radio = document.querySelector(`input[name="serviceType"][value="${radioValue}"]`);
+            if (radio) {
+              radio.checked = true;
+              radio.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+            // Wait for dropdown to populate
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+          
+          // Step 3: Select station from dropdown
+          if (data.station) {
+            const pickupSelect = document.getElementById('pickupOnlySelect');
+            const dropSelect = document.getElementById('dropOnlySelect');
+            const activeSelect = data.assistanceType === 'Boarding' ? pickupSelect : dropSelect;
+            
+            if (activeSelect && activeSelect.options.length > 1) {
+              let matched = false;
+              const stationLower = data.station.toLowerCase();
+              
+              Array.from(activeSelect.options).forEach(opt => {
+                if (!matched && (
+                  opt.text.toLowerCase().includes(stationLower) ||
+                  opt.value.toLowerCase().includes(stationLower) ||
+                  (opt.dataset.name && opt.dataset.name.toLowerCase().includes(stationLower))
+                )) {
+                  activeSelect.value = opt.value;
+                  activeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                  matched = true;
+                }
+              });
+            }
+          }
+          
+          // Step 4: Fill coach and seat
+          const coachInput = document.getElementById('coach');
+          const seatInput = document.getElementById('seat');
+          if (coachInput && data.coach) coachInput.value = data.coach;
+          if (seatInput && data.seat) seatInput.value = data.seat;
+          
+          // Step 5: Select services (checkboxes)
+          if (data.services && Array.isArray(data.services)) {
+            data.services.forEach(svc => {
+              const checkbox = document.querySelector(`input[data-service="${svc}"]`);
+              if (checkbox && !checkbox.checked) {
+                checkbox.checked = true;
+                checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+              }
+            });
+            // Wait for service sections to appear
+            await new Promise(resolve => setTimeout(resolve, 300));
+          }
+          
+          // Step 6: Add luggage to cart using the actual function
+          if (data.luggageType && data.services && data.services.includes('Luggage')) {
+            if (typeof addLuggageToCart === 'function') {
+              addLuggageToCart(data.luggageType);
+            } else {
+              // Fallback: click the luggage card
+              const card = document.querySelector(`.luggage-type-card[data-type="${data.luggageType}"]`);
+              if (card) card.click();
+            }
+          }
+          
+          // Step 7: Set language dropdowns
+          if (data.language && data.services && data.services.includes('Language')) {
+            ['language', 'preferredLanguageHelp'].forEach(id => {
+              const sel = document.getElementById(id);
+              if (sel) {
+                Array.from(sel.options).forEach(opt => {
+                  if (opt.value.toLowerCase() === data.language.toLowerCase() || 
+                      opt.text.toLowerCase() === data.language.toLowerCase()) {
+                    sel.value = opt.value;
+                    sel.dispatchEvent(new Event('change', { bubbles: true }));
+                  }
+                });
+              }
+            });
+          }
+          
+          // Step 8: Set insurance
+          if (data.insurance) {
+            const insuranceChk = document.getElementById('insuranceChk');
+            if (insuranceChk && !insuranceChk.checked) {
+              insuranceChk.checked = true;
+              insuranceChk.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+          }
+          
+          // Step 9: Trigger price update
+          if (typeof updatePriceDisplay === 'function') updatePriceDisplay();
+          if (typeof updatePrice === 'function') updatePrice();
+          if (typeof updateFormProgress === 'function') updateFormProgress();
+          
+          addAssistantMessage(t('fillDone'));
+          speak(t('fillDone'));
+          
+          // Close assistant and scroll to form
+          setTimeout(() => {
+            closeVoiceAssistant();
+            document.getElementById('book')?.scrollIntoView({ behavior: 'smooth' });
+          }, 2500);
+          
+        } catch (err) {
+          console.error('Voice booking fill error:', err);
+          addAssistantMessage(t('fillError'));
+          speak(t('fillError'));
+          setTimeout(() => {
+            closeVoiceAssistant();
+            document.getElementById('book')?.scrollIntoView({ behavior: 'smooth' });
+          }, 2000);
+        }
+      }
+      
+      fillForm();
+    }
+
+    // Cancel Summary
+    function cancelVoiceSummary() {
+      document.getElementById('voiceBookingSummary').style.display = 'none';
+      voiceAssistant.currentStep = -1;
+      voiceAssistant.bookingData = {};
+      
+      const cancelMessage = t('cancelBooking');
+      addAssistantMessage(cancelMessage);
+      speak(cancelMessage);
+    }
+
+    // Handle text input
+    function handleVoiceTextInput(event) {
+      if (event.key === 'Enter') {
+        sendTextMessage();
+      }
+    }
+
+    // Send text message
+    function sendTextMessage() {
+      const input = document.getElementById('voiceTextInput');
+      const text = input.value.trim();
+      if (text) {
+        addUserMessage(text);
+        processUserInput(text);
+        input.value = '';
+      }
+    }
+
+    // Expose functions globally
+    window.openVoiceAssistant = openVoiceAssistant;
+    window.closeVoiceAssistant = closeVoiceAssistant;
+    window.toggleVoiceRecognition = toggleVoiceRecognition;
+    window.handleVoiceTextInput = handleVoiceTextInput;
+    window.sendTextMessage = sendTextMessage;
+    window.confirmVoiceBooking = confirmVoiceBooking;
+    window.cancelVoiceSummary = cancelVoiceSummary;
+  </script>
+
   <div class="toast" id="toast"></div>
+
+  <!-- Support Chatbot Overlay -->
+  <div class="support-chatbot-overlay" id="supportChatbotOverlay" onclick="closeSupportChatbot()"></div>
+
+  <!-- Support Chatbot Panel -->
+  <div class="support-chatbot" id="supportChatbot">
+    <div class="chatbot-header">
+      <div class="chatbot-header-icon">🤖</div>
+      <div class="chatbot-header-info">
+        <div class="chatbot-header-title">RailMitra Support Assistant</div>
+        <div class="chatbot-header-subtitle">We typically reply instantly</div>
+      </div>
+      <button class="chatbot-header-close" onclick="closeSupportChatbot()" title="Close">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="chatbot-body" id="chatbotBody"></div>
+    <div class="chatbot-footer">
+      <input type="text" id="chatbotInput" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendChatbotMsg()">
+      <button class="chatbot-send-btn" onclick="sendChatbotMsg()" title="Send">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Support Chatbot JavaScript -->
+  <script>
+  (function() {
+    // ============ Chatbot Knowledge Base ============
+    const chatbotData = {
+      categories: [
+        { id: 'myTickets', label: '🎫 My Support Tickets' },
+        { id: 'booking', label: '📋 Issue with Previous Booking' },
+        { id: 'payment', label: '💳 Payment Related Issue' },
+        { id: 'assistant', label: '👤 Assistant / Service Issue' },
+        { id: 'newBooking', label: '🆕 New Booking Help' },
+        { id: 'station', label: '📍 Station or Meeting Point Help' },
+        { id: 'refund', label: '💰 Refund or Cancellation' },
+        { id: 'support', label: '📞 Talk to Support Executive' }
+      ],
+      subOptions: {
+        booking: {
+          title: 'What issue are you facing with your booking?',
+          options: [
+            { id: 'booking_status', label: 'Booking not showing in My Bookings' },
+            { id: 'booking_wrong', label: 'Wrong details in my booking' },
+            { id: 'booking_noAssistant', label: 'No assistant assigned yet' },
+            { id: 'booking_missed', label: 'Assistant did not arrive' },
+            { id: 'booking_other', label: 'Other booking issue' }
+          ]
+        },
+        payment: {
+          title: 'What payment issue do you have?',
+          options: [
+            { id: 'pay_upi', label: 'UPI payment failed' },
+            { id: 'pay_deducted', label: 'Payment deducted but booking not confirmed' },
+            { id: 'pay_txn', label: 'Transaction ID verification' },
+            { id: 'pay_receipt', label: 'Need payment receipt' },
+            { id: 'pay_refund', label: 'Refund request for failed payment' }
+          ]
+        },
+        assistant: {
+          title: 'What assistant/service issue do you have?',
+          options: [
+            { id: 'asst_late', label: 'Assistant arrived late' },
+            { id: 'asst_rude', label: 'Unprofessional behavior' },
+            { id: 'asst_noshow', label: 'Assistant did not show up' },
+            { id: 'asst_wrong', label: 'Wrong service provided' },
+            { id: 'asst_feedback', label: 'Want to give feedback' }
+          ]
+        },
+        newBooking: {
+          title: 'What help do you need with a new booking?',
+          options: [
+            { id: 'new_how', label: 'How to create a new booking?' },
+            { id: 'new_services', label: 'What services are available?' },
+            { id: 'new_pricing', label: 'Pricing and charges' },
+            { id: 'new_train', label: 'Train not found in search' },
+            { id: 'new_voice', label: 'How to use Voice Booking?' }
+          ]
+        },
+        station: {
+          title: 'What station help do you need?',
+          options: [
+            { id: 'stn_meeting', label: 'Where to meet the assistant?' },
+            { id: 'stn_platform', label: 'How to find my platform?' },
+            { id: 'stn_accessible', label: 'Accessibility / wheelchair help' },
+            { id: 'stn_luggage', label: 'Luggage cart availability' },
+            { id: 'stn_contact', label: 'Station helpline number' }
+          ]
+        },
+        refund: {
+          title: 'What refund or cancellation help do you need?',
+          options: [
+            { id: 'ref_cancel', label: 'How to cancel a booking?' },
+            { id: 'ref_status', label: 'Refund status check' },
+            { id: 'ref_timeline', label: 'How long does refund take?' },
+            { id: 'ref_partial', label: 'Partial refund received' },
+            { id: 'ref_policy', label: 'Cancellation policy' }
+          ]
+        },
+        support: {
+          title: 'Connecting you with support...',
+          options: []
+        }
+      },
+      answers: {
+        // Booking
+        booking_status: "Your booking may take up to 2 minutes to appear after payment confirmation. Please check the **My Bookings** section.\n\nIf it's been more than 5 minutes:\n1. Check your email for confirmation\n2. Verify the payment was deducted\n3. Try refreshing the page\n\nIf it still doesn't show, your payment may not have been processed. Check your bank statement.",
+        booking_wrong: "If your booking has incorrect details:\n1. Go to **My Bookings**\n2. Find the booking and click **View Details**\n3. Minor changes (coach/seat) can be updated before assistant assignment\n\nFor major changes (train/date), you may need to cancel and rebook.\n\n⚠️ Changes cannot be made after an assistant is assigned.",
+        booking_noAssistant: "Assistants are typically assigned within **15-30 minutes** of booking.\n\nIf no assistant is assigned yet:\n• The booking may be for a future date — assignment happens closer to the travel date\n• High demand at your station may cause delays\n• Our team is reviewing your request\n\nIf it's been over 2 hours and travel is within 24 hours, please escalate.",
+        booking_missed: "We're very sorry that the assistant didn't arrive. This is a serious issue.\n\n1. Your booking will be flagged for review\n2. You're eligible for a **full refund**\n3. The assistant will be investigated\n\nPlease escalate this to admin for immediate resolution and refund processing.",
+        booking_other: "Please describe your booking issue in the text box below, and we'll try to help. If we can't resolve it here, we'll connect you to an admin.",
+
+        // Payment
+        pay_upi: "UPI payment failures are usually temporary. Try these steps:\n1. Check your internet connection\n2. Ensure your UPI app is updated\n3. Verify sufficient balance in your bank account\n4. Try a different UPI app (GPay, PhonePe, Paytm)\n5. Wait 2-3 minutes and try again\n\n💡 If money was debducted, it will be auto-refunded within 24-48 hours.",
+        pay_deducted: "If your payment was deducted but booking isn't confirmed:\n\n1. **Wait 5-10 minutes** — sometimes confirmation is delayed\n2. Check **My Bookings** for a pending booking\n3. Check your email/SMS for booking confirmation\n4. Note your **Transaction ID** from your bank/UPI app\n\nIf not resolved in 30 minutes, the amount will be auto-refunded within 3-5 business days. For faster resolution, please escalate with your Transaction ID.",
+        pay_txn: "To verify a transaction:\n1. Open your UPI app or bank app\n2. Go to **Transaction History**\n3. Find the RailMitra payment\n4. Note the **Transaction/Reference ID**\n\nShare this ID with our support team for quick verification and resolution.",
+        pay_receipt: "To get your payment receipt:\n1. Go to **My Bookings**\n2. Click on the booking\n3. Click **Download Receipt** or **View Details**\n\nReceipts are also sent to your registered email. Check your spam folder if you don't see it.",
+        pay_refund: "For a refund on a failed payment:\n1. If money was deducted but booking failed — automatic refund in 3-5 business days\n2. If you need immediate help, please escalate with your Transaction ID\n\n📧 You'll receive an email when the refund is processed.",
+
+        // Assistant
+        asst_late: "We apologize for the inconvenience. Late arrivals are tracked in our system.\n\n• If the assistant was 10+ minutes late, you may be eligible for a **partial refund**\n• We'll flag this in the assistant's record\n• Please rate the service in your booking details\n\nFor compensation, please escalate to admin.",
+        asst_rude: "We take professionalism very seriously. Please:\n1. Rate the assistant in **My Bookings → Feedback**\n2. Describe the incident in detail\n3. Escalate to admin for investigation\n\nThe assistant will be reviewed and appropriate action will be taken. You may also be eligible for a refund.",
+        asst_noshow: "If the assistant didn't show up at all:\n1. You'll receive a **full refund**\n2. The assistant will be flagged\n3. We can try to assign a replacement if time permits\n\nPlease escalate to admin immediately for fastest resolution.",
+        asst_wrong: "If the wrong service was provided:\n• Check if the booking details match what was requested\n• The assistant should follow the services listed in your booking\n• Rate the service and describe the issue\n\nFor a partial or full refund, please escalate to admin.",
+        asst_feedback: "We appreciate your feedback!\n1. Go to **My Bookings**\n2. Find the completed booking\n3. Click **Rate & Feedback**\n4. Give a star rating and write your comments\n\n⭐ Your feedback helps us improve the service for everyone!",
+
+        // New booking
+        new_how: "Creating a new booking is easy:\n1. Click **Book Now** in the navigation\n2. Enter your **Train Number** — it auto-loads stations\n3. Select **Boarding** or **Arrival** assistance\n4. Choose your station, coach, and seat\n5. Select services: **Luggage**, **Seat Escort**, **Language Help**\n6. Add insurance if needed\n7. Click **Create Booking** and pay\n\n🎤 You can also use our **Voice Booking** assistant — click the microphone button!",
+        new_services: "RailMitra offers these services:\n\n🧳 **Luggage Assistance** — Help carrying your bags (Small ₹30, Medium ₹60, Large ₹100)\n🪑 **Seat Escort** — Guide to your seat/coach inside the train\n🗣️ **Language Help** — Translator for Hindi, Telugu, Tamil, Bengali, Kannada, English\n\nYou can combine multiple services in one booking!",
+        new_pricing: "**Service Pricing:**\n• Luggage Small (≤5kg): ₹30\n• Luggage Medium (≤10kg): ₹60\n• Luggage Large (>10kg): ₹100\n• Seat Escort: ₹40\n• Language Help: ₹25\n• Insurance: ₹0.45 (covers luggage up to ₹30,000)\n\n💡 Final price is calculated at checkout based on selected services.",
+        new_train: "If your train isn't found:\n1. Try searching by **train number** (e.g. 22404) instead of name\n2. Verify the train number on IRCTC\n3. Some special/seasonal trains may not be in our database\n\nIf the train still doesn't appear, please contact admin to request adding it.",
+        new_voice: "To use Voice Booking:\n1. Click the **🎤 Mic** button at the bottom right\n2. Say **\"Book assistance\"** to start\n3. Follow the step-by-step prompts\n4. Confirm your booking summary\n5. The form fills automatically!\n\n💡 You can switch languages using the language buttons in the voice assistant. Supports English, Hindi, Telugu, Tamil, and Malayalam.",
+
+        // Station
+        stn_meeting: "Your assigned assistant will meet you at:\n• **Boarding**: Near the station entry gate or platform entrance\n• **Arrival**: At your coach door on the platform\n\nThe assistant will have your booking details and will contact you via the app. Look for someone with a RailMitra ID badge.",
+        stn_platform: "To find your platform:\n1. Check the **departure board** at the station\n2. Your booking confirmation shows the train details\n3. Your assistant will guide you if booked for boarding\n4. Ask any station staff near the entry\n\n📱 Indian Railways app also shows live platform updates.",
+        stn_accessible: "RailMitra provides accessibility support:\n• Wheelchair assistance is available at major stations\n• Select **Seat Escort** for guided help\n• Mention accessibility needs in the booking notes\n• Our assistants are trained for elderly and differently-abled passengers\n\nFor special requirements, please escalate to admin before your travel date.",
+        stn_luggage: "Luggage cart availability varies by station:\n• Major stations (Secunderabad, Warangal, etc.) usually have carts\n• Smaller stations may have only manual porters\n• Our **Luggage Assistance** service includes help carrying your bags\n\nBook the Luggage service for worry-free travel!",
+        stn_contact: "Station helpline numbers:\n• **Indian Railways**: 139\n• **Security helpline**: 182\n• **RailMitra support**: Available via this chat\n\nFor station-specific numbers, check the Indian Railways website or app.",
+
+        // Refund
+        ref_cancel: "To cancel a booking:\n1. Go to **My Bookings**\n2. Find the active booking\n3. Click **Cancel Booking**\n4. Confirm the cancellation\n\n⚠️ Cancellation is free if no assistant has been assigned. If already assigned, partial charges may apply.",
+        ref_status: "To check your refund status:\n1. Go to **My Bookings**\n2. Find the cancelled booking\n3. Refund status will show as: **Processing**, **Completed**, or **Pending**\n\nRefunds typically take **3-5 business days** to reflect in your account.",
+        ref_timeline: "Refund timelines:\n• **UPI**: 1-3 business days\n• **Net Banking**: 3-5 business days\n• **Credit/Debit Card**: 5-7 business days\n• **Admin-initiated refund**: 2-5 business days\n\nYou'll receive an email when the refund is processed.",
+        ref_partial: "If you received a partial refund:\n• Cancellation charges may have been deducted\n• If an assistant was already assigned, a service fee is retained\n• Check the cancellation policy for details\n\nIf you believe the amount is incorrect, please escalate with your booking and transaction details.",
+        ref_policy: "**Cancellation Policy:**\n• **Before assistant assigned**: Full refund (100%)\n• **After assistant assigned**: 80% refund\n• **Within 1 hour of travel**: 50% refund\n• **No-show**: No refund\n\nInsurance amount (₹0.45) is non-refundable."
+      }
+    };
+
+    // ============ Chatbot State ============
+    let chatbotOpen = false;
+    let chatbotHistory = []; // 'main', categoryId, subOptionId
+
+    // ============ Core Functions ============
+    function toggleSupportChatbot() {
+      if (chatbotOpen) { closeSupportChatbot(); return; }
+      openSupportChatbot();
+    }
+
+    function openSupportChatbot() {
+      chatbotOpen = true;
+      chatbotHistory = ['main'];
+      document.getElementById('supportChatbot').classList.add('open');
+      document.getElementById('supportChatbotOverlay').classList.add('open');
+      const body = document.getElementById('chatbotBody');
+      body.innerHTML = '';
+      // Greet
+      const name = document.getElementById('passengerName')?.value ||
+                   document.getElementById('navUserName')?.textContent || 'Guest';
+      addBotMsg(`Hello <strong>${name}</strong>, welcome to RailMitra Support! 👋\nHow can I help you today?`);
+      setTimeout(() => showMainMenu(), 400);
+    }
+
+    function closeSupportChatbot() {
+      chatbotOpen = false;
+      document.getElementById('supportChatbot').classList.remove('open');
+      document.getElementById('supportChatbotOverlay').classList.remove('open');
+    }
+
+    // ============ Message Helpers ============
+    function addBotMsg(html, extra) {
+      const body = document.getElementById('chatbotBody');
+      const div = document.createElement('div');
+      div.className = 'cb-msg bot';
+      div.innerHTML = html.replace(/\n/g, '<br>').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      body.appendChild(div);
+      if (extra) body.appendChild(extra);
+      scrollChatbot();
+    }
+
+    function addUserMsg(text) {
+      const body = document.getElementById('chatbotBody');
+      const div = document.createElement('div');
+      div.className = 'cb-msg user';
+      div.textContent = text;
+      body.appendChild(div);
+      scrollChatbot();
+    }
+
+    function addOptions(options, onClick) {
+      const body = document.getElementById('chatbotBody');
+      const wrap = document.createElement('div');
+      wrap.className = 'cb-options';
+      options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'cb-opt-btn';
+        btn.textContent = opt.label;
+        btn.onclick = () => onClick(opt);
+        wrap.appendChild(btn);
+      });
+      body.appendChild(wrap);
+      scrollChatbot();
+    }
+
+    function showTyping() {
+      const body = document.getElementById('chatbotBody');
+      const div = document.createElement('div');
+      div.className = 'cb-typing';
+      div.id = 'cbTyping';
+      div.innerHTML = '<span></span><span></span><span></span>';
+      body.appendChild(div);
+      scrollChatbot();
+    }
+
+    function hideTyping() {
+      document.getElementById('cbTyping')?.remove();
+    }
+
+    function scrollChatbot() {
+      const body = document.getElementById('chatbotBody');
+      setTimeout(() => { body.scrollTop = body.scrollHeight; }, 60);
+    }
+
+    // ============ Menu Flows ============
+    function showMainMenu() {
+      addOptions(chatbotData.categories, (opt) => {
+        addUserMsg(opt.label);
+        chatbotHistory.push(opt.id);
+        if (opt.id === 'myTickets') {
+          showMyTickets();
+          return;
+        }
+        if (opt.id === 'support') {
+          showEscalation();
+          return;
+        }
+        showTyping();
+        setTimeout(() => {
+          hideTyping();
+          const sub = chatbotData.subOptions[opt.id];
+          addBotMsg(sub.title);
+          setTimeout(() => {
+            addOptions(sub.options, (subOpt) => handleSubOption(subOpt));
+          }, 200);
+        }, 600);
+      });
+    }
+
+    function handleSubOption(subOpt) {
+      addUserMsg(subOpt.label);
+      chatbotHistory.push(subOpt.id);
+      showTyping();
+      setTimeout(() => {
+        hideTyping();
+        const answer = chatbotData.answers[subOpt.id];
+        if (answer) {
+          addBotMsg(answer);
+          setTimeout(() => showPostAnswer(), 400);
+        } else {
+          addBotMsg("Let me look into that for you. Please describe the issue in more detail below, or connect with our admin for help.");
+          setTimeout(() => showEscalation(), 400);
+        }
+      }, 800);
+    }
+
+    function showPostAnswer() {
+      const body = document.getElementById('chatbotBody');
+      const wrap = document.createElement('div');
+      wrap.className = 'cb-options';
+
+      const solvedBtn = document.createElement('button');
+      solvedBtn.className = 'cb-opt-btn';
+      solvedBtn.textContent = '✅ Issue Resolved';
+      solvedBtn.onclick = () => {
+        addUserMsg('Issue Resolved');
+        showTyping();
+        setTimeout(() => {
+          hideTyping();
+          const div = document.createElement('div');
+          div.className = 'cb-resolved';
+          div.innerHTML = '✅ <strong>Great!</strong> Glad we could help. If you have any other questions, feel free to ask!';
+          body.appendChild(div);
+          setTimeout(() => showBackToMenu(), 400);
+        }, 400);
+      };
+
+      const notSolvedBtn = document.createElement('button');
+      notSolvedBtn.className = 'cb-opt-btn';
+      notSolvedBtn.textContent = '❌ Not Resolved';
+      notSolvedBtn.onclick = () => {
+        addUserMsg('Not Resolved');
+        showEscalation();
+      };
+
+      const backBtn = document.createElement('button');
+      backBtn.className = 'cb-opt-btn';
+      backBtn.textContent = '◀ Back to Menu';
+      backBtn.onclick = () => {
+        addUserMsg('Back to Menu');
+        chatbotHistory = ['main'];
+        showTyping();
+        setTimeout(() => {
+          hideTyping();
+          addBotMsg("Sure! What else can I help you with?");
+          setTimeout(() => showMainMenu(), 300);
+        }, 400);
+      };
+
+      wrap.appendChild(solvedBtn);
+      wrap.appendChild(notSolvedBtn);
+      wrap.appendChild(backBtn);
+      body.appendChild(wrap);
+      scrollChatbot();
+    }
+
+    function showEscalation() {
+      const body = document.getElementById('chatbotBody');
+      const div = document.createElement('div');
+      div.className = 'cb-escalation-banner';
+      div.innerHTML = `<strong>⚠️ Need further help?</strong>
+        Connect with our admin support team for manual assistance. They will review your issue and get back to you.
+        <br><button class="cb-connect-admin-btn" onclick="escalateToAdmin()">🔗 Connect Admin</button>`;
+      body.appendChild(div);
+      scrollChatbot();
+    }
+
+    function showBackToMenu() {
+      const body = document.getElementById('chatbotBody');
+      const link = document.createElement('span');
+      link.className = 'cb-back-link';
+      link.textContent = '◀ Back to main menu';
+      link.onclick = () => {
+        chatbotHistory = ['main'];
+        addUserMsg('Back to Menu');
+        showTyping();
+        setTimeout(() => {
+          hideTyping();
+          addBotMsg("What else can I help you with?");
+          setTimeout(() => showMainMenu(), 300);
+        }, 400);
+      };
+      body.appendChild(link);
+      scrollChatbot();
+    }
+
+    // ============ My Tickets ============
+    async function showMyTickets() {
+      showTyping();
+      const token = localStorage.getItem('token');
+      let tickets = [];
+
+      // Try fetching from API if logged in
+      if (token) {
+        try {
+          const res = await fetch('/api/support/my-tickets', {
+            headers: { 'Authorization': 'Bearer ' + token }
+          });
+          const data = await res.json();
+          if (data.success && data.tickets) tickets = data.tickets;
+        } catch(e) { console.warn('Failed to fetch tickets:', e); }
+      }
+
+      // Also check localStorage for tickets created without login
+      const localTicketIds = JSON.parse(localStorage.getItem('rmSupportTickets') || '[]');
+      if (localTicketIds.length && (!tickets.length || !token)) {
+        try {
+          const res = await fetch('/api/support/tickets-by-ids', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ticketIds: localTicketIds })
+          });
+          const data = await res.json();
+          if (data.success && data.tickets) {
+            // Merge, avoiding duplicates
+            const existingIds = new Set(tickets.map(t => t.ticketId));
+            data.tickets.forEach(t => { if (!existingIds.has(t.ticketId)) tickets.push(t); });
+          }
+        } catch(e) {}
+      }
+
+      hideTyping();
+
+      if (!tickets.length) {
+        addBotMsg('You don\'t have any support tickets yet. If you need help, choose a topic below or talk to support.');
+        setTimeout(() => showMainMenu(), 400);
+        return;
+      }
+
+      addBotMsg(`You have **${tickets.length}** support ticket${tickets.length > 1 ? 's' : ''}. Tap a ticket to view details:`);
+
+      const body = document.getElementById('chatbotBody');
+      tickets.forEach(ticket => {
+        const card = document.createElement('div');
+        card.className = 'cb-ticket-card';
+        const statusClass = (ticket.status || 'open').replace(/\s/g, '-');
+        const statusLabel = { open: 'Open', 'in-progress': 'In Progress', resolved: 'Resolved', closed: 'Closed' };
+        const date = new Date(ticket.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        card.innerHTML = `
+          <div class="cb-ticket-header">
+            <span class="cb-ticket-id">#${ticket.ticketId}</span>
+            <span class="cb-ticket-badge ${statusClass}">${statusLabel[ticket.status] || ticket.status}</span>
+          </div>
+          <div class="cb-ticket-category">${ticket.issueCategory || ticket.issueTrail || 'General'}</div>
+          <div class="cb-ticket-date">${date}</div>
+          ${ticket.adminResponse ? '<div style="font-size:11px;color:#1d4ed8;margin-top:4px;">💬 Admin replied</div>' : ''}
+        `;
+        card.onclick = () => showTicketDetail(ticket);
+        body.appendChild(card);
+      });
+      scrollChatbot();
+      setTimeout(() => showBackToMenu(), 300);
+    }
+
+    function showTicketDetail(ticket) {
+      addUserMsg('#' + ticket.ticketId);
+      const body = document.getElementById('chatbotBody');
+      const statusLabel = { open: 'Open', 'in-progress': 'In Progress', resolved: 'Resolved', closed: 'Closed' };
+      const statusClass = (ticket.status || 'open').replace(/\s/g, '-');
+      const date = new Date(ticket.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+      // Ticket info header
+      const infoDiv = document.createElement('div');
+      infoDiv.style.cssText = 'background:linear-gradient(135deg,#1e293b,#334155);color:#fff;border-radius:14px;padding:12px 14px;margin-bottom:4px;font-size:12px;';
+      infoDiv.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><span style="font-weight:700;font-size:14px;">#${ticket.ticketId}</span><span class="cb-ticket-badge ${statusClass}" style="color:#fff;background:rgba(255,255,255,0.2);">${statusLabel[ticket.status] || ticket.status}</span></div><div style="opacity:0.8;">${ticket.issueCategory || 'Support'} • ${date}</div>`;
+      body.appendChild(infoDiv);
+
+      // Initial passenger message (escalation)
+      const pMsg1 = document.createElement('div');
+      pMsg1.className = 'cb-msg user';
+      pMsg1.style.cssText = 'margin-top:8px;';
+      pMsg1.textContent = ticket.issueTrail || 'Support request';
+      body.appendChild(pMsg1);
+
+      // Chat history — render all messages as chat bubbles
+      if (ticket.chatHistory && ticket.chatHistory.length) {
+        ticket.chatHistory.forEach(msg => {
+          if (msg.startsWith('Passenger follow-up:')) {
+            const text = msg.replace('Passenger follow-up: ', '');
+            const el = document.createElement('div');
+            el.className = 'cb-msg user';
+            el.textContent = text;
+            body.appendChild(el);
+          } else if (msg.startsWith('Admin:')) {
+            const text = msg.replace('Admin: ', '');
+            const el = document.createElement('div');
+            el.className = 'cb-msg bot';
+            el.innerHTML = '<div style="font-size:10px;color:#6366f1;font-weight:600;margin-bottom:2px;">🛡️ Admin</div>' + text;
+            body.appendChild(el);
+          }
+        });
+      }
+
+      // Show adminResponse if not already in chatHistory
+      if (ticket.adminResponse) {
+        const alreadyInChat = ticket.chatHistory?.some(m => m === 'Admin: ' + ticket.adminResponse);
+        if (!alreadyInChat) {
+          const adminEl = document.createElement('div');
+          adminEl.className = 'cb-msg bot';
+          adminEl.innerHTML = '<div style="font-size:10px;color:#6366f1;font-weight:600;margin-bottom:2px;">🛡️ Admin</div>' + ticket.adminResponse;
+          body.appendChild(adminEl);
+        }
+      } else if (ticket.status === 'open') {
+        const waitEl = document.createElement('div');
+        waitEl.className = 'cb-msg bot';
+        waitEl.innerHTML = '<span style="color:#f59e0b;">⏳ Waiting for admin response...</span>';
+        body.appendChild(waitEl);
+      }
+
+      if (ticket.resolvedAt) {
+        const rd = new Date(ticket.resolvedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        const resolvedEl = document.createElement('div');
+        resolvedEl.style.cssText = 'text-align:center;font-size:11px;color:#10b981;padding:6px;';
+        resolvedEl.innerHTML = '✅ Resolved on ' + rd;
+        body.appendChild(resolvedEl);
+      }
+
+      scrollChatbot();
+
+      // Set up direct chat input for this ticket
+      window._pendingFollowupTicket = ticket.ticketId;
+      window._activeTicketObj = ticket;
+
+      // Join socket room for real-time sync
+      joinSupportRoom(ticket.ticketId);
+
+      // Show action buttons
+      setTimeout(() => {
+        const opts = [];
+        if (ticket.status === 'resolved') {
+          opts.push({ label: '✅ Thanks, Resolved', id: 'thanks' });
+          opts.push({ label: '❌ Still Not Resolved', id: 'reopen' });
+        }
+        opts.push({ label: '◀ Back to Tickets', id: 'backTickets' });
+        opts.push({ label: '◀ Main Menu', id: 'backMenu' });
+
+        addOptions(opts, (opt) => {
+          addUserMsg(opt.label);
+          window._pendingFollowupTicket = null;
+          window._activeTicketObj = null;
+          if (opt.id === 'thanks') {
+            addBotMsg('Great to hear! We\'re glad your issue was resolved. 😊');
+            setTimeout(() => showBackToMenu(), 400);
+          } else if (opt.id === 'reopen') {
+            addBotMsg('Sorry to hear that. Let me connect you with admin support again.');
+            setTimeout(() => showEscalation(), 400);
+          } else if (opt.id === 'backTickets') {
+            showMyTickets();
+          } else {
+            chatbotHistory = ['main'];
+            showTyping();
+            setTimeout(() => { hideTyping(); addBotMsg('What else can I help you with?'); setTimeout(() => showMainMenu(), 300); }, 400);
+          }
+        });
+
+        // Add hint about typing
+        if (ticket.status !== 'resolved' && ticket.status !== 'closed') {
+          const hint = document.createElement('div');
+          hint.style.cssText = 'text-align:center;font-size:11px;color:#94a3b8;padding:4px;margin-top:2px;';
+          hint.textContent = '💬 Type a message below to reply to this ticket';
+          body.appendChild(hint);
+          scrollChatbot();
+        }
+      }, 300);
+    }
+
+    // ============ Escalation ============
+    function escalateToAdmin() {
+      addUserMsg('Connect Admin');
+      showTyping();
+      const name = document.getElementById('passengerName')?.value ||
+                   document.getElementById('navUserName')?.textContent || 'Guest';
+      const token = localStorage.getItem('token');
+      const issueTrail = chatbotHistory.filter(h => h !== 'main').join(' → ');
+
+      setTimeout(async () => {
+        hideTyping();
+        // Try to send escalation to backend
+        try {
+          const res = await fetch('/api/support/escalate', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { 'Authorization': 'Bearer ' + token } : {})
+            },
+            body: JSON.stringify({
+              passengerName: name,
+              issueTrail: issueTrail,
+              chatHistory: chatbotHistory,
+              timestamp: new Date().toISOString()
+            })
+          });
+          const result = await res.json();
+          if (res.ok && result.success) {
+            const tid = result.ticketId || ('RM' + Date.now().toString().slice(-6));
+            // Save ticket ID locally for tracking without login
+            try {
+              const stored = JSON.parse(localStorage.getItem('rmSupportTickets') || '[]');
+              if (!stored.includes(tid)) { stored.unshift(tid); if (stored.length > 20) stored.pop(); }
+              localStorage.setItem('rmSupportTickets', JSON.stringify(stored));
+            } catch(e) {}
+            addBotMsg("✅ Your issue has been **escalated to the admin team**.\n\n📋 **Ticket Reference**: #" + tid + "\n👤 **Name**: " + name + "\n📝 **Issue**: " + (issueTrail || 'General support request') + "\n\nOur admin team will review your case and respond within **24 hours**. You'll receive a notification when they reply.\n\nThank you for your patience! 🙏");
+          } else {
+            throw new Error(result.message || 'API error');
+          }
+        } catch(e) {
+          // Even if API fails, show local confirmation
+          const ticketId = 'RM' + Date.now().toString().slice(-6);
+          addBotMsg("📋 Your issue has been logged for admin review.\n\n**Ticket**: #" + ticketId + "\n**Name**: " + name + "\n**Issue**: " + (issueTrail || 'General support request') + "\n\nOur support team will contact you soon. You can also email us at **support@railmitra.in** for urgent help.\n\nThank you! 🙏");
+        }
+        setTimeout(() => showBackToMenu(), 500);
+      }, 1000);
+    }
+
+    // ============ Free Text Input ============
+    function sendChatbotMsg() {
+      const input = document.getElementById('chatbotInput');
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+
+      // Handle pending follow-up message for a ticket
+      if (window._pendingFollowupTicket) {
+        const ticketId = window._pendingFollowupTicket;
+        window._pendingFollowupTicket = null;
+        addUserMsg(text);
+        showTyping();
+        (async () => {
+          try {
+            const token = localStorage.getItem('token');
+            const res = await fetch('/api/support/followup', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { 'Authorization': 'Bearer ' + token } : {})
+              },
+              body: JSON.stringify({ ticketId, message: text })
+            });
+            const data = await res.json();
+            hideTyping();
+            if (data.success) {
+              // Emit via socket for real-time delivery to admin
+              emitSupportMessage(ticketId, text);
+              // Re-enable chat input for this ticket
+              window._pendingFollowupTicket = ticketId;
+              addBotMsg('✅ Message sent to admin on ticket **#' + ticketId + '**. You can continue typing to chat.');
+            } else {
+              addBotMsg('Could not add follow-up. Please try again or escalate a new ticket.');
+            }
+          } catch(e) {
+            hideTyping();
+            addBotMsg('Failed to send follow-up. Please check your connection.');
+          }
+        })();
+        return;
+      }
+
+      addUserMsg(text);
+
+      // Simple keyword matching for free text
+      const lower = text.toLowerCase();
+      showTyping();
+      setTimeout(() => {
+        hideTyping();
+        if (/refund|money back|return amo/i.test(lower)) {
+          addBotMsg(chatbotData.answers.ref_status);
+          setTimeout(() => showPostAnswer(), 400);
+        } else if (/cancel|cancell/i.test(lower)) {
+          addBotMsg(chatbotData.answers.ref_cancel);
+          setTimeout(() => showPostAnswer(), 400);
+        } else if (/payment|pay|upi|deduct/i.test(lower)) {
+          addBotMsg(chatbotData.answers.pay_deducted);
+          setTimeout(() => showPostAnswer(), 400);
+        } else if (/receipt|invoice|bill/i.test(lower)) {
+          addBotMsg(chatbotData.answers.pay_receipt);
+          setTimeout(() => showPostAnswer(), 400);
+        } else if (/book|how to|new booking/i.test(lower)) {
+          addBotMsg(chatbotData.answers.new_how);
+          setTimeout(() => showPostAnswer(), 400);
+        } else if (/price|pricing|cost|charge|fee/i.test(lower)) {
+          addBotMsg(chatbotData.answers.new_pricing);
+          setTimeout(() => showPostAnswer(), 400);
+        } else if (/assistant|late|no.?show|didn.?t come/i.test(lower)) {
+          addBotMsg(chatbotData.answers.asst_noshow);
+          setTimeout(() => showPostAnswer(), 400);
+        } else if (/luggage|bag|cart/i.test(lower)) {
+          addBotMsg(chatbotData.answers.stn_luggage);
+          setTimeout(() => showPostAnswer(), 400);
+        } else if (/meeting|where.*meet|find.*assistant/i.test(lower)) {
+          addBotMsg(chatbotData.answers.stn_meeting);
+          setTimeout(() => showPostAnswer(), 400);
+        } else if (/platform|coach|seat/i.test(lower)) {
+          addBotMsg(chatbotData.answers.stn_platform);
+          setTimeout(() => showPostAnswer(), 400);
+        } else if (/voice|mic|speak/i.test(lower)) {
+          addBotMsg(chatbotData.answers.new_voice);
+          setTimeout(() => showPostAnswer(), 400);
+        } else if (/service|offer|what.*available/i.test(lower)) {
+          addBotMsg(chatbotData.answers.new_services);
+          setTimeout(() => showPostAnswer(), 400);
+        } else if (/help|menu|option|start/i.test(lower)) {
+          addBotMsg("Sure! Here are the topics I can help with:");
+          setTimeout(() => showMainMenu(), 300);
+        } else if (/thank|thanks|ok|great|good|bye/i.test(lower)) {
+          addBotMsg("You're welcome! 😊 If you need any more help, just ask. Have a great journey! 🚂");
+          setTimeout(() => showBackToMenu(), 400);
+        } else if (/my ticket|ticket status|previous ticket|check ticket|track ticket/i.test(lower)) {
+          hideTyping();
+          showMyTickets();
+          return;
+        } else if (/admin|human|real person|executive|agent/i.test(lower)) {
+          addBotMsg("Let me connect you with our admin support team.");
+          setTimeout(() => showEscalation(), 400);
+        } else {
+          addBotMsg("I'm not sure I understand that. Let me show you the topics I can help with:");
+          setTimeout(() => showMainMenu(), 400);
+        }
+      }, 700);
+    }
+
+    // ============ Socket.IO for real-time ticket chat ============
+    let supportSocket = null;
+    function initSupportSocket() {
+      if (supportSocket) return;
+      function tryConnect() {
+        if (typeof io !== 'undefined') {
+          supportSocket = io({ transports: ['websocket', 'polling'] });
+          supportSocket.on('support_message', (data) => {
+            // Only render if we're viewing this ticket
+            if (window._pendingFollowupTicket === data.ticketId || window._activeTicketObj?.ticketId === data.ticketId) {
+              const body = document.getElementById('chatbotBody');
+              if (!body) return;
+              if (data.sender === 'admin') {
+                const el = document.createElement('div');
+                el.className = 'cb-msg bot';
+                el.innerHTML = '<div style="font-size:10px;color:#6366f1;font-weight:600;margin-bottom:2px;">\ud83d\udee1\ufe0f Admin</div>' + data.message;
+                body.appendChild(el);
+                scrollChatbot();
+              }
+            }
+          });
+          supportSocket.on('support_typing', (data) => {
+            if (data.sender === 'admin' && (window._pendingFollowupTicket || window._activeTicketObj)) {
+              let ind = document.getElementById('supportTypingInd');
+              if (!ind) {
+                ind = document.createElement('div');
+                ind.id = 'supportTypingInd';
+                ind.className = 'cb-msg bot';
+                ind.style.cssText = 'font-size:12px;color:#94a3b8;font-style:italic;';
+                ind.textContent = 'Admin is typing...';
+                document.getElementById('chatbotBody')?.appendChild(ind);
+                scrollChatbot();
+              }
+            }
+          });
+          supportSocket.on('support_stop_typing', () => {
+            document.getElementById('supportTypingInd')?.remove();
+          });
+          console.log('[Support] Socket connected');
+        } else {
+          setTimeout(tryConnect, 500);
+        }
+      }
+      tryConnect();
+    }
+    initSupportSocket();
+
+    function joinSupportRoom(ticketId) {
+      if (supportSocket && ticketId) {
+        supportSocket.emit('support_join', { ticketId, role: 'passenger' });
+      }
+    }
+
+    function emitSupportMessage(ticketId, message) {
+      if (supportSocket && ticketId && message) {
+        supportSocket.emit('support_message', { ticketId, message, sender: 'passenger' });
+      }
+    }
+
+    // ============ Expose Globally ============
+    window.toggleSupportChatbot = toggleSupportChatbot;
+    window.openSupportChatbot = openSupportChatbot;
+    window.closeSupportChatbot = closeSupportChatbot;
+    window.sendChatbotMsg = sendChatbotMsg;
+    window.escalateToAdmin = escalateToAdmin;
+    window.showMyTickets = showMyTickets;
+  })();
+  </script>
+
   </body>
 </html>

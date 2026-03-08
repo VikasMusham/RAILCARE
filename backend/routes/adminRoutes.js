@@ -362,6 +362,54 @@ router.patch('/bookings/:id/verify-payment', async (req, res) => {
 });
 
 /**
+ * PATCH /api/admin/bookings/:id/update-refund-status
+ * Admin updates refund status for cancelled bookings
+ */
+router.patch('/bookings/:id/update-refund-status', async (req, res) => {
+  try {
+    const bookingId = req.params.id;
+    const { newStatus } = req.body;
+    
+    // Validate status
+    const validStatuses = ['Refund_Initiated', 'Refund_Processing', 'Refunded'];
+    if (!validStatuses.includes(newStatus)) {
+      return res.status(400).json({ success: false, message: 'Invalid refund status' });
+    }
+    
+    const Booking = require('../models/Booking');
+    const booking = await Booking.findById(bookingId);
+    if (!booking) {
+      return res.status(404).json({ success: false, message: 'Booking not found' });
+    }
+    
+    // Only allow refund status updates for cancelled bookings
+    if (booking.status !== 'Cancelled') {
+      return res.status(400).json({ success: false, message: 'Booking is not cancelled' });
+    }
+    
+    booking.paymentStatus = newStatus;
+    await booking.save();
+    
+    // Log the refund status update
+    try {
+      const AuditLog = require('../models/AuditLog');
+      await AuditLog.create({
+        action: 'update_refund_status',
+        actorId: req.user?.id || req.user?._id,
+        actorRole: 'admin',
+        targetType: 'booking',
+        targetId: String(booking._id),
+        meta: { newStatus, refundAmount: booking.refundAmount }
+      });
+    } catch (e) {}
+    
+    res.json({ success: true, message: `Refund status updated to ${newStatus}`, booking });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error', error: err.message });
+  }
+});
+
+/**
  * GET /api/admin/applications
  * Get all assistant applications with filters
  */
@@ -506,6 +554,18 @@ router.patch('/clear-demo', async (req, res) => {
     res.json({ success: true, message: 'Demo data cleared' });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Failed to clear demo data: ' + err.message });
+  }
+});
+
+// Clear ALL bookings from database
+router.post('/clear-bookings', async (req, res) => {
+  try {
+    const Booking = require('../models/Booking');
+    const result = await Booking.deleteMany({});
+    console.log('[Admin] Cleared all bookings:', result.deletedCount);
+    res.json({ success: true, message: `All bookings cleared (${result.deletedCount} deleted)` });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 

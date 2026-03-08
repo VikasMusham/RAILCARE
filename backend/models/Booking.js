@@ -81,7 +81,7 @@ const BookingSchema = new mongoose.Schema({
   
   // Payment
   price: { type: Number, default: 0 },
-  paymentStatus: { type: String, enum: ['Pending', 'pending_verification', 'Paid', 'Refunded', 'Failed'], default: 'Pending' },
+  paymentStatus: { type: String, enum: ['Pending', 'pending_verification', 'Paid', 'Refund_Initiated', 'Refund_Processing', 'Refunded', 'Failed'], default: 'Pending' },
   paymentMethod: { type: String, default: '' },
   transactionId: { type: String, default: '' },
   upiProofFile: { type: String, default: '' }, // Path to uploaded UPI payment proof
@@ -99,6 +99,14 @@ const BookingSchema = new mongoose.Schema({
   isEmergency: { type: Boolean, default: false },
   emergencyMarkedAt: { type: Date, default: null },
   emergencyReason: { type: String, default: '' },
+  
+  // Cancellation
+  cancellationReason: { type: String, default: '' },
+  cancellationFee: { type: Number, default: 0 },
+  refundAmount: { type: Number, default: 0 },
+  cancelledAt: { type: Date, default: null },
+  cancelledBy: { type: String, enum: ['passenger', 'assistant', 'admin', ''], default: '' },
+  previousAssistantId: { type: mongoose.Schema.Types.ObjectId, ref: 'Assistant', default: null },
   
   // Notes
   passengerNotes: { type: String, default: '' },

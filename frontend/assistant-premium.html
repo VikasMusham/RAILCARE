@@ -497,6 +497,76 @@
       flex: 1;
     }
 
+    /* Active Status Toggle */
+    .status-toggle-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-top: var(--space-4);
+      padding: 12px 16px;
+      background: var(--bg-secondary);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-color);
+    }
+    .status-toggle-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    .status-toggle {
+      position: relative;
+      width: 56px;
+      height: 28px;
+      cursor: pointer;
+    }
+    .status-toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .status-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #d1d5db;
+      transition: 0.3s;
+      border-radius: 28px;
+    }
+    .status-slider:before {
+      position: absolute;
+      content: "";
+      height: 22px;
+      width: 22px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: 0.3s;
+      border-radius: 50%;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+    .status-toggle input:checked + .status-slider {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+    .status-toggle input:checked + .status-slider:before {
+      transform: translateX(28px);
+    }
+    .status-text {
+      font-size: 14px;
+      font-weight: 700;
+      min-width: 80px;
+      text-align: left;
+    }
+    .status-text.active {
+      color: #10b981;
+    }
+    .status-text.inactive {
+      color: #6b7280;
+    }
+
     /* Booking Cards */
     .booking-card {
       background: var(--bg-secondary);
@@ -1152,8 +1222,7 @@
   <nav class="navbar">
     <div class="navbar-inner">
       <a href="passenger-premium.html" class="logo">
-        <div class="logo-icon">🚄</div>
-        <span class="logo-text">RailMitra</span>
+        <img src="railmitra-logo.png" alt="RailMitra" style="height: 64px; width: auto;">
       </a>
       
       <div class="nav-links">
@@ -1386,6 +1455,15 @@
                   <polyline points="22 4 12 14.01 9 11.01"></polyline>
                 </svg>
                 <span id="profileBadgeText">Verified</span>
+              </div>
+              <!-- Active Status Toggle -->
+              <div class="status-toggle-container" id="statusToggleContainer">
+                <span class="status-toggle-label">Availability:</span>
+                <label class="status-toggle">
+                  <input type="checkbox" id="activeStatusToggle" onchange="toggleActiveStatus(this.checked)">
+                  <span class="status-slider"></span>
+                </label>
+                <span class="status-text inactive" id="statusText">Not Active</span>
               </div>
               <div class="profile-stats">
                 <div class="profile-stat">
@@ -2177,6 +2255,20 @@
       if (aadharUrl) docsHtml += `<a href="${aadharUrl}" target="_blank" class="doc-link">📄 Aadhar</a>`;
       if (panUrl) docsHtml += `<a href="${panUrl}" target="_blank" class="doc-link">📄 PAN</a>`;
       docsWrap.innerHTML = docsHtml;
+      
+      // Update active status toggle
+      const activeToggle = document.getElementById('activeStatusToggle');
+      const statusText = document.getElementById('statusText');
+      if (activeToggle && statusText) {
+        activeToggle.checked = assistant.isOnline || false;
+        if (assistant.isOnline) {
+          statusText.textContent = 'Active';
+          statusText.className = 'status-text active';
+        } else {
+          statusText.textContent = 'Not Active';
+          statusText.className = 'status-text inactive';
+        }
+      }
         // Assistant: Request re-verification if revoked
         window.requestReverify = async function() {
           try {
@@ -2189,6 +2281,49 @@
             }
           } catch (e) { showToast('Error: ' + e.message); }
         }
+    }
+
+    // ==================== TOGGLE ACTIVE STATUS ====================
+    async function toggleActiveStatus(isActive) {
+      if (!assistant) {
+        showToast('Please register first');
+        return;
+      }
+      
+      const statusText = document.getElementById('statusText');
+      const toggle = document.getElementById('activeStatusToggle');
+      
+      try {
+        const fetcher = window.RailCareAuth?.authFetch || fetch;
+        const res = await fetcher(`/api/assistants/${assistant._id}/toggle-online`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ isOnline: isActive })
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          assistant.isOnline = isActive;
+          if (isActive) {
+            statusText.textContent = 'Active';
+            statusText.className = 'status-text active';
+            showToast('You are now Active! You will receive booking requests.');
+          } else {
+            statusText.textContent = 'Not Active';
+            statusText.className = 'status-text inactive';
+            showToast('You are now Inactive. You will not receive new bookings.');
+          }
+        } else {
+          // Revert toggle if failed
+          toggle.checked = !isActive;
+          showToast(data.message || 'Failed to update status');
+        }
+      } catch (err) {
+        // Revert toggle if error
+        toggle.checked = !isActive;
+        showToast('Error updating status: ' + err.message);
+      }
     }
 
     // ==================== STATS ====================
@@ -2429,7 +2564,7 @@
           }
 
           // Show in-progress bookings assigned to this assistant
-          if (['Accepted', 'Start Pending', 'In Progress', 'Completion Pending'].includes(b.status)) {
+          if (['Assigned', 'Accepted', 'Start Pending', 'In Progress', 'Completion Pending'].includes(b.status)) {
             const bAssistantId2 = b.assistantId?._id || b.assistantId;
             if (bAssistantId2 && bAssistantId2.toString() === assistant._id.toString()) {
               return true;
@@ -2479,6 +2614,7 @@
           const statusClass = {
             'Pending': 'status-pending',
             'Searching': 'status-pending',
+            'Assigned': 'status-accepted',
             'Accepted': 'status-accepted',
             'Start Pending': 'status-accepted',
             'In Progress': 'status-progress',
@@ -2506,6 +2642,15 @@
             actions = `
               <button class=\"btn btn-success\" onclick=\"acceptBooking('${b._id}')\">Accept</button>
               <button class=\"btn btn-danger\" onclick=\"rejectBooking('${b._id}')\">Decline</button>
+            `;
+          } else if (b.status === 'Assigned') {
+            // Admin assigned this booking - assistant can start service or decline
+            actions = `
+              <button class="btn btn-success" onclick="acceptBooking('${b._id}')">Accept Assignment</button>
+              <button class="btn btn-warning" onclick="startProgress('${b._id}')">Start Service</button>
+              <button class="btn btn-danger" onclick="rejectBooking('${b._id}')">Decline</button>
+              ${passengerPhone ? `<a href="tel:${passengerPhone}" class="btn btn-outline-primary" style="margin-left:8px;"><span style='font-size:16px;'>📞</span> Call Passenger</a>` : ''}
+              ${cashCollectedBtn}
             `;
           } else if (b.status === 'Accepted') {
             actions = `

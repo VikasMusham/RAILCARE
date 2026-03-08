@@ -601,8 +601,8 @@ router.post('/:id/start', async (req, res) => {
     const booking = await Booking.findById(req.params.id);
     if (!booking) return res.status(404).json({ success: false, message: 'Booking not found' });
     
-    // Can only start if status is Accepted
-    if (booking.status !== 'Accepted') {
+    // Can only start if status is Accepted or Assigned (admin-assigned bookings can start directly)
+    if (!['Accepted', 'Assigned'].includes(booking.status)) {
       return res.status(400).json({ success: false, message: `Cannot start service - booking status is: ${booking.status}` });
     }
     
@@ -946,6 +946,114 @@ router.post('/:id/mark-cash-paid', async (req, res) => {
   } catch (err) {
     console.error('[Booking] mark-cash-paid error:', err);
     res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * POST /api/bookings/cancel-request
+ * Passenger requests to cancel their booking
+ * - Before assistant assigned: Full refund
+ * - After assistant assigned: ₹20 cancellation fee deducted
+ */
+router.post('/cancel-request', authenticate, async (req, res) => {
+  try {
+    const { bookingId, reason, isPostAssignment, refundAmount } = req.body;
+    
+    if (!bookingId || !reason) {
+      return res.status(400).json({ success: false, message: 'Booking ID and reason are required' });
+    }
+    
+    const booking = await Booking.findById(bookingId);
+    if (!booking) {
+      return res.status(404).json({ success: false, message: 'Booking not found' });
+    }
+    
+    // Check if user owns this booking
+    const userId = req.user?.id || req.user?._id;
+    if (booking.userId && booking.userId.toString() !== userId?.toString()) {
+      // Also check by phone
+      const userPhone = req.user?.phone;
+      if (booking.phone !== userPhone) {
+        return res.status(403).json({ success: false, message: 'You can only cancel your own bookings' });
+      }
+    }
+    
+    // Check if booking can be cancelled
+    const cancellableStatuses = ['Pending', 'Searching', 'Assigned', 'Accepted', 'Start Pending', 'In Progress'];
+    if (!cancellableStatuses.includes(booking.status)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: `Cannot cancel booking with status: ${booking.status}` 
+      });
+    }
+    
+    // Calculate refund
+    const originalAmount = booking.price || 0;
+    const actualPostAssignment = ['Assigned', 'Accepted', 'Start Pending', 'In Progress'].includes(booking.status);
+    const cancellationFee = actualPostAssignment ? 20 : 0;
+    const calculatedRefund = Math.max(0, originalAmount - cancellationFee);
+    
+    // Update booking
+    const previousStatus = booking.status;
+    const previousAssistant = booking.assistantId;
+    
+    booking.status = 'Cancelled';
+    booking.cancellationReason = reason;
+    booking.cancellationFee = cancellationFee;
+    booking.refundAmount = calculatedRefund;
+    booking.cancelledAt = new Date();
+    booking.cancelledBy = 'passenger';
+    
+    // If assistant was assigned, unassign them
+    if (booking.assistantId) {
+      const Assistant = require('../models/Assistant');
+      await Assistant.findByIdAndUpdate(booking.assistantId, {
+        $unset: { currentBookingId: 1 },
+        isEligibleForBookings: true
+      });
+      booking.previousAssistantId = booking.assistantId;
+      booking.assistantId = null;
+    }
+    
+    await booking.save();
+    
+    // Log the cancellation
+    console.log(`[CANCEL] Booking ${bookingId} cancelled by passenger. Reason: ${reason}. Refund: ₹${calculatedRefund} (Fee: ₹${cancellationFee})`);
+    
+    // Create audit log if available
+    try {
+      const AuditLog = require('../models/AuditLog');
+      await AuditLog.create({
+        action: 'BOOKING_CANCELLED_BY_PASSENGER',
+        bookingId: booking._id,
+        userId: userId,
+        details: {
+          reason,
+          previousStatus,
+          previousAssistant: previousAssistant?.toString(),
+          originalAmount,
+          cancellationFee,
+          refundAmount: calculatedRefund
+        }
+      });
+    } catch (auditErr) {
+      console.log('[AuditLog] Could not create audit log:', auditErr.message);
+    }
+    
+    return res.json({
+      success: true,
+      message: 'Booking cancelled successfully',
+      booking: {
+        _id: booking._id,
+        status: booking.status,
+        refundAmount: calculatedRefund,
+        cancellationFee
+      }
+    });
+    
+  } catch (err) {
+    console.error('[cancel-request] Error:', err.message);
+    return res.status(500).json({ success: false, error: err.message });
   }
 });
 
