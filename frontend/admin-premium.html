@@ -1605,8 +1605,7 @@
   <nav class="navbar">
     <div class="navbar-inner">
       <a href="passenger-premium.html" class="logo">
-        <div class="logo-icon">🚄</div>
-        <span class="logo-text">RailMitra</span>
+        <img src="railmitra-logo.png" alt="RailMitra" style="height: 64px; width: auto;">
       </a>
       
       <div class="nav-links">
@@ -2114,6 +2113,9 @@
       <button class="tab" data-tab="feedback">⭐ Feedback</button>
       <button class="tab" data-tab="audit">📜 Audit Logs</button>
         <button class="tab" data-tab="user-roles">👥 User Roles & Details</button>
+        <button class="tab" data-tab="support-tickets">🎫 Support Tickets
+          <span class="tab-badge" id="supportTicketsBadge" style="display:none;background:#ef4444;">0</span>
+        </button>
       <span style="flex:1"></span>
       <!-- Emergency Test Button removed -->
       <!-- Emergency Chat Panel - Premium Edition -->
@@ -2321,6 +2323,38 @@
         <div id="userRolesDetailsContainer">
           <div class="loading"></div>
         </div>
+      </div>
+    </div>
+
+    <!-- Support Tickets Tab -->
+    <div class="tab-content" id="tab-support-tickets">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">🎫 Support Tickets</h2>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <select id="supportFilterStatus" onchange="loadSupportTickets()" class="form-input" style="width:auto;padding:6px 12px;font-size:13px;">
+              <option value="">All Status</option>
+              <option value="open">Open</option>
+              <option value="in-progress">In Progress</option>
+              <option value="resolved">Resolved</option>
+              <option value="closed">Closed</option>
+            </select>
+            <select id="supportFilterPriority" onchange="loadSupportTickets()" class="form-input" style="width:auto;padding:6px 12px;font-size:13px;">
+              <option value="">All Priority</option>
+              <option value="urgent">Urgent</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+            <button class="btn btn-secondary" onclick="loadSupportTickets()">Refresh</button>
+          </div>
+        </div>
+
+        <!-- Stats Row -->
+        <div id="supportTicketStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:20px;"></div>
+
+        <!-- Tickets List -->
+        <div id="supportTicketsList"></div>
       </div>
     </div>
   </div>
@@ -2612,6 +2646,7 @@
         else if (tab.dataset.tab === 'bookings') loadBookings();
         else if (tab.dataset.tab === 'feedback') loadFeedback();
         else if (tab.dataset.tab === 'audit') loadAuditLogs();
+        else if (tab.dataset.tab === 'support-tickets') loadSupportTickets();
         else if (tab.dataset.tab === 'user-roles') {
           // Show user roles and details
           const container = document.getElementById('userRolesDetailsContainer');
@@ -3087,27 +3122,167 @@
     }
 
     async function editAssistant(id) {
-      const name = prompt('New name:');
-      if (!name) return;
+      // Fetch full assistant data
+      let assistant;
       try {
         const fetcher = window.RailCareAuth?.authFetch || fetch;
-        await fetcher(`/api/assistants/${id}`, {
+        const res = await fetcher(`/api/assistants/${id}`);
+        const data = await res.json();
+        assistant = data.assistant || data;
+        if (!assistant || !assistant.name) throw new Error('Not found');
+      } catch (e) { showToast('Could not load assistant data', 'error'); return; }
+
+      // Remove any previous modal
+      document.getElementById('editAssistantModal')?.remove();
+
+      const langs = (assistant.languages || []).join(', ');
+      const html = `
+        <div class="modal-overlay active" id="editAssistantModal" onclick="if(event.target===this)this.remove()" style="z-index:9999;">
+          <div class="modal" style="max-width:520px;padding:0;overflow:hidden;border-radius:16px;">
+            <div style="background:linear-gradient(135deg,#1e293b,#334155);color:#fff;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;">
+              <div style="font-weight:700;font-size:16px;">✏️ Edit Assistant</div>
+              <button onclick="document.getElementById('editAssistantModal').remove()" style="background:none;border:none;color:#fff;cursor:pointer;font-size:20px;">✕</button>
+            </div>
+            <div style="padding:20px;max-height:70vh;overflow-y:auto;">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                <div>
+                  <label style="font-size:12px;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:4px;">Name</label>
+                  <input id="ea_name" value="${assistant.name || ''}" class="form-input" style="width:100%;padding:10px 12px;border:1.5px solid var(--border-color);border-radius:10px;font-size:13px;background:var(--card-bg);color:var(--text-primary);">
+                </div>
+                <div>
+                  <label style="font-size:12px;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:4px;">Phone</label>
+                  <input id="ea_phone" value="${assistant.phone || ''}" class="form-input" style="width:100%;padding:10px 12px;border:1.5px solid var(--border-color);border-radius:10px;font-size:13px;background:var(--card-bg);color:var(--text-primary);">
+                </div>
+                <div>
+                  <label style="font-size:12px;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:4px;">Age</label>
+                  <input id="ea_age" type="number" value="${assistant.age || ''}" class="form-input" style="width:100%;padding:10px 12px;border:1.5px solid var(--border-color);border-radius:10px;font-size:13px;background:var(--card-bg);color:var(--text-primary);">
+                </div>
+                <div>
+                  <label style="font-size:12px;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:4px;">Station</label>
+                  <input id="ea_station" value="${assistant.station || ''}" class="form-input" style="width:100%;padding:10px 12px;border:1.5px solid var(--border-color);border-radius:10px;font-size:13px;background:var(--card-bg);color:var(--text-primary);">
+                </div>
+                <div style="grid-column:span 2;">
+                  <label style="font-size:12px;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:4px;">Languages (comma-separated)</label>
+                  <input id="ea_languages" value="${langs}" class="form-input" style="width:100%;padding:10px 12px;border:1.5px solid var(--border-color);border-radius:10px;font-size:13px;background:var(--card-bg);color:var(--text-primary);">
+                </div>
+                <div style="grid-column:span 2;">
+                  <label style="font-size:12px;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:4px;">Permanent Address</label>
+                  <input id="ea_address" value="${assistant.permanentAddress || ''}" class="form-input" style="width:100%;padding:10px 12px;border:1.5px solid var(--border-color);border-radius:10px;font-size:13px;background:var(--card-bg);color:var(--text-primary);">
+                </div>
+                <div>
+                  <label style="font-size:12px;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:4px;">Years of Experience</label>
+                  <input id="ea_exp" type="number" value="${assistant.yearsOfExperience || 0}" class="form-input" style="width:100%;padding:10px 12px;border:1.5px solid var(--border-color);border-radius:10px;font-size:13px;background:var(--card-bg);color:var(--text-primary);">
+                </div>
+                <div>
+                  <label style="font-size:12px;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:4px;">Rating</label>
+                  <div style="padding:10px 12px;font-size:13px;color:var(--text-secondary);background:var(--hover-bg);border-radius:10px;">${assistant.rating ? assistant.rating.toFixed(1) + ' ★ (' + (assistant.ratingCount||0) + ')' : 'No ratings'}</div>
+                </div>
+              </div>
+              <div style="margin-top:16px;display:flex;flex-wrap:wrap;gap:16px;">
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text-secondary);">
+                  <input type="checkbox" id="ea_verified" ${assistant.verified ? 'checked' : ''} style="width:16px;height:16px;accent-color:#10b981;">
+                  <span>✅ Verified</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text-secondary);">
+                  <input type="checkbox" id="ea_docsVerified" ${assistant.documentsVerified ? 'checked' : ''} style="width:16px;height:16px;accent-color:#3b82f6;">
+                  <span>📄 Documents Verified</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text-secondary);">
+                  <input type="checkbox" id="ea_eligible" ${assistant.isEligibleForBookings ? 'checked' : ''} style="width:16px;height:16px;accent-color:#f59e0b;">
+                  <span>📋 Eligible for Bookings</span>
+                </label>
+              </div>
+              ${assistant.photoFilePath || assistant.documents?.aadhar || assistant.documents?.pan ? `
+              <div style="margin-top:16px;padding:12px;background:var(--hover-bg);border-radius:10px;">
+                <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:8px;">📎 Documents</div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                  ${assistant.photoFilePath ? '<a href="' + assistant.photoFilePath + '" target="_blank" style="font-size:12px;color:#3b82f6;">📷 Photo</a>' : ''}
+                  ${assistant.documents?.aadhar ? '<a href="' + assistant.documents.aadhar + '" target="_blank" style="font-size:12px;color:#3b82f6;">🪪 Aadhar</a>' : ''}
+                  ${assistant.documents?.pan ? '<a href="' + assistant.documents.pan + '" target="_blank" style="font-size:12px;color:#3b82f6;">💳 PAN</a>' : ''}
+                </div>
+              </div>` : ''}
+              <div style="margin-top:20px;display:flex;gap:10px;justify-content:flex-end;">
+                <button onclick="document.getElementById('editAssistantModal').remove()" class="btn btn-secondary" style="padding:10px 20px;border-radius:10px;">Cancel</button>
+                <button onclick="saveAssistantEdit('${id}')" class="btn btn-primary" style="padding:10px 20px;border-radius:10px;background:linear-gradient(135deg,#2563eb,#3b82f6);color:#fff;border:none;">💾 Save Changes</button>
+              </div>
+            </div>
+          </div>
+        </div>`;
+      document.body.insertAdjacentHTML('beforeend', html);
+    }
+
+    async function saveAssistantEdit(id) {
+      const body = {
+        name: document.getElementById('ea_name')?.value?.trim(),
+        phone: document.getElementById('ea_phone')?.value?.trim(),
+        age: document.getElementById('ea_age')?.value,
+        station: document.getElementById('ea_station')?.value?.trim(),
+        languages: document.getElementById('ea_languages')?.value?.trim(),
+        permanentAddress: document.getElementById('ea_address')?.value?.trim(),
+        yearsOfExperience: document.getElementById('ea_exp')?.value,
+        verified: document.getElementById('ea_verified')?.checked,
+        documentsVerified: document.getElementById('ea_docsVerified')?.checked,
+        isEligibleForBookings: document.getElementById('ea_eligible')?.checked
+      };
+      if (!body.name) { showToast('Name is required', 'error'); return; }
+      if (!body.station) { showToast('Station is required', 'error'); return; }
+      try {
+        const fetcher = window.RailCareAuth?.authFetch || fetch;
+        const res = await fetcher(`/api/assistants/${id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name })
+          body: JSON.stringify(body)
         });
-        loadAssistants();
-      } catch (e) { alert(e.message); }
+        const data = await res.json();
+        if (data.success) {
+          showToast('Assistant updated successfully');
+          document.getElementById('editAssistantModal')?.remove();
+          loadAssistants();
+          loadOverview();
+        } else {
+          showToast(data.message || 'Failed to update', 'error');
+        }
+      } catch (e) { showToast('Error: ' + e.message, 'error'); }
     }
 
     async function revokeAssistant(id) {
-      if (!confirm('Revoke this assistant?')) return;
+      const reason = prompt('Reason for revoking this assistant (optional):');
+      if (reason === null) return; // user cancelled
       try {
         const fetcher = window.RailCareAuth?.authFetch || fetch;
-        await fetcher(`/api/assistants/${id}/reject`, { method: 'POST' });
-        loadAssistants();
-        loadOverview();
-      } catch (e) { alert(e.message); }
+        const res = await fetcher(`/api/assistants/${id}/reject`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reason: reason || 'Revoked by admin' })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Assistant revoked');
+          loadAssistants();
+          loadOverview();
+        } else {
+          showToast('Failed to revoke', 'error');
+        }
+      } catch (e) { showToast('Error: ' + e.message, 'error'); }
+    }
+
+    async function removeAssistant(id) {
+      if (!confirm('⚠️ PERMANENTLY delete this assistant? This cannot be undone. All data including bookings history will be affected.')) return;
+      if (!confirm('Are you absolutely sure? Type OK to confirm.')) return;
+      try {
+        const fetcher = window.RailCareAuth?.authFetch || fetch;
+        const res = await fetcher(`/api/assistants/${id}`, {
+          method: 'DELETE'
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Assistant permanently deleted');
+          loadAssistants();
+          loadOverview();
+        } else {
+          showToast(data.message || 'Failed to delete', 'error');
+        }
+      } catch (e) { showToast('Error: ' + e.message, 'error'); }
     }
 
     // ==================== BOOKINGS ====================
@@ -3232,6 +3407,10 @@
           }) : '—';
 
           const assistantName = b.assistantId?.name || 'Not Assigned';
+          const assistantIsOnline = b.assistantId?.isOnline;
+          const assistantStatusIndicator = b.assistantId ? 
+            (assistantIsOnline ? '<span style="color:#10b981;font-weight:600;margin-left:6px;">● Active</span>' : '<span style="color:#9ca3af;font-weight:600;margin-left:6px;">○ Inactive</span>') 
+            : '';
 
           let paymentControls = '';
           const isUpiPayment = b.paymentMethod === 'UPI' || b.paymentMethod === 'UPI_QR' || b.paymentMethod === 'upi_qr';
@@ -3260,6 +3439,65 @@
               paymentControls += `</div>`;
             } else if (b.paymentStatus === 'Paid') {
               paymentControls += `<div class="verified-badge"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Payment Verified</div>`;
+            }
+            
+            // Refund workflow for cancelled bookings with paid status
+            if ((b.status === 'Cancelled' || b.status === 'Rejected') && (b.paymentStatus === 'Paid' || b.paymentStatus === 'Refund_Initiated' || b.paymentStatus === 'Refund_Processing')) {
+              paymentControls += `<div class="refund-workflow-section" style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed #e5e7eb;">`;
+              paymentControls += `<div style="font-weight: 600; font-size: 13px; margin-bottom: 10px; color: #ef4444; display: flex; align-items: center; gap: 6px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 15v4c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                Refund Required
+              </div>`;
+              
+              // Show cancellation details if available
+              if (b.cancellationReason) {
+                paymentControls += `<div style="font-size: 12px; color: #6b7280; margin-bottom: 8px; background: #fef3c7; padding: 8px 10px; border-radius: 6px;">
+                  <strong>Cancellation Reason:</strong> ${b.cancellationReason}
+                </div>`;
+              }
+              if (b.refundAmount || b.cancellationFee) {
+                paymentControls += `<div style="font-size: 12px; color: #047857; margin-bottom: 10px; background: #ecfdf5; padding: 8px 10px; border-radius: 6px;">
+                  <strong>Refund Amount:</strong> ₹${b.refundAmount || (b.price - (b.cancellationFee || 0))} 
+                  ${b.cancellationFee ? `<span style="color:#b45309;">(₹${b.cancellationFee} fee deducted)</span>` : ''}
+                </div>`;
+              }
+              
+              // Refund status buttons
+              if (b.paymentStatus === 'Paid') {
+                paymentControls += `<button class='booking-btn' style='background: #f59e0b; color: white; width: 100%;' onclick='window.updateRefundStatus("${b._id}", "Refund_Initiated")'>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  Initiate Refund
+                </button>`;
+              } else if (b.paymentStatus === 'Refund_Initiated') {
+                paymentControls += `<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                  <span style="color: #f59e0b; font-weight: 600; font-size: 12px;">⏳ Refund Initiated</span>
+                </div>`;
+                paymentControls += `<button class='booking-btn' style='background: #3b82f6; color: white; width: 100%;' onclick='window.updateRefundStatus("${b._id}", "Refund_Processing")'>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-9-9"/><polyline points="21 3 21 9 15 9"/></svg>
+                  Mark Processing
+                </button>`;
+              } else if (b.paymentStatus === 'Refund_Processing') {
+                paymentControls += `<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                  <span style="color: #3b82f6; font-weight: 600; font-size: 12px;">🔄 Processing Refund...</span>
+                </div>`;
+                paymentControls += `<button class='booking-btn' style='background: #10b981; color: white; width: 100%;' onclick='window.updateRefundStatus("${b._id}", "Refunded")'>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  Mark Refund Complete
+                </button>`;
+              }
+              
+              paymentControls += `</div>`;
+            }
+            
+            // Show refund completed badge
+            if (b.paymentStatus === 'Refunded') {
+              paymentControls += `<div style="margin-top: 12px; padding: 12px; background: linear-gradient(135deg, #ecfdf5, #d1fae5); border-radius: 10px; border: 1px solid #10b981;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  <span style="color: #047857; font-weight: 700; font-size: 14px;">Refund Completed</span>
+                </div>
+                ${b.refundAmount ? `<div style="font-size: 12px; color: #065f46; margin-top: 6px;">₹${b.refundAmount} refunded to passenger</div>` : ''}
+              </div>`;
             }
             
             paymentControls += `</div>`;
@@ -3390,7 +3628,7 @@
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                       Assistant
                     </div>
-                    <div class="info-value">${assistantName}</div>
+                    <div class="info-value">${assistantName}${assistantStatusIndicator}</div>
                   </div>
                   <div class="booking-info-card">
                     <div class="info-label">
@@ -3987,14 +4225,25 @@
     // ==================== FILTERS ====================
 
     async function clearBookings() {
-      if (!confirm('Clear all bookings? This cannot be undone.')) return;
+      if (!confirm('⚠️ DELETE ALL BOOKINGS? This will permanently remove every booking from the database and cannot be undone!')) return;
+      if (!confirm('Are you absolutely sure? All booking data will be lost forever.')) return;
       try {
-        const fetcher = window.RailCareAuth?.authFetch || fetch;
-        await fetcher('/api/admin/clear-bookings', { method: 'POST' });
-        loadBookings();
-        loadOverview && loadOverview();
+        const token = getToken();
+        const res = await fetch('/api/admin/clear-bookings', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('All bookings cleared from database');
+          _currentBookings = [];
+          loadBookings();
+          loadOverview && loadOverview();
+        } else {
+          showToast(data.message || 'Failed to clear bookings', 'error');
+        }
       } catch (err) {
-        alert(err.message || 'Failed to clear bookings');
+        showToast(err.message || 'Failed to clear bookings', 'error');
       }
     }
     document.getElementById('filterStation')?.addEventListener('change', loadBookings);
@@ -4018,7 +4267,393 @@
       else if (activeTab === 'bookings') loadBookings();
       else if (activeTab === 'feedback') loadFeedback();
       else if (activeTab === 'audit') loadAuditLogs();
+      else if (activeTab === 'support-tickets') loadSupportTickets();
+      // Also update badge count on each poll
+      updateSupportBadge();
     }, 15000);
+
+    // ==================== SUPPORT TICKETS ====================
+    async function loadSupportTickets() {
+      const token = getToken();
+      const container = document.getElementById('supportTicketsList');
+      const statsEl = document.getElementById('supportTicketStats');
+      const statusFilter = document.getElementById('supportFilterStatus')?.value || '';
+      const priorityFilter = document.getElementById('supportFilterPriority')?.value || '';
+
+      container.innerHTML = '<div class="loading"></div>';
+      
+      try {
+        let url = '/api/support/tickets?limit=100';
+        if (statusFilter) url += '&status=' + statusFilter;
+        if (priorityFilter) url += '&priority=' + priorityFilter;
+        
+        const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+        const data = await res.json();
+        
+        if (!data.success) {
+          container.innerHTML = '<p style="color:#ef4444;">Failed to load tickets.</p>';
+          return;
+        }
+
+        const { tickets, stats } = data;
+
+        // Stats
+        statsEl.innerHTML = `
+          <div style="background:linear-gradient(135deg,rgba(239,68,68,0.1),rgba(239,68,68,0.05));border:1px solid rgba(239,68,68,0.2);border-radius:12px;padding:14px;text-align:center;">
+            <div style="font-size:24px;font-weight:700;color:#ef4444;">${stats.open}</div>
+            <div style="font-size:11px;color:#6b7280;">Open</div>
+          </div>
+          <div style="background:linear-gradient(135deg,rgba(245,158,11,0.1),rgba(245,158,11,0.05));border:1px solid rgba(245,158,11,0.2);border-radius:12px;padding:14px;text-align:center;">
+            <div style="font-size:24px;font-weight:700;color:#f59e0b;">${stats.inProgress}</div>
+            <div style="font-size:11px;color:#6b7280;">In Progress</div>
+          </div>
+          <div style="background:linear-gradient(135deg,rgba(16,185,129,0.1),rgba(16,185,129,0.05));border:1px solid rgba(16,185,129,0.2);border-radius:12px;padding:14px;text-align:center;">
+            <div style="font-size:24px;font-weight:700;color:#10b981;">${stats.resolved}</div>
+            <div style="font-size:11px;color:#6b7280;">Resolved</div>
+          </div>
+          <div style="background:linear-gradient(135deg,rgba(220,38,38,0.1),rgba(220,38,38,0.05));border:1px solid rgba(220,38,38,0.2);border-radius:12px;padding:14px;text-align:center;">
+            <div style="font-size:24px;font-weight:700;color:#dc2626;">${stats.urgent}</div>
+            <div style="font-size:11px;color:#6b7280;">Urgent</div>
+          </div>
+          <div style="background:linear-gradient(135deg,rgba(99,102,241,0.1),rgba(99,102,241,0.05));border:1px solid rgba(99,102,241,0.2);border-radius:12px;padding:14px;text-align:center;">
+            <div style="font-size:24px;font-weight:700;color:#6366f1;">${stats.total}</div>
+            <div style="font-size:11px;color:#6b7280;">Total</div>
+          </div>
+        `;
+
+        // Update badge
+        const badge = document.getElementById('supportTicketsBadge');
+        if (stats.open > 0) {
+          badge.textContent = stats.open;
+          badge.style.display = 'inline-flex';
+        } else {
+          badge.style.display = 'none';
+        }
+
+        if (!tickets.length) {
+          container.innerHTML = '<p style="text-align:center;color:#6b7280;padding:24px;">No support tickets found.</p>';
+          return;
+        }
+
+        const priorityColors = { urgent: '#dc2626', high: '#f59e0b', medium: '#3b82f6', low: '#6b7280' };
+        const priorityBg = { urgent: 'rgba(220,38,38,0.1)', high: 'rgba(245,158,11,0.1)', medium: 'rgba(59,130,246,0.1)', low: 'rgba(107,114,128,0.1)' };
+        const statusColors = { open: '#ef4444', 'in-progress': '#f59e0b', resolved: '#10b981', closed: '#6b7280' };
+        const statusLabels = { open: 'Open', 'in-progress': 'In Progress', resolved: 'Resolved', closed: 'Closed' };
+
+        // Store tickets globally for chat modal access
+        window._supportTickets = {};
+        let html = '<div style="display:flex;flex-direction:column;gap:12px;">';
+        tickets.forEach(t => {
+          window._supportTickets[t.ticketId] = t;
+          const date = new Date(t.createdAt).toLocaleString();
+          const pColor = priorityColors[t.priority] || '#6b7280';
+          const pBg = priorityBg[t.priority] || 'rgba(107,114,128,0.1)';
+          const sColor = statusColors[t.status] || '#6b7280';
+          const sLabel = statusLabels[t.status] || t.status;
+
+          html += `
+            <div style="border:1px solid var(--border-color,#e5e7eb);border-radius:12px;padding:16px;background:var(--bg-card,#fff);transition:box-shadow 0.2s;" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.08)'" onmouseout="this.style.boxShadow='none'">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+                <div style="flex:1;min-width:200px;">
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                    <span style="font-weight:700;font-size:14px;color:var(--text-primary,#1e293b);">#${t.ticketId}</span>
+                    <span style="background:${pBg};color:${pColor};padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600;text-transform:uppercase;">${t.priority}</span>
+                    <span style="background:${sColor}22;color:${sColor};padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600;">${sLabel}</span>
+                  </div>
+                  <div style="font-size:13px;color:var(--text-primary,#374151);margin-bottom:4px;">
+                    <strong>👤 ${t.passengerName}</strong>${t.passengerEmail ? ' • ' + t.passengerEmail : ''}${t.passengerPhone ? ' • ' + t.passengerPhone : ''}
+                  </div>
+                  <div style="font-size:12px;color:#6b7280;margin-bottom:4px;">
+                    📋 <strong>Category:</strong> ${t.issueCategory || '—'} &nbsp;|&nbsp; 🕐 ${date}
+                  </div>
+                  <div style="font-size:12px;color:#6b7280;">
+                    🔗 <strong>Issue Trail:</strong> ${t.issueTrail || '—'}
+                  </div>
+                  ${t.adminResponse ? '<div style="margin-top:6px;padding:8px 12px;background:rgba(16,185,129,0.08);border-radius:8px;font-size:12px;color:#065f46;"><strong>Admin Response:</strong> ' + t.adminResponse + '</div>' : ''}
+                  ${(t.chatHistory && t.chatHistory.filter(m => m.startsWith('Passenger follow-up:')).length) ? '<div style="margin-top:8px;border-top:1px solid #e5e7eb;padding-top:8px;"><div style="font-size:11px;font-weight:600;color:#6366f1;margin-bottom:4px;">💬 Passenger Follow-ups:</div>' + t.chatHistory.filter(m => m.startsWith('Passenger follow-up:')).map(m => '<div style="padding:6px 10px;background:rgba(99,102,241,0.06);border-radius:8px;font-size:12px;color:#4338ca;margin-bottom:4px;border-left:3px solid #6366f1;">' + m.replace('Passenger follow-up: ','') + '</div>').join('') + '</div>' : ''}
+                </div>
+                <div style="display:flex;flex-direction:column;gap:6px;min-width:140px;">
+                  <select onchange="updateTicketStatus('${t.ticketId}', this.value)" style="padding:6px 10px;border-radius:8px;border:1px solid #d1d5db;font-size:12px;background:var(--bg-primary,#fff);color:var(--text-primary,#374151);cursor:pointer;">
+                    <option value="open" ${t.status==='open'?'selected':''}>🔴 Open</option>
+                    <option value="in-progress" ${t.status==='in-progress'?'selected':''}>🟡 In Progress</option>
+                    <option value="resolved" ${t.status==='resolved'?'selected':''}>🟢 Resolved</option>
+                    <option value="closed" ${t.status==='closed'?'selected':''}>⚫ Closed</option>
+                  </select>
+                  <button onclick="openTicketChat('${t.ticketId}')" class="btn btn-primary" style="font-size:11px;padding:6px 12px;">
+                    💬 Chat
+                  </button>
+                  <button onclick="deleteTicket('${t.ticketId}')" class="btn btn-secondary" style="font-size:11px;padding:6px 12px;color:#ef4444;">
+                    🗑 Delete
+                  </button>
+                </div>
+              </div>
+            </div>`;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+      } catch(err) {
+        console.error('Load support tickets error:', err);
+        container.innerHTML = '<p style="color:#ef4444;">Error loading support tickets.</p>';
+      }
+    }
+
+    async function updateTicketStatus(ticketId, status) {
+      const token = getToken();
+      try {
+        const res = await fetch('/api/support/tickets/' + ticketId, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ status })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Ticket #' + ticketId + ' updated to ' + status);
+          loadSupportTickets();
+        } else {
+          showToast('Failed to update ticket', 'error');
+        }
+      } catch(err) {
+        showToast('Error updating ticket', 'error');
+      }
+    }
+
+    function openTicketChat(ticketId) {
+      const ticket = window._supportTickets?.[ticketId];
+      if (!ticket) { showToast('Ticket not found', 'error'); return; }
+      document.getElementById('ticketResponseModal')?.remove();
+
+      const date = new Date(ticket.createdAt).toLocaleString();
+      const statusLabel = { open: 'Open', 'in-progress': 'In Progress', resolved: 'Resolved', closed: 'Closed' };
+
+      // Build conversation messages from chatHistory + adminResponse
+      let chatMsgs = '';
+
+      // Initial escalation message (from passenger)
+      chatMsgs += `<div style="display:flex;justify-content:flex-start;margin-bottom:8px;"><div style="max-width:80%;background:#f1f5f9;border-radius:14px 14px 14px 4px;padding:10px 14px;font-size:13px;color:#1e293b;"><div style="font-size:10px;color:#6b7280;margin-bottom:4px;">👤 ${ticket.passengerName} • ${date}</div><strong>${ticket.issueCategory || 'Support Request'}</strong><br><span style="color:#475569;">${ticket.issueTrail || 'General inquiry'}</span></div></div>`;
+
+      // Parse chatHistory for follow-ups + admin replies
+      if (ticket.chatHistory && ticket.chatHistory.length) {
+        ticket.chatHistory.forEach(msg => {
+          if (msg.startsWith('Passenger follow-up:')) {
+            const text = msg.replace('Passenger follow-up: ', '');
+            chatMsgs += `<div style="display:flex;justify-content:flex-start;margin-bottom:8px;"><div style="max-width:80%;background:#f1f5f9;border-radius:14px 14px 14px 4px;padding:10px 14px;font-size:13px;color:#1e293b;"><div style="font-size:10px;color:#6b7280;margin-bottom:2px;">👤 ${ticket.passengerName}</div>${text}</div></div>`;
+          } else if (msg.startsWith('Admin:')) {
+            const text = msg.replace('Admin: ', '');
+            chatMsgs += `<div style="display:flex;justify-content:flex-end;margin-bottom:8px;"><div style="max-width:80%;background:linear-gradient(135deg,#2563eb,#3b82f6);border-radius:14px 14px 4px 14px;padding:10px 14px;font-size:13px;color:#fff;"><div style="font-size:10px;color:rgba(255,255,255,0.7);margin-bottom:2px;">🛡️ Admin</div>${text}</div></div>`;
+          }
+        });
+      }
+
+      // Show current adminResponse if exists and not already in chatHistory
+      if (ticket.adminResponse) {
+        const alreadyInHistory = ticket.chatHistory?.some(m => m === 'Admin: ' + ticket.adminResponse);
+        if (!alreadyInHistory) {
+          chatMsgs += `<div style="display:flex;justify-content:flex-end;margin-bottom:8px;"><div style="max-width:80%;background:linear-gradient(135deg,#2563eb,#3b82f6);border-radius:14px 14px 4px 14px;padding:10px 14px;font-size:13px;color:#fff;"><div style="font-size:10px;color:rgba(255,255,255,0.7);margin-bottom:2px;">🛡️ Admin</div>${ticket.adminResponse}</div></div>`;
+        }
+      }
+
+      const html = `
+        <div class="modal-overlay active" id="ticketResponseModal" onclick="if(event.target===this)this.remove()" style="z-index:9999;">
+          <div class="modal" style="max-width:480px;height:600px;max-height:85vh;display:flex;flex-direction:column;padding:0;overflow:hidden;border-radius:16px;">
+            <!-- Chat Header -->
+            <div style="background:linear-gradient(135deg,#1e293b,#334155);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+              <div>
+                <div style="font-weight:700;font-size:15px;">💬 #${ticketId}</div>
+                <div style="font-size:11px;opacity:0.7;">👤 ${ticket.passengerName} • ${statusLabel[ticket.status] || ticket.status}</div>
+              </div>
+              <button onclick="document.getElementById('ticketResponseModal').remove()" style="background:none;border:none;color:#fff;cursor:pointer;font-size:20px;padding:4px 8px;">✕</button>
+            </div>
+            <!-- Chat Messages -->
+            <div id="ticketChatMessages" style="flex:1;overflow-y:auto;padding:16px;background:#fafbfc;display:flex;flex-direction:column;">
+              ${chatMsgs}
+            </div>
+            <!-- Chat Input -->
+            <div style="border-top:1px solid #e5e7eb;padding:12px 14px;background:#fff;flex-shrink:0;">
+              <div style="display:flex;gap:8px;align-items:flex-end;">
+                <textarea id="ticketChatInput" rows="2" placeholder="Type your reply to ${ticket.passengerName}..." style="flex:1;border:1.5px solid #e2e8f0;border-radius:12px;padding:10px 14px;font-size:13px;resize:none;outline:none;font-family:inherit;transition:border-color 0.2s;" onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#e2e8f0'" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendTicketChat('${ticketId}')}"></textarea>
+                <button onclick="sendTicketChat('${ticketId}')" style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#3b82f6);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
+                  <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
+              </div>
+              <div style="display:flex;gap:6px;margin-top:8px;">
+                <button onclick="sendTicketChat('${ticketId}','resolved')" class="btn btn-secondary" style="font-size:11px;padding:4px 12px;color:#10b981;">✅ Mark Resolved</button>
+                <button onclick="sendTicketChat('${ticketId}','closed')" class="btn btn-secondary" style="font-size:11px;padding:4px 12px;color:#6b7280;">⚫ Close Ticket</button>
+              </div>
+            </div>
+          </div>
+        </div>`;
+      document.body.insertAdjacentHTML('beforeend', html);
+      // Scroll chat to bottom
+      const msgBox = document.getElementById('ticketChatMessages');
+      if (msgBox) msgBox.scrollTop = msgBox.scrollHeight;
+      // Join socket room for real-time sync
+      adminJoinSupportRoom(ticketId);
+    }
+
+    async function sendTicketChat(ticketId, statusOverride) {
+      const token = getToken();
+      const input = document.getElementById('ticketChatInput');
+      const message = input?.value?.trim() || '';
+      if (!message && !statusOverride) return;
+
+      const msgBox = document.getElementById('ticketChatMessages');
+
+      // Show the sent message in the chat immediately
+      if (message) {
+        msgBox.insertAdjacentHTML('beforeend', `<div style="display:flex;justify-content:flex-end;margin-bottom:8px;"><div style="max-width:80%;background:linear-gradient(135deg,#2563eb,#3b82f6);border-radius:14px 14px 4px 14px;padding:10px 14px;font-size:13px;color:#fff;"><div style="font-size:10px;color:rgba(255,255,255,0.7);margin-bottom:2px;">🛡️ Admin • just now</div>${message}</div></div>`);
+        msgBox.scrollTop = msgBox.scrollHeight;
+        input.value = '';
+      }
+
+      const body = {};
+      if (message) body.adminResponse = message;
+      if (statusOverride) body.status = statusOverride;
+      else body.status = 'in-progress';
+
+      try {
+        const res = await fetch('/api/support/tickets/' + ticketId, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (data.success) {
+          // Also append to chatHistory on server
+          if (message) {
+            await fetch('/api/support/followup', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ ticketId, message: 'Admin: ' + message })
+            }).catch(() => {});
+            // Emit via socket for real-time delivery to passenger
+            adminEmitSupportMessage(ticketId, message);
+          }
+          if (statusOverride) {
+            const labels = { resolved: 'Resolved', closed: 'Closed' };
+            msgBox.insertAdjacentHTML('beforeend', `<div style="text-align:center;padding:8px;font-size:12px;color:#6b7280;">— Ticket marked as <strong>${labels[statusOverride] || statusOverride}</strong> —</div>`);
+            msgBox.scrollTop = msgBox.scrollHeight;
+            showToast('Ticket #' + ticketId + ' ' + (labels[statusOverride] || statusOverride));
+          } else {
+            showToast('Reply sent');
+          }
+          loadSupportTickets();
+        } else {
+          showToast('Failed to send', 'error');
+        }
+      } catch(err) {
+        showToast('Error sending reply', 'error');
+      }
+    }
+
+    // ======= Support Ticket Real-Time Socket =======
+    let adminSupportSocket = null;
+    let adminSupportCurrentRoom = null;
+
+    function initAdminSupportSocket() {
+      function tryConnect() {
+        if (typeof io !== 'undefined') {
+          adminSupportSocket = io('http://localhost:3000');
+
+          adminSupportSocket.on('support_message', (data) => {
+            // Only render if the admin chat modal is open for this ticket
+            if (data.sender === 'passenger' && adminSupportCurrentRoom === 'support_' + data.ticketId) {
+              const msgBox = document.getElementById('ticketChatMessages');
+              if (msgBox) {
+                const ticket = window._supportTickets?.[data.ticketId];
+                const name = ticket?.passengerName || 'Passenger';
+                msgBox.insertAdjacentHTML('beforeend',
+                  `<div style="display:flex;justify-content:flex-start;margin-bottom:8px;">
+                    <div style="max-width:80%;background:#f1f5f9;border-radius:14px 14px 14px 4px;padding:10px 14px;font-size:13px;color:#1e293b;">
+                      <div style="font-size:10px;color:#6b7280;margin-bottom:2px;">👤 ${name} • just now</div>${data.message}
+                    </div>
+                  </div>`);
+                msgBox.scrollTop = msgBox.scrollHeight;
+              }
+            }
+          });
+
+          adminSupportSocket.on('support_typing', (data) => {
+            if (data.sender === 'passenger' && adminSupportCurrentRoom) {
+              let ind = document.getElementById('adminSupportTypingInd');
+              if (!ind) {
+                const msgBox = document.getElementById('ticketChatMessages');
+                if (msgBox) {
+                  ind = document.createElement('div');
+                  ind.id = 'adminSupportTypingInd';
+                  ind.style.cssText = 'font-size:12px;color:#94a3b8;font-style:italic;padding:4px 14px;';
+                  ind.textContent = 'Passenger is typing...';
+                  msgBox.appendChild(ind);
+                  msgBox.scrollTop = msgBox.scrollHeight;
+                }
+              }
+            }
+          });
+
+          adminSupportSocket.on('support_stop_typing', () => {
+            document.getElementById('adminSupportTypingInd')?.remove();
+          });
+
+          console.log('[Admin Support] Socket connected');
+        } else {
+          setTimeout(tryConnect, 500);
+        }
+      }
+      tryConnect();
+    }
+    initAdminSupportSocket();
+
+    function adminJoinSupportRoom(ticketId) {
+      if (adminSupportSocket && ticketId) {
+        adminSupportCurrentRoom = 'support_' + ticketId;
+        adminSupportSocket.emit('support_join', { ticketId, role: 'admin' });
+      }
+    }
+
+    function adminEmitSupportMessage(ticketId, message) {
+      if (adminSupportSocket && ticketId && message) {
+        adminSupportSocket.emit('support_message', { ticketId, message, sender: 'admin' });
+      }
+    }
+
+    async function deleteTicket(ticketId) {
+      if (!confirm('Delete ticket #' + ticketId + '? This cannot be undone.')) return;
+      const token = getToken();
+      try {
+        const res = await fetch('/api/support/tickets/' + ticketId, {
+          method: 'DELETE',
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Ticket #' + ticketId + ' deleted');
+          loadSupportTickets();
+        } else {
+          showToast('Failed to delete ticket', 'error');
+        }
+      } catch(err) {
+        showToast('Error deleting ticket', 'error');
+      }
+    }
+
+    async function updateSupportBadge() {
+      const token = getToken();
+      if (!token) return;
+      try {
+        const res = await fetch('/api/support/tickets?limit=1', { headers: { 'Authorization': 'Bearer ' + token } });
+        const data = await res.json();
+        if (data.success && data.stats) {
+          const badge = document.getElementById('supportTicketsBadge');
+          if (data.stats.open > 0) {
+            badge.textContent = data.stats.open;
+            badge.style.display = 'inline-flex';
+          } else {
+            badge.style.display = 'none';
+          }
+        }
+      } catch(e) {}
+    }
+    // Initial badge load
+    setTimeout(updateSupportBadge, 2000);
   </script>
 
 </body>

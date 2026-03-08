@@ -237,7 +237,7 @@ router.get('/recent-bookings', async (req, res) => {
       status: { $in: ['Completed', 'Rejected', 'Cancelled'] }
     })
       .populate('passengerId', 'name phone')
-      .populate('assistantId', 'name phone')
+      .populate('assistantId', 'name phone station isOnline rating')
       .sort({ createdAt: -1 })
       .limit(parseInt(limit))
       .lean();
@@ -253,33 +253,51 @@ router.get('/recent-bookings', async (req, res) => {
 /**
  * GET /api/admin/dashboard/available-assistants
  * Get list of available assistants for manual reassignment
+ * For admin, show all approved/verified assistants at the station (even if busy)
  */
 router.get('/available-assistants', async (req, res) => {
   try {
     const { station } = req.query;
     
-    let query = {
-      isEligibleForBookings: true,
-      currentBookingId: null
-    };
+    // For admin manual assignment, show all approved assistants at the station
+    // isEligibleForBookings check removed - admin can force assign if needed
+    let stationQuery = {};
     if (station) {
-      query.$or = [
+      stationQuery.$or = [
         { station: new RegExp('^' + station + '$', 'i') },
         { stationCode: new RegExp('^' + station + '$', 'i') }
       ];
     }
+    
     // First try with applicationStatus: 'Approved'
-    let assistants = await Assistant.find({ ...query, applicationStatus: 'Approved' })
-      .select('name phone station isOnline rating totalBookingsCompleted languages verified')
-      .sort({ isOnline: -1, rating: -1 })
+    let assistants = await Assistant.find({ 
+      ...stationQuery, 
+      applicationStatus: 'Approved',
+      revoked: { $ne: true }
+    })
+      .select('name phone station stationCode isOnline rating totalBookingsCompleted languages verified isEligibleForBookings currentBookingId')
+      .sort({ currentBookingId: 1, isOnline: -1, rating: -1 })  // Available ones first
       .lean();
+    
     // If none, fallback to verified: true
     if ((!assistants || assistants.length === 0) && station) {
-      assistants = await Assistant.find({ ...query, verified: true, $or: query.$or })
-        .select('name phone station isOnline rating totalBookingsCompleted languages verified')
-        .sort({ isOnline: -1, rating: -1 })
+      assistants = await Assistant.find({ 
+        ...stationQuery, 
+        verified: true,
+        revoked: { $ne: true }
+      })
+        .select('name phone station stationCode isOnline rating totalBookingsCompleted languages verified isEligibleForBookings currentBookingId')
+        .sort({ currentBookingId: 1, isOnline: -1, rating: -1 })
         .lean();
     }
+    
+    // Add availability status for each assistant
+    assistants = assistants.map(a => ({
+      ...a,
+      isBusy: !!a.currentBookingId,
+      availabilityStatus: a.currentBookingId ? 'Busy (has active booking)' : 'Available'
+    }));
+    
     res.json({ success: true, assistants });
 
   } catch (err) {

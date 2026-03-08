@@ -54,7 +54,17 @@ function authFetch(url, opts = {}) {
   opts.headers = opts.headers || {};
   const token = getToken();
   if (token) opts.headers['Authorization'] = 'Bearer ' + token;
-  return fetch(url, opts);
+  return fetch(url, opts).then(res => {
+    // Auto-handle 401 (invalid/expired token) - clear token and notify
+    if (res.status === 401) {
+      console.warn('[authFetch] 401 Unauthorized - token may be invalid or expired');
+      // Clear the invalid token
+      try { localStorage.removeItem('railcare_token'); } catch (e) {}
+      try { sessionStorage.removeItem('railcare_token'); } catch (e) {}
+      try { localStorage.removeItem('railcare_logged_in'); } catch (e) {}
+    }
+    return res;
+  });
 }
 
 async function getCurrentUser() {

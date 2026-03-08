@@ -406,6 +406,41 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+// Toggle assistant online/active status
+router.post('/:id/toggle-online', async (req, res) => {
+  try {
+    const { isOnline } = req.body;
+    const assistant = await Assistant.findById(req.params.id);
+    if (!assistant) return res.status(404).json({ success: false, message: 'Assistant not found' });
+    
+    // Update online status
+    assistant.isOnline = isOnline === true;
+    if (isOnline) {
+      assistant.lastOnlineAt = new Date();
+    }
+    await assistant.save();
+    
+    console.log(`[Assistant] ${assistant.name} is now ${isOnline ? 'ACTIVE' : 'INACTIVE'}`);
+    res.json({ success: true, assistant, isOnline: assistant.isOnline });
+  } catch (err) {
+    console.error('[Assistant] Toggle online error:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Request re-verification after being revoked
+router.post('/:id/request-reverify', async (req, res) => {
+  try {
+    const assistant = await Assistant.findById(req.params.id);
+    if (!assistant) return res.status(404).json({ success: false, message: 'Not found' });
+    assistant.requestedReverify = true;
+    await assistant.save();
+    res.json({ success: true });
+  } catch (err) { 
+    res.status(500).json({ success: false, error: err.message }); 
+  }
+});
+
 // Get bookings for assistant
 router.get('/:id/bookings', async (req, res) => {
   try {

@@ -26,6 +26,29 @@ router.post('/:id/request-reverify', async (req, res) => {
     res.json({ success: true });
   } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
+
+// Assistant: toggle online/active status
+router.post('/:id/toggle-online', async (req, res) => {
+  try {
+    const { isOnline } = req.body;
+    const assistant = await Assistant.findById(req.params.id);
+    if (!assistant) return res.status(404).json({ success: false, message: 'Assistant not found' });
+    
+    // Update online status
+    assistant.isOnline = isOnline === true;
+    if (isOnline) {
+      assistant.lastOnlineAt = new Date();
+    }
+    await assistant.save();
+    
+    console.log(`[Assistant] ${assistant.name} is now ${isOnline ? 'ACTIVE' : 'INACTIVE'}`);
+    res.json({ success: true, assistant, isOnline: assistant.isOnline });
+  } catch (err) {
+    console.error('[Assistant] Toggle online error:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // Admin: re-verify a revoked assistant
 router.post('/:id/verify-again', authenticate, authorize('admin'), async (req, res) => {
   try {
@@ -133,7 +156,15 @@ router.post('/:id/reject', authenticate, authorize('admin'), async (req, res) =>
     if (!assistant) return res.status(404).json({ success: false });
     assistant.verified = false;
     assistant.revoked = true;
+    if (req.body && req.body.reason) assistant.rejectionReason = String(req.body.reason).slice(0, 500);
+    assistant.isEligibleForBookings = false;
+    assistant.isOnline = false;
     await assistant.save();
+    // Audit log
+    try {
+      const AuditLog = require('../models/AuditLog');
+      await AuditLog.create({ action: 'revoke_assistant', actorId: req.user && (req.user.id || req.user._id), actorRole: 'admin', targetType: 'assistant', targetId: String(assistant._id), meta: { assistantName: assistant.name, reason: req.body?.reason || '' } });
+    } catch (e) { console.error('Audit log failed', e.message); }
     res.json({ success: true });
   } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
@@ -148,11 +179,17 @@ router.put('/:id', authenticate, async (req, res) => {
     const isAdmin = user.role === 'admin';
     const isOwner = user.role === 'assistant' && assistant.userId && assistant.userId.toString() === (user.id || user._id || '').toString();
     if (!isAdmin && !isOwner) return res.status(403).json({ success: false, message: 'Forbidden' });
-    const { name, station, languages, verified } = req.body || {};
+    const { name, phone, age, station, languages, verified, documentsVerified, isEligibleForBookings, permanentAddress, yearsOfExperience } = req.body || {};
     if (name !== undefined) assistant.name = name;
+    if (phone !== undefined) assistant.phone = phone;
+    if (age !== undefined) assistant.age = Number(age) || assistant.age;
     if (station !== undefined) assistant.station = station;
     if (languages !== undefined) assistant.languages = Array.isArray(languages) ? languages : (typeof languages === 'string' ? languages.split(',').map(s=>s.trim()).filter(Boolean) : assistant.languages);
     if (verified !== undefined && isAdmin) assistant.verified = Boolean(verified);
+    if (documentsVerified !== undefined && isAdmin) assistant.documentsVerified = Boolean(documentsVerified);
+    if (isEligibleForBookings !== undefined && isAdmin) assistant.isEligibleForBookings = Boolean(isEligibleForBookings);
+    if (permanentAddress !== undefined) assistant.permanentAddress = permanentAddress;
+    if (yearsOfExperience !== undefined) assistant.yearsOfExperience = Number(yearsOfExperience) || 0;
     await assistant.save();
     res.json({ success: true, assistant });
   } catch (err) { res.status(500).json({ success: false, error: err.message }); }
@@ -235,6 +272,22 @@ router.post('/:id/verify-docs', authenticate, authorize('admin'), async (req, re
     } catch (e) { console.error('Audit log failed', e.message); }
     return res.json({ success: true, assistant });
   } catch (err) { return res.status(500).json({ success: false, message: 'Server error' }); }
+});
+
+// Admin: permanently delete an assistant
+router.delete('/:id', authenticate, authorize('admin'), async (req, res) => {
+  try {
+    const assistant = await Assistant.findById(req.params.id);
+    if (!assistant) return res.status(404).json({ success: false, message: 'Not found' });
+    const name = assistant.name;
+    await Assistant.findByIdAndDelete(req.params.id);
+    // record audit log
+    try {
+      const AuditLog = require('../models/AuditLog');
+      await AuditLog.create({ action: 'delete_assistant', actorId: req.user && (req.user.id || req.user._id), actorRole: 'admin', targetType: 'assistant', targetId: req.params.id, meta: { assistantName: name } });
+    } catch (e) { console.error('Audit log failed', e.message); }
+    res.json({ success: true, message: 'Assistant permanently deleted' });
+  } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
 
 module.exports = router;

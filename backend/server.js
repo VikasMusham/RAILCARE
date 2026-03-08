@@ -18,6 +18,7 @@ const schedulingRoutes = require('./routes/scheduling'); // Scheduling & task ma
 const { retrySearchingBookings } = require('./services/matchingService');
 const paymentRoutes = require('./routes/payment'); // Payment routes
 const adminPaymentRoutes = require('./routes/adminPayment'); // Admin payment status
+const supportRoutes = require('./routes/support'); // Support ticket routes
 
 // Background Services (Enterprise Scheduling)
 const trainDelayTracker = require('./services/trainDelayTracker');
@@ -85,6 +86,34 @@ io.on('connection', (socket) => {
     delete typingUsers[bookingId];
     socket.to(bookingId).emit('stop_typing');
   });
+  // === Support Ticket Real-Time Chat ===
+  socket.on('support_join', ({ ticketId, role }) => {
+    if (ticketId) {
+      const room = 'support_' + ticketId;
+      socket.join(room);
+      socket._supportRoom = room;
+      socket._supportRole = role;
+      console.log('[SOCKET] Joined support room:', room, 'as', role);
+    }
+  });
+
+  socket.on('support_message', ({ ticketId, message, sender }) => {
+    if (ticketId && message) {
+      const room = 'support_' + ticketId;
+      // Broadcast to everyone else in the room
+      socket.to(room).emit('support_message', { ticketId, message, sender, time: new Date().toISOString() });
+      console.log('[SOCKET] Support msg in', room, 'from', sender);
+    }
+  });
+
+  socket.on('support_typing', ({ ticketId, sender }) => {
+    if (ticketId) socket.to('support_' + ticketId).emit('support_typing', { sender });
+  });
+
+  socket.on('support_stop_typing', ({ ticketId }) => {
+    if (ticketId) socket.to('support_' + ticketId).emit('support_stop_typing');
+  });
+
   socket.on('disconnect', () => {
     if (socket.bookingId && typingUsers[socket.bookingId]) {
       delete typingUsers[socket.bookingId];
@@ -113,6 +142,7 @@ app.use('/api/trains', trainRoutes); // Train search
 app.use('/api/scheduling', schedulingRoutes); // Task scheduling & management
 app.use('/api/payment', paymentRoutes); // Payment routes
 app.use('/api/admin/payment', adminPaymentRoutes); // Admin payment status
+app.use('/api/support', supportRoutes); // Support tickets
 
 // Serve frontend static files
 const frontendPath = path.join(__dirname, '..', 'frontend');

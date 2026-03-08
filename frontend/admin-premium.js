@@ -24,13 +24,14 @@ function showAssistantsModal(station, bookingId) {
       if (data.success && data.assistants && data.assistants.length > 0) {
         listDiv.innerHTML = `<div style='margin-bottom:10px;font-weight:600;'>Total: ${data.assistants.length}</div>` +
           data.assistants.map(a =>
-            `<div style='padding:10px 0;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between;'>
+            `<div style='padding:10px 0;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between;${a.isBusy ? 'opacity:0.7;background:#fefce8;' : ''}'>
               <div>
                 <div><b>${a.name}</b> <span style='color:#888;font-size:13px;'>(${a.phone})</span></div>
                 <div style='font-size:13px;color:#666;'>${a.languages && a.languages.length ? 'Lang: ' + a.languages.join(', ') : ''}</div>
                 <div style='font-size:13px;color:#666;'>${a.isOnline ? '<span style="color:#10b981;">Online</span>' : 'Offline'} | ${a.rating ? '⭐ ' + a.rating.toFixed(1) : 'No rating'}</div>
+                ${a.isBusy ? '<div style="font-size:12px;color:#ca8a04;font-weight:500;margin-top:4px;">⚠️ Busy (has active booking)</div>' : '<div style="font-size:12px;color:#10b981;font-weight:500;margin-top:4px;">✓ Available</div>'}
               </div>
-              <button class='btn btn-success btn-sm' onclick='assignAssistantToBooking("${bookingId}","${a._id}")'>Assign</button>
+              <button class='btn ${a.isBusy ? 'btn-warning' : 'btn-success'} btn-sm' onclick='assignAssistantToBooking("${bookingId}","${a._id}")'>${a.isBusy ? 'Force Assign' : 'Assign'}</button>
             </div>`
           ).join('');
       } else {
@@ -119,5 +120,47 @@ window.markPaymentNotDone = async function(bookingId) {
     }
   } catch (err) {
     alert('Failed to mark as COD: ' + err.message);
+  }
+};
+
+// Update refund status for cancelled bookings
+window.updateRefundStatus = async function(bookingId, newStatus) {
+  const statusLabels = {
+    'Refund_Initiated': 'initiate the refund',
+    'Refund_Processing': 'mark refund as processing',
+    'Refunded': 'mark refund as completed'
+  };
+  
+  if (!confirm(`Are you sure you want to ${statusLabels[newStatus] || 'update refund status'}?`)) {
+    return;
+  }
+  
+  try {
+    const res = await window.authFetch(`/api/admin/bookings/${bookingId}/update-refund-status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ newStatus: newStatus })
+    });
+    
+    let data;
+    try {
+      data = await res.json();
+    } catch (e) {
+      data = { success: false, message: 'Invalid server response' };
+    }
+    
+    if (res.ok && data.success) {
+      const successMessages = {
+        'Refund_Initiated': 'Refund has been initiated!',
+        'Refund_Processing': 'Refund marked as processing.',
+        'Refunded': 'Refund completed successfully!'
+      };
+      alert(successMessages[newStatus] || 'Refund status updated.');
+      window.loadBookings && window.loadBookings();
+    } else {
+      alert('Failed to update refund status: ' + (data.message || 'Unknown error'));
+    }
+  } catch (err) {
+    alert('Failed to update refund status: ' + err.message);
   }
 };
